@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>IMDB Report</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body{
+                margin: auto;
+                line-height:1;
+                font-family: arial;
+                padding:2em;
+                outline:0;
+                font-size:100%;
+                vertical-align:top;
+                background:transparent;
+            }
+        </style>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/overcast/jquery-ui.min.css">
+
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    </head>
+    <body>
+        <section id="pageContent">
+            <main role="main">
+                <p>
+                <div style="padding: 1em" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+                    <span><b>Report in:</b> ${report_location}</span><br/>
+                    <span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
+                    <span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
+                    <span><b>Total scanned:</b> ${total}</span>
+                </div>
+                <div id="accordion">
+                    <h3>Not Found</h3>
+                    <div>
+                        <p>${NOT_FOUND}</p>
+                    </div>
+                    <h3>Logs</h3>
+                    <div>
+                        ${logsData}
+                    </div>
+                </div>
+                <br/>
+                <div id ="tabs-1">
+                    <ul>
+                        <li><a href="#tabs-2">By rating</a></li>
+                        <li><a href="#tabs-3">By date</a></li>
+                    </ul>

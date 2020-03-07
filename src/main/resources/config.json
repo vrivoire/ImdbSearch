@@ -1,0 +1,20 @@
+{
+    "REPORT_BODY": "/report_body.html",
+    "PATTERN": "[SsNn]\\d\\d",
+    "CHROME_APPLICATION": "\"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe\"",
+    "REPORT_NAME": "_report.html",
+    "REPORT_HEADER": "/report_header.html",
+    "GLOB": "glob:**.{html,ini,db,exe,pdf,docx,doc,zip,rar,7z,torrent,!bt,jpg,htm}",
+    "ICON": "/IMDB.jpg",
+    "REPORT_FOOTER": "/report_footer.html",
+    "SUPPORTED_EXTENSIONS": [
+        ".xa", ".wav", ".dts", ".tta", ".tac", ".ts", ".mpg", ".ra", ".ram", ".rm",
+        ".rv", ".rmbv", ".ogm", ".ogg", ".nut", ".nsv", ".nsc", ".mpg", ".mp3", ".mp2",
+        ".mp4", ".mov", ".mkv", ".mka", ".flv", ".avi", ".au", ".asf", ".wmv", ".asf",
+        ".wmv", ".a52", ".dts", ".aac", ".flac", ".dv", ".vid", ".3gp"],
+    "TORRENTS": [
+        ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw",
+        "x264", "www", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch",
+        "Torrent9", "CpasBien"
+    ]
+}
