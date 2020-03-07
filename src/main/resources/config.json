@@ -4,7 +4,7 @@
     "CHROME_APPLICATION": "\"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe\"",
     "REPORT_NAME": "_report.html",
     "REPORT_HEADER": "/report_header.html",
-    "GLOB": "glob:**.{html,ini,db,exe,pdf,docx,doc,zip,rar,7z,torrent,!bt,jpg,htm}",
+    "GLOB": "glob:**.{html,ini,db,exe,pdf,docx,doc,zip,rar,7z,torrent,!bt,jpg,htm,msi}",
     "ICON": "/IMDB.jpg",
     "REPORT_FOOTER": "/report_footer.html",
     "SUPPORTED_EXTENSIONS": [
