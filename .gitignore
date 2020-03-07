@@ -1,3 +1,5 @@
 /target/
 /bin/ImdbSearch.jar
 /bin/ImdbSearch.log
+/bin/ImdbSearch.exe
+/ImdbSearch.log
