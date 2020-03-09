@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.log4j.LogManager;
@@ -111,9 +110,18 @@ public class SearchMovie {
         Set<NameYearBean> nameYearBeanSet = new HashSet<>();
         if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
             try {
-                final var filter = path.getFileSystem().getPathMatcher(Config.GLOB.getString());
-                Stream<Path> list = Files.list(path);
-                list.filter(p -> !filter.matches(p) && !p.endsWith("To Be Viewed"))
+                List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
+                StringBuilder sb = new StringBuilder("glob:**.{");
+                extensions.forEach((extension) -> {
+                    sb.append(extension.strip().replace(".", "")).append(',');
+                });
+                sb.deleteCharAt(sb.lastIndexOf(","));
+                sb.append("}");
+
+                var excludeFilter = path.getFileSystem().getPathMatcher(Config.GLOB.getString());
+                var includeFilter = path.getFileSystem().getPathMatcher(sb.toString());
+
+                Files.list(path).filter(p -> !excludeFilter.matches(p) && includeFilter.matches(p))
                         .forEach((Path p) -> {
                             String fileName = p.getFileName().toString();
                             List<String> tokenized = tokenize(fileName);
