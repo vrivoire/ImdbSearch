@@ -110,6 +110,7 @@ public class SearchMovie {
         LOG.info(Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) + " " + path);
         if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
             try {
+                @SuppressWarnings("unchecked")
                 List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
                 StringBuilder sb = new StringBuilder("glob:**.{");
                 extensions.forEach((extension) -> {
