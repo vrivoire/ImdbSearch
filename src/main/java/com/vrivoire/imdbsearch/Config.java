@@ -1,8 +1,5 @@
 package com.vrivoire.imdbsearch;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +7,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  *
@@ -25,7 +27,6 @@ public enum Config {
     REPORT_BODY,
     REPORT_FOOTER,
     PATTERN,
-    GLOB,
     SUPPORTED_EXTENSIONS,
     TORRENTS;
 
@@ -63,8 +64,7 @@ public enum Config {
             MAP.putAll(objectMapper.readValue(file, new TypeReference<Map<String, Object>>() {
             }));
             LOG.debug("Configuration:\n" + objectMapper.writeValueAsString(MAP));
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             LOG.fatal(ex);
             System.exit(-1);
         }

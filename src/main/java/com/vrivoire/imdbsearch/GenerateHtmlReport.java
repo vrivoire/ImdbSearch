@@ -88,7 +88,6 @@ public class GenerateHtmlReport {
             sb1.append("</code>");
         }
 
-        System.out.println("\n" + sb1.toString());
         Map<String, Object> map = new HashMap<>();
         map.put("report_location", fullReportPath);
         map.put("foundCount", movieList.size());

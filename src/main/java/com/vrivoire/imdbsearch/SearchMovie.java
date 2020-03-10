@@ -1,10 +1,5 @@
 package com.vrivoire.imdbsearch;
 
-import com.omertron.omdbapi.OMDBException;
-import com.omertron.omdbapi.OmdbApi;
-import com.omertron.omdbapi.model.OmdbVideoFull;
-import com.omertron.omdbapi.tools.OmdbBuilder;
-import com.omertron.omdbapi.tools.OmdbParameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,10 +15,17 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import com.omertron.omdbapi.OMDBException;
+import com.omertron.omdbapi.OmdbApi;
+import com.omertron.omdbapi.model.OmdbVideoFull;
+import com.omertron.omdbapi.tools.OmdbBuilder;
+import com.omertron.omdbapi.tools.OmdbParameters;
 
 /**
  *
@@ -57,8 +59,7 @@ public class SearchMovie {
             try {
                 NameYearBean search = searchiMDB(nameYearBean);
                 list.add(search);
-            }
-            catch (OMDBException | IllegalAccessException | InvocationTargetException ex) {
+            } catch (OMDBException | IllegalAccessException | InvocationTargetException ex) {
                 NOT_FOUND.add(nameYearBean);
                 LOG.info(nameYearBean);
                 LOG.info(ex.getMessage());
@@ -83,8 +84,7 @@ public class SearchMovie {
         Integer year = null;
         try {
             year = Integer.parseInt(nameYearBean.getYear());
-        }
-        catch (NumberFormatException nfe) {
+        } catch (NumberFormatException nfe) {
             // ignore, no year
         }
         if (year != null && year > 1800) {
@@ -96,8 +96,7 @@ public class SearchMovie {
         OmdbVideoFull info;
         try {
             info = OMDB_API.getInfo(build);
-        }
-        catch (OMDBException ex) {
+        } catch (OMDBException ex) {
             build = new OmdbBuilder().setTitle(nameYearBean.getName()).build();
             info = OMDB_API.getInfo(build);
         }
@@ -108,6 +107,7 @@ public class SearchMovie {
     private Set<NameYearBean> listFiles() throws FileNotFoundException {
         var path = Path.of(Main.default_path);
         Set<NameYearBean> nameYearBeanSet = new HashSet<>();
+        LOG.info(Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) + " " + path);
         if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
             try {
                 List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
@@ -118,10 +118,9 @@ public class SearchMovie {
                 sb.deleteCharAt(sb.lastIndexOf(","));
                 sb.append("}");
 
-                var excludeFilter = path.getFileSystem().getPathMatcher(Config.GLOB.getString());
                 var includeFilter = path.getFileSystem().getPathMatcher(sb.toString());
 
-                Files.list(path).filter(p -> !excludeFilter.matches(p) && includeFilter.matches(p))
+                Files.list(path).filter(p -> Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS) || includeFilter.matches(p))
                         .forEach((Path p) -> {
                             String fileName = p.getFileName().toString();
                             List<String> tokenized = tokenize(fileName);
@@ -130,8 +129,7 @@ public class SearchMovie {
                             nameYearBeanSet.add(nameYearBean);
                         });
 
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 LOG.error(ex.getMessage(), ex);
             }
         }
@@ -170,8 +168,7 @@ public class SearchMovie {
                 if (year > 1800) {
                     break;
                 }
-            }
-            catch (NumberFormatException nfe) {
+            } catch (NumberFormatException nfe) {
             }
 
             Matcher matcher = PATTERN.matcher(next);
