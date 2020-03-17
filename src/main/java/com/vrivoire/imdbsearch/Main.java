@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 public class Main { //extends Application {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
-    public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Downloads" + SystemUtils.FILE_SEPARATOR;
+    public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "ToBeViewed" + SystemUtils.FILE_SEPARATOR;
     private static String[] _args;
     private final static JTextArea TEXT_AREA = new JTextArea();
     private static JFrame frame;
