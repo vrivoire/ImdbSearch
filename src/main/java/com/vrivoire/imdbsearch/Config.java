@@ -1,5 +1,8 @@
 package com.vrivoire.imdbsearch;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -7,13 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  *
@@ -49,23 +47,30 @@ public enum Config {
             MAP.putAll(objectMapper.readValue(defaults, new TypeReference<Map<String, Object>>() {
             }));
             LOG.info("Default configuration " + (defaults != null && !defaults.isEmpty() ? "" : "not") + " found");
-            LOG.debug("Default configuration:\n" + defaults);
+            LOG.info("Default configuration:\n" + defaults);
 
             File file = new File("config.json");
             if (!file.exists()) {
                 file = new File("bin/config.json");
             }
-            if (!file.exists()) {
+            if (!file.exists() && defaults == null) {
                 LOG.fatal("Config file not found. exiting.");
                 System.exit(-1);
             }
-            LOG.info("Config file found in: " + file.getAbsolutePath());
+            if (file.exists()) {
+                LOG.info("Config file found in: " + file.getAbsolutePath());
 
-            MAP.putAll(objectMapper.readValue(file, new TypeReference<Map<String, Object>>() {
-            }));
-            LOG.debug("Configuration:\n" + objectMapper.writeValueAsString(MAP));
-        } catch (IOException ex) {
-            LOG.fatal(ex);
+                MAP.putAll(objectMapper.readValue(file, new TypeReference<Map<String, Object>>() {
+                }));
+                LOG.debug("Configuration:\n" + objectMapper.writeValueAsString(MAP));
+            } else {
+                LOG.info("Using default configuration.");
+                MAP.putAll(objectMapper.readValue(defaults, new TypeReference<Map<String, Object>>() {
+                }));
+            }
+        }
+        catch (IOException ex) {
+            LOG.fatal(ex, ex);
             System.exit(-1);
         }
     }

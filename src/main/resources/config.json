@@ -13,7 +13,7 @@
         ".wmv", ".a52", ".dts", ".aac", ".flac", ".dv", ".vid", ".3gp"],
     "TORRENTS": [
         ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw",
-        "x264", "www", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch",
-        "Torrent9", "CpasBien"
+        "x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch",
+        "Torrent9", "CpasBien", "Torrent9"
     ]
 }
