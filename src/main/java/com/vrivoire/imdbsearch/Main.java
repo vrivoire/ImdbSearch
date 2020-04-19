@@ -187,6 +187,7 @@ public class Main {
                             LOG.warn("--> The file '" + originalName + "' do not exist.");
                         }
                     }
+                    break;
                 }
             }
         });
