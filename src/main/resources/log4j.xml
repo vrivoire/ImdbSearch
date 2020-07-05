@@ -3,22 +3,19 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/"  debug="false">
 
-    <!-- console appender -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <param name="Target" value="System.out" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS}  %-5p %c{1}.%M - %m%n" />
+            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n" />
         </layout>
     </appender>
 
-    <!-- LogGrabber appender -->
     <appender name="logGrabber" class="com.vrivoire.imdbsearch.log4j.LogGrabber">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS}  %-5p %c{1}.%M - %m%n" />
+            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n" />
         </layout>
     </appender>
 
-    <!-- rolling file appender -->
     <appender name="file" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="ImdbSearch.log" />
         <param name="Append" value="true" />
@@ -26,7 +23,7 @@
         <param name="MaxFileSize" value="5MB" />
         <param name="MaxBackupIndex" value="5" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS}  %-5p %c{1}.%M - %m%n" />
+            <param name="ConversionPattern" value="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n" />
         </layout>
     </appender>
 

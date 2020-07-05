@@ -17,7 +17,8 @@ module com.vrivoire.imdbsearch {
     requires commons.collections;
     requires commons.beanutils;
     requires commons.logging;
-    requires log4j;
+    requires org.apache.logging.log4j;
+    requires org.apache.logging.log4j.core;
 
     exports com.vrivoire.imdbsearch;
 }

@@ -2,7 +2,7 @@ package com.vrivoire.imdbsearch;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vrivoire.imdbsearch.log4j.LogGrabber;
+import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -27,10 +27,6 @@ public class GenerateHtmlReport {
 
     private static final Logger LOG = LogManager.getLogger(GenerateHtmlReport.class);
     private final String fullReportPath;
-
-    static {
-
-    }
 
     /**
      *
@@ -79,7 +75,7 @@ public class GenerateHtmlReport {
                     .append("</button></a><p/>");
         });
 
-        List<String> logs = LogGrabber.getLogs();
+        List<String> logs = LogGrabberAppender.getLogs();
         StringBuilder sb1 = new StringBuilder("<code>");
         if (logs != null) {
             logs.forEach((log) -> {

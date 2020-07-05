@@ -1,6 +1,7 @@
 package com.vrivoire.imdbsearch;
 
-import com.vrivoire.imdbsearch.log4j.LogGrabber;
+import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
+
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -21,9 +23,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -31,166 +34,161 @@ import org.apache.log4j.Logger;
  */
 public class Main {
 
-    private static final Logger LOG = LogManager.getLogger(Main.class);
-    public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
-    private static String[] _args;
-    private final static JTextArea TEXT_AREA = new JTextArea();
-    private static JFrame frame;
+	private static final Logger LOG = LogManager.getLogger(Main.class);
+	public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
+	private static String[] _args;
+	private final static JTextArea TEXT_AREA = new JTextArea();
+	private static JFrame frame;
 
-    static {
-        LogGrabber.setPanel(TEXT_AREA);
-    }
+	/**
+	 *
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		try {
+			LOG.info("--------------------------------------------------------------------------------");
+			_args = args;
+			LogGrabberAppender.setPanel(TEXT_AREA);
+			Main main = new Main();
+			main.start();
+		} catch (Exception ex) {
+			LOG.fatal(ex.getMessage(), ex);
+		}
+	}
 
-    /**
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        try {
-            LOG.info("--------------------------------------------------------------------------------");
-            _args = args;
-            Main main = new Main();
-            main.start();
-        }
-        catch (Exception ex) {
-            LOG.fatal(ex.getMessage(), ex);
-        }
-    }
+	public Main() throws Exception {
+		createWindow();
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	}
 
-    public Main() throws Exception {
-        createWindow();
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    }
+	private void start() throws FileNotFoundException {
+		while (validatePath()) {
+			process();
+			LogGrabberAppender.resetLogs();
+		}
+		System.exit(0);
+	}
 
-    private void start() throws FileNotFoundException {
-        while (validatePath()) {
-            process();
-            LogGrabber.resetLogs();
-        }
-        System.exit(0);
-    }
+	private void process() {
+		try {
 
-    private void process() {
-        try {
+			var searchMovie = new SearchMovie();
+			List<NameYearBean> list = searchMovie.search();
+			var noFound = searchMovie.getNoFound();
 
-            var searchMovie = new SearchMovie();
-            List<NameYearBean> list = searchMovie.search();
-            var noFound = searchMovie.getNoFound();
+			setNewFileName(list);
+			setNewFileName(noFound);
 
-            setNewFileName(list);
-            setNewFileName(noFound);
+			var generateHtmlReport = new GenerateHtmlReport();
+			generateHtmlReport.deleteReport();
+			generateHtmlReport.generate(list, noFound);
 
-            var generateHtmlReport = new GenerateHtmlReport();
-            generateHtmlReport.deleteReport();
-            generateHtmlReport.generate(list, noFound);
+			LOG.info("Found " + list.size() + " movie" + (list.size() > 1 ? "s" : ""));
+			LOG.info("Not found " + noFound.size() + " movie" + (noFound.size() > 1 ? "s" : ""));
 
-            LOG.info("Found " + list.size() + " movie" + (list.size() > 1 ? "s" : ""));
-            LOG.info("Not found " + noFound.size() + " movie" + (noFound.size() > 1 ? "s" : ""));
+			Process exec = Runtime.getRuntime().exec(Config.CHROME_APPLICATION.getString() + '"' + default_path + "_report.html\"");
+		} catch (IOException ioe) {
+			LOG.fatal(ioe.getMessage(), ioe);
+			System.exit(-1);
+		}
+	}
 
-            Process exec = Runtime.getRuntime().exec(Config.CHROME_APPLICATION.getString() + '"' + default_path + "_report.html\"");
-        }
-        catch (IOException ioe) {
-            LOG.fatal(ioe.getMessage(), ioe);
-            System.exit(-1);
-        }
-    }
+	private static void createWindow() {
+		frame = new JFrame("ImdbSearch - Log window");
+		URL imageURL = Main.class.getResource(Config.ICON.getString());
+		if (imageURL != null) {
+			frame.setIconImage(new ImageIcon(imageURL).getImage());
+		}
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    private static void createWindow() {
-        frame = new JFrame("ImdbSearch - Log window");
-        URL imageURL = Main.class.getResource(Config.ICON.getString());
-        if (imageURL != null) {
-            frame.setIconImage(new ImageIcon(imageURL).getImage());
-        }
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JPanel panel = new JPanel();
+		LayoutManager layout = new FlowLayout();
+		panel.setLayout(layout);
 
-        JPanel panel = new JPanel();
-        LayoutManager layout = new FlowLayout();
-        panel.setLayout(layout);
+		TEXT_AREA.setEditable(false);
+		TEXT_AREA.setBackground(Color.BLACK);
+		TEXT_AREA.setForeground(Color.ORANGE);
+		TEXT_AREA.setFont(new Font("Lucida Console", Font.PLAIN, 12));
+		JScrollPane scrollPane = new JScrollPane(TEXT_AREA, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.getVerticalScrollBar().addAdjustmentListener((AdjustmentEvent e) -> {
+			e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+		});
+		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		frame.setSize(1000, 800);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+	}
 
-        TEXT_AREA.setEditable(false);
-        TEXT_AREA.setBackground(Color.BLACK);
-        TEXT_AREA.setForeground(Color.ORANGE);
-        TEXT_AREA.setFont(new Font("Lucida Console", Font.PLAIN, 12));
-        JScrollPane scrollPane = new JScrollPane(TEXT_AREA, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.getVerticalScrollBar().addAdjustmentListener((AdjustmentEvent e) -> {
-            e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-        });
-        frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-        frame.setSize(1000, 800);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
+	private static boolean createFileChooser() throws HeadlessException {
+		JFileChooser fileChooser = new JFileChooser(default_path);
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fileChooser.setDialogTitle("Select a directory to scan.");
+		int option = fileChooser.showOpenDialog(frame);
+		if (option == JFileChooser.APPROVE_OPTION) {
 
-    private static boolean createFileChooser() throws HeadlessException {
-        JFileChooser fileChooser = new JFileChooser(default_path);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.setDialogTitle("Select a directory to scan.");
-        int option = fileChooser.showOpenDialog(frame);
-        if (option == JFileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+			default_path = file.getAbsolutePath() + File.separator;
+			return true;
+		} else {
+			LOG.info("Open command cancelled by user.");
+			return false;
+		}
+	}
 
-            File file = fileChooser.getSelectedFile();
-            default_path = file.getAbsolutePath() + File.separator;
-            return true;
-        } else {
-            LOG.info("Open command cancelled by user.");
-            return false;
-        }
-    }
+	private boolean validatePath() throws FileNotFoundException {
+		boolean isExit = true;
+		if (_args != null && _args.length > 0) {
+			default_path = _args[0];
 
-    private boolean validatePath() throws FileNotFoundException {
-        boolean isExit = true;
-        if (_args != null && _args.length > 0) {
-            default_path = _args[0];
+			var path = Path.of(default_path).toAbsolutePath().normalize();
+			default_path = path.toString();
+			var last = default_path.charAt(default_path.length() - 1);
+			if (last != '/' && last != '\\') { //
+				default_path += File.separator;
+			}
 
-            var path = Path.of(default_path).toAbsolutePath().normalize();
-            default_path = path.toString();
-            var last = default_path.charAt(default_path.length() - 1);
-            if (last != '/' && last != '\\') { //
-                default_path += File.separator;
-            }
+			if (!path.toFile().exists() && !path.toFile().isDirectory()) {
+				throw new FileNotFoundException("The path '" + path + "' does not exist or is not a directory.");
+			}
+		} else {
+			isExit = createFileChooser();
+		}
 
-            if (!path.toFile().exists() && !path.toFile().isDirectory()) {
-                throw new FileNotFoundException("The path '" + path + "' does not exist or is not a directory.");
-            }
-        } else {
-            isExit = createFileChooser();
-        }
+		LOG.info("Scanning directory: " + default_path);
+		return isExit;
+	}
 
-        LOG.info("Scanning directory: " + default_path);
-        return isExit;
-    }
+	@SuppressWarnings("unchecked")
+	private void setNewFileName(List<NameYearBean> list) {
+		list.forEach((NameYearBean nameYearBean) -> {
+			var originalName = nameYearBean.getOriginalName();
+			var name = nameYearBean.getName();
 
-    @SuppressWarnings("unchecked")
-    private void setNewFileName(List<NameYearBean> list) {
-        list.forEach((NameYearBean nameYearBean) -> {
-            var originalName = nameYearBean.getOriginalName();
-            var name = nameYearBean.getName();
-
-            List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
-            for (String extension : extensions) {
-                if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
-                    String newName = (name + " " + nameYearBean.getYear() + extension).toLowerCase();
-                    if (!newName.equals(originalName)) {
-                        LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
-                        var oldF = new File(Main.default_path + originalName);
-                        if (oldF.exists()) {
-                            var newF = new File(Main.default_path + newName);
-                            if (newF.toString().equalsIgnoreCase(oldF.toString())) {
-                                LOG.warn("--> The new file name '" + originalName + "' already exist.");
-                            } else {
-                                var isRenamed = oldF.renameTo(newF);
-                                if (!isRenamed) {
-                                    LOG.warn("--> Renaming file '" + originalName + "' failed.");
-                                }
-                            }
-                        } else {
-                            LOG.warn("--> The file '" + originalName + "' do not exist.");
-                        }
-                    }
-                    break;
-                }
-            }
-        });
-    }
+			List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
+			for (String extension : extensions) {
+				if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
+					String newName = (name + " " + nameYearBean.getYear() + extension).toLowerCase();
+					if (!newName.equals(originalName)) {
+						LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
+						var oldF = new File(Main.default_path + originalName);
+						if (oldF.exists()) {
+							var newF = new File(Main.default_path + newName);
+							if (newF.toString().equalsIgnoreCase(oldF.toString())) {
+								LOG.warn("--> The new file name '" + originalName + "' already exist.");
+							} else {
+								var isRenamed = oldF.renameTo(newF);
+								if (!isRenamed) {
+									LOG.warn("--> Renaming file '" + originalName + "' failed.");
+								}
+							}
+						} else {
+							LOG.warn("--> The file '" + originalName + "' do not exist.");
+						}
+					}
+					break;
+				}
+			}
+		});
+	}
 
 }
