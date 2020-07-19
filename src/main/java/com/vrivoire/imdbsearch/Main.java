@@ -35,10 +35,15 @@ import org.apache.logging.log4j.Logger;
 public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
+	private static final String DIALOG_TITLE = "Select a directory to scan.";
+	private final static JTextArea TEXT_AREA = new JTextArea();
 	public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
 	private static String[] _args;
-	private final static JTextArea TEXT_AREA = new JTextArea();
 	private static JFrame frame;
+
+	static {
+		LogGrabberAppender.setPanel(TEXT_AREA);
+	}
 
 	/**
 	 *
@@ -48,7 +53,6 @@ public class Main {
 		try {
 			LOG.info("--------------------------------------------------------------------------------");
 			_args = args;
-			LogGrabberAppender.setPanel(TEXT_AREA);
 			Main main = new Main();
 			main.start();
 		} catch (Exception ex) {
@@ -61,7 +65,7 @@ public class Main {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	}
 
-	private void start() throws FileNotFoundException {
+	private void start() throws FileNotFoundException, HeadlessException, InterruptedException {
 		while (validatePath()) {
 			process();
 			LogGrabberAppender.resetLogs();
@@ -71,7 +75,6 @@ public class Main {
 
 	private void process() {
 		try {
-
 			var searchMovie = new SearchMovie();
 			List<NameYearBean> list = searchMovie.search();
 			var noFound = searchMovie.getNoFound();
@@ -86,7 +89,7 @@ public class Main {
 			LOG.info("Found " + list.size() + " movie" + (list.size() > 1 ? "s" : ""));
 			LOG.info("Not found " + noFound.size() + " movie" + (noFound.size() > 1 ? "s" : ""));
 
-			Process exec = Runtime.getRuntime().exec(Config.CHROME_APPLICATION.getString() + '"' + default_path + "_report.html\"");
+			Process exec = Runtime.getRuntime().exec(Config.WEB_BROWSER.getString() + '"' + default_path + "_report.html\"");
 		} catch (IOException ioe) {
 			LOG.fatal(ioe.getMessage(), ioe);
 			System.exit(-1);
@@ -135,7 +138,7 @@ public class Main {
 		}
 	}
 
-	private boolean validatePath() throws FileNotFoundException {
+	private boolean validatePath() throws FileNotFoundException, HeadlessException {
 		boolean isExit = true;
 		if (_args != null && _args.length > 0) {
 			default_path = _args[0];
@@ -168,7 +171,7 @@ public class Main {
 			for (String extension : extensions) {
 				if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
 					String newName = (name + " " + nameYearBean.getYear() + extension).toLowerCase();
-					if (!newName.equals(originalName)) {
+					if (!newName.equalsIgnoreCase(originalName)) {
 						LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
 						var oldF = new File(Main.default_path + originalName);
 						if (oldF.exists()) {

@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration
-    status="error"
-    monitorInterval="30"
-    packages="com.vrivoire.imdbsearch.log4j"
-    xmlns="http://logging.apache.org/log4j/2.0/config"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
+	status="error"
+	monitorInterval="30"
+	packages="com.vrivoire.imdbsearch.log4j"
+	xmlns="http://logging.apache.org/log4j/2.0/config"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
            https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
-    <Appenders>
-        <Console name="CONSOLE" target="SYSTEM_OUT">
-            <PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
-        </Console>
-        <RollingFile name="FILE"
-                     fileName="ImdbSearch.log"
-                     append="true"
-                     bufferedIO="true"
-                     filePattern="ImdbSearch-%d{MM-dd-yyyy}.log">
-            <PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
-            <Policies>
-                <CronTriggeringPolicy schedule="0 0 0,12 * * ?" />
-            </Policies>
-            <DefaultRolloverStrategy max="20"/>
-        </RollingFile >
+	<Appenders>
+		<Console name="CONSOLE" target="SYSTEM_OUT">
+			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
+		</Console>
+		<RollingFile name="FILE"
+					 append="true"
+					 bufferedIO="true"
+					 fileName="ImdbSearch.log"
+					 filePattern="ImdbSearch-%d{yyyy-MM-dd}.log">
+			<PatternLayout pattern="%-23d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20"/>
+		</RollingFile >
 
-        <LogGrabber name="GRABBER">
-            <PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
-        </LogGrabber>
+		<LogGrabber name="GRABBER">
+			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
+		</LogGrabber>
 
-        <Async name="ASYNC">
-            <AppenderRef ref="FILE"/>
-            <AppenderRef ref="CONSOLE"/>
-            <AppenderRef ref="GRABBER"/>
-        </Async>
-    </Appenders>
+		<Async name="ASYNC">
+			<AppenderRef ref="FILE"/>
+			<AppenderRef ref="CONSOLE"/>
+			<AppenderRef ref="GRABBER"/>
+		</Async>
+	</Appenders>
 
-    <Loggers>
-        <Root level="info">
-            <AppenderRef ref="CONSOLE"/>
-            <AppenderRef ref="FILE"/>
-            <AppenderRef ref="GRABBER"/>
-        </Root>
-    </Loggers>
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="CONSOLE"/>
+			<AppenderRef ref="FILE"/>
+			<AppenderRef ref="GRABBER"/>
+		</Root>
+	</Loggers>
 </Configuration>

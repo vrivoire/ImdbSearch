@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
  * @author Vincent
  */
 public enum Config {
-    CHROME_APPLICATION,
+    WEB_BROWSER,
     ICON,
     REPORT_NAME,
     REPORT_HEADER,
