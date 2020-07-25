@@ -15,5 +15,8 @@
 		".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw",
 		"x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch",
 		"Torrent9", "CpasBien", "Torrent9", "vostfr", "1080", "720", "null"
+	],
+	"IGNORED_FOLDERS": [
+		"Captures", "W"
 	]
 }
