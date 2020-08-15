@@ -31,6 +31,7 @@ public class GenerateHtmlReport {
 	private static final Logger LOG = LogManager.getLogger(GenerateHtmlReport.class);
 	private static final String MOVIES = "&#x1F4F9;";
 	private static final String SERIES = "&#x1F4FA;";
+	private static final String UNKNOWN = "&#x2753;";
 	private final String fullReportPath;
 
 	/**
@@ -72,8 +73,10 @@ public class GenerateHtmlReport {
 					.append("&s=all\" target =\"_blank\"><button  class=\"ui-button ui-widget ui-corner-all\">");
 			if (item.getType().equals("series")) {
 				sb.append(SERIES);
-			} else {
+			} else if (item.getType().equals("movie")) {
 				sb.append(MOVIES);
+			} else {
+				sb.append(UNKNOWN).append(" '").append(item.getType()).append("'");
 			}
 			sb.append("&nbsp;")
 					.append(name)
@@ -157,10 +160,13 @@ public class GenerateHtmlReport {
 		map.entrySet().stream().filter((entry) -> (entry.getValue() instanceof String)).forEachOrdered((entry) -> {
 			entry.setValue(escapeHtml4((String) entry.getValue()));
 		});
-		if (((String) map.get("Type")).equals("series")) {
+		String type = (String) map.get("Type");
+		if (type.equals("series")) {
 			map.put("Type", SERIES);
-		} else {
+		} else if (type.equals("movie")) {
 			map.put("Type", MOVIES);
+		} else {
+			map.put("Type", UNKNOWN + " '" + map.get("Type") + "'");
 		}
 		return map;
 	}
