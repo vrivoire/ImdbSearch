@@ -124,12 +124,13 @@ public class SearchMovie {
 				Files.list(path).filter(p -> Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS) || includeFilter.matches(p))
 						.forEach((Path p) -> {
 							String fileName = p.getFileName().toString();
+							boolean isDirectory = p.toFile().isDirectory();
 							List<String> tokenized = tokenize(fileName);
 							String fullFileName = p.getParent().toString() + File.separator + fileName;
 							if (new File(fullFileName).isDirectory() && ignoredFolders.contains(fileName)) {
 								LOG.info("Ignoring folder: " + fileName);
 							} else {
-								NameYearBean nameYearBean = getFileNameYear(tokenized, p.getFileName().toString(), new File(fullFileName).lastModified());
+								NameYearBean nameYearBean = getFileNameYear(tokenized, p.getFileName().toString(), new File(fullFileName).lastModified(), isDirectory);
 								nameYearBeanSet.add(nameYearBean);
 							}
 						});
@@ -161,7 +162,7 @@ public class SearchMovie {
 		return (List<String>) IteratorUtils.toList(tokenizer.asIterator());
 	}
 
-	private NameYearBean getFileNameYear(List<String> tokenized, String originalName, long lastModified) {
+	private NameYearBean getFileNameYear(List<String> tokenized, String originalName, long lastModified, boolean isDirectory) {
 		Iterator iterator = tokenized.iterator();
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(iterator.next()).append(' ');
@@ -184,6 +185,7 @@ public class SearchMovie {
 		}
 
 		NameYearBean nameYearBean = new NameYearBean();
+		nameYearBean.setIsDirectory(isDirectory);
 		nameYearBean.setName(stringBuilder.toString().trim().toLowerCase());
 		nameYearBean.setYear(year == null ? null : year.toString());
 		nameYearBean.setFileDate(lastModified);

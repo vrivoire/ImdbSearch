@@ -128,8 +128,8 @@
 				<version>3.8.1</version>
 				<configuration>
 					<release>${maven.compiler.release}</release>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.source}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<showDeprecation>true</showDeprecation>
 					<compilerArgument>-Xlint:unchecked</compilerArgument>

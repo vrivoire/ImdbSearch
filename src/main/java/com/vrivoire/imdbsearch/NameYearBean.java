@@ -17,6 +17,7 @@ public class NameYearBean extends OmdbVideoFull {
 	private String name;
 	private String originalName;
 	private long fileDate;
+	private boolean isDirectory;
 
 	/**
 	 *
@@ -64,12 +65,21 @@ public class NameYearBean extends OmdbVideoFull {
 		this.fileDate = fileDate;
 	}
 
+	public boolean isDirectory() {
+		return isDirectory;
+	}
+
+	public void setIsDirectory(boolean isDirectory) {
+		this.isDirectory = isDirectory;
+	}
+
 	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 89 * hash + Objects.hashCode(this.name);
 		hash = 89 * hash + Objects.hashCode(this.originalName);
 		hash = 89 * hash + (int) (this.fileDate ^ (this.fileDate >>> 32));
+		hash = 89 * hash + (this.isDirectory ? 1 : 0);
 		return hash;
 	}
 
@@ -88,6 +98,9 @@ public class NameYearBean extends OmdbVideoFull {
 		if (this.fileDate != other.fileDate) {
 			return false;
 		}
+		if (this.isDirectory != other.isDirectory) {
+			return false;
+		}
 		if (!Objects.equals(this.name, other.name)) {
 			return false;
 		}
@@ -101,15 +114,10 @@ public class NameYearBean extends OmdbVideoFull {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("getFileDate=").append(getFileDate());
-		builder.append(", getName=").append(getName());
-		builder.append(", getOriginalName=").append(getOriginalName());
-		builder.append(", hashCode=").append(hashCode());
-		builder.append(", DATE_FORMATER=").append(DATE_FORMATER);
-		builder.append(", fileDate=").append(fileDate);
+		builder.append("fileDate=").append(fileDate);
+		builder.append(", isDirectory=").append(isDirectory);
 		builder.append(", name=").append(name);
 		builder.append(", originalName=").append(originalName);
-		builder.append(", serialVersionUID=").append(serialVersionUID);
 		builder.append(", getActors=").append(getActors());
 		builder.append(", getAwards=").append(getAwards());
 		builder.append(", getCountries=").append(getCountries());
@@ -141,12 +149,8 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", getTomatoUserReviews=").append(getTomatoUserReviews());
 		builder.append(", getTomatoWebsite=").append(getTomatoWebsite());
 		builder.append(", getWriter=").append(getWriter());
-		builder.append(", getImdbID=").append(getImdbID());
-		builder.append(", getPoster=").append(getPoster());
-		builder.append(", getTitle=").append(getTitle());
-		builder.append(", getType=").append(getType());
-		builder.append(", getYear=").append(getYear());
 		builder.append("]");
 		return builder.toString();
 	}
+
 }
