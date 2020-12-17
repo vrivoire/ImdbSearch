@@ -29,7 +29,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 public class GenerateHtmlReport {
 
 	private static final Logger LOG = LogManager.getLogger(GenerateHtmlReport.class);
-	private static final String MOVIES = "&#x1F4F9;";
+	private static final String MOVIES = "&#x1F4FD;";
 	private static final String SERIES = "&#x1F4FA;";
 	private static final String UNKNOWN = "&#x2753;";
 	private final String fullReportPath;
