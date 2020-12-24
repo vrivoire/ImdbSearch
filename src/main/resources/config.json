@@ -12,7 +12,7 @@
 		".mp4", ".mov", ".mkv", ".mka", ".flv", ".avi", ".au", ".asf", ".wmv", ".asf",
 		".wmv", ".a52", ".dts", ".aac", ".flac", ".dv", ".vid", ".3gp"],
 	"TORRENTS": [
-		".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw",
+		".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw", ".cc",
 		"x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch",
 		"Torrent9", "CpasBien", "Torrent9", "vostfr", "1080", "720", "null"
 	],

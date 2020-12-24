@@ -12,9 +12,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.release>3.6.3</maven.release>
-		<maven.compiler.release>13</maven.compiler.release>
-		<maven.compiler.source>13</maven.compiler.source>
-		<maven.compiler.target>13</maven.compiler.target>
+		<maven.compiler.release>14</maven.compiler.release>
+		<maven.compiler.source>14</maven.compiler.source>
+		<maven.compiler.target>14</maven.compiler.target>
 		<mainClass>com.vrivoire.imdbsearch.Main</mainClass>
 	</properties>
 
@@ -65,10 +65,9 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.7.0-M1</version>
+			<version>5.7.0-RC1</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -98,7 +97,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>copy-resources</id>
@@ -128,8 +127,8 @@
 				<version>3.8.1</version>
 				<configuration>
 					<release>${maven.compiler.release}</release>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.source}</target>
+					<source>14</source>
+					<target>14</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<showDeprecation>true</showDeprecation>
 					<compilerArgument>-Xlint:unchecked</compilerArgument>

@@ -66,9 +66,19 @@ public class Main {
 	}
 
 	private void start() throws FileNotFoundException, HeadlessException, InterruptedException {
-		while (validatePath()) {
-			process();
-			LogGrabberAppender.resetLogs();
+		if (_args != null && _args.length > 0) {
+			for (String _arg : _args) {
+				LOG.info("_arg: " + _arg);
+				if (validatePath(_arg)) {
+					process();
+					LogGrabberAppender.resetLogs();
+				}
+			}
+		} else {
+			while (validatePath(null)) {
+				process();
+				LogGrabberAppender.resetLogs();
+			}
 		}
 		System.exit(0);
 	}
@@ -138,10 +148,12 @@ public class Main {
 		}
 	}
 
-	private boolean validatePath() throws FileNotFoundException, HeadlessException {
+	private boolean validatePath(String _arg) throws FileNotFoundException, HeadlessException {
 		boolean isExit = true;
-		if (_args != null && _args.length > 0) {
-			default_path = _args[0];
+		if (_arg != null && !_arg.isBlank()) {
+//			for (String _arg : _args) {
+//				LOG.info("_arg: " + _arg);
+			default_path = _arg;
 
 			var path = Path.of(default_path).toAbsolutePath().normalize();
 			default_path = path.toString();
@@ -153,6 +165,8 @@ public class Main {
 			if (!path.toFile().exists() && !path.toFile().isDirectory()) {
 				throw new FileNotFoundException("The path '" + path + "' does not exist or is not a directory.");
 			}
+//			}
+			isExit = true;
 		} else {
 			isExit = createFileChooser();
 		}
