@@ -152,7 +152,6 @@ public class Main {
 		boolean isExit = true;
 		if (_arg != null && !_arg.isBlank()) {
 			default_path = _arg;
-
 			var path = Path.of(default_path).toAbsolutePath().normalize();
 			default_path = path.toString();
 			var last = default_path.charAt(default_path.length() - 1);
@@ -163,7 +162,6 @@ public class Main {
 			if (!path.toFile().exists() && !path.toFile().isDirectory()) {
 				throw new FileNotFoundException("The path '" + path + "' does not exist or is not a directory.");
 			}
-
 			isExit = true;
 		} else {
 			isExit = createFileChooser();
