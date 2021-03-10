@@ -118,6 +118,8 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", isDirectory=").append(isDirectory);
 		builder.append(", name=").append(name);
 		builder.append(", originalName=").append(originalName);
+		builder.append(", this.getLanguages=").append(getLanguages());
+		builder.append(", this.getCountries=").append(getCountries());
 		builder.append(", getActors=").append(getActors());
 		builder.append(", getAwards=").append(getAwards());
 		builder.append(", getCountries=").append(getCountries());
