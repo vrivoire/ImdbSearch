@@ -2,8 +2,9 @@ package com.vrivoire.imdbsearch;
 
 import com.omertron.omdbapi.model.OmdbVideoFull;
 
+import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
-import java.util.Objects;
+import java.text.StringCharacterIterator;
 
 /**
  *
@@ -13,11 +14,13 @@ public class NameYearBean extends OmdbVideoFull {
 
 	private static final long serialVersionUID = -8717940658283105093L;
 	private transient static final SimpleDateFormat DATE_FORMATER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private static final double ONE_K = 1_024.0;
 
 	private String name;
 	private String originalName;
 	private long fileDate;
 	private boolean isDirectory;
+	private String size;
 
 	/**
 	 *
@@ -73,41 +76,28 @@ public class NameYearBean extends OmdbVideoFull {
 		this.isDirectory = isDirectory;
 	}
 
-	@Override
-	public int hashCode() {
-		int hash = 5;
-		hash = 89 * hash + Objects.hashCode(this.name);
-		hash = 89 * hash + Objects.hashCode(this.originalName);
-		hash = 89 * hash + (int) (this.fileDate ^ (this.fileDate >>> 32));
-		hash = 89 * hash + (this.isDirectory ? 1 : 0);
-		return hash;
+	void setSize(long bytes) {
+		long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
+		if (absB < 1024) {
+			size = bytes + " B";
+			return;
+		}
+		long value = absB;
+		CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+		for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
+			value >>= 10;
+			ci.next();
+		}
+		value *= Long.signum(bytes);
+		size = String.format("%.1f %ciB", value / 1024.0, ci.current());
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		final NameYearBean other = (NameYearBean) obj;
-		if (this.fileDate != other.fileDate) {
-			return false;
-		}
-		if (this.isDirectory != other.isDirectory) {
-			return false;
-		}
-		if (!Objects.equals(this.name, other.name)) {
-			return false;
-		}
-		if (!Objects.equals(this.originalName, other.originalName)) {
-			return false;
-		}
-		return true;
+	public String getSize() {
+		return size;
+	}
+
+	public boolean isIsDirectory() {
+		return isDirectory;
 	}
 
 	@Override
@@ -118,6 +108,7 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", isDirectory=").append(isDirectory);
 		builder.append(", name=").append(name);
 		builder.append(", originalName=").append(originalName);
+		builder.append(", size=").append(size);
 		builder.append(", this.getLanguages=").append(getLanguages());
 		builder.append(", this.getCountries=").append(getCountries());
 		builder.append(", getActors=").append(getActors());

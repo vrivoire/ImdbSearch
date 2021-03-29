@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
+ * https://stackoverflow.com/questions/8380425/get-video-file-metadata-in-java/8380514
  *
  * @author Vincent Rivoire
  */
