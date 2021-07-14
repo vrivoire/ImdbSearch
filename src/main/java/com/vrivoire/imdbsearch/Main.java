@@ -62,6 +62,7 @@ public class Main {
 	}
 
 	public Main() throws Exception {
+		Config.configure();
 		createWindow();
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	}

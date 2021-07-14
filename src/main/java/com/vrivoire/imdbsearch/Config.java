@@ -42,7 +42,7 @@ public enum Config {
 	private static final Map<String, Object> MAP = new HashMap<>();
 	private static Thread thread = null;
 
-	static {
+	public static void configure() {
 		try {
 			final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
