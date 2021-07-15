@@ -46,10 +46,6 @@ public class Main {
 		LogGrabberAppender.setPanel(TEXT_AREA);
 	}
 
-	/**
-	 *
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		try {
 			LOG.info("--------------------------------------------------------------------------------");
