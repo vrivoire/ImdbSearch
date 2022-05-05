@@ -97,7 +97,8 @@ public class Main {
 			LOG.info("Found " + list.size() + " movie" + (list.size() > 1 ? "s" : ""));
 			LOG.info("Not found " + noFound.size() + " movie" + (noFound.size() > 1 ? "s" : ""));
 
-			Process exec = Runtime.getRuntime().exec(Config.WEB_BROWSER.getString() + '"' + default_path + "_report.html\"");
+			String[] cmd = {Config.WEB_BROWSER.getString(), '"' + default_path + "_report.html\""};
+			Runtime.getRuntime().exec(cmd);
 		} catch (IOException ioe) {
 			LOG.fatal(ioe.getMessage(), ioe);
 			System.exit(-1);
