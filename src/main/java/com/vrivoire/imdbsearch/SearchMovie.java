@@ -91,6 +91,7 @@ public class SearchMovie {
 			build = new OmdbBuilder().setTitle(nameYearBean.getName()).build();
 		}
 
+		LOG.info("Looking for: " + nameYearBean.getName() + " (" + nameYearBean.getOriginalName() + ") " + (nameYearBean.getYear() == null ? "" : nameYearBean.getYear()));
 		OmdbVideoFull info;
 		try {
 			info = OMDB_API.getInfo(build);
