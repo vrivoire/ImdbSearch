@@ -57,8 +57,10 @@ public class SearchMovie {
 		final List<NameYearBean> list = new ArrayList<>();
 		movieSet.forEach((var nameYearBean) -> {
 			try {
-				NameYearBean search = searchiMDB(nameYearBean);
-				list.add(search);
+				if (!nameYearBean.getOriginalName().toLowerCase().contains("system volume information")) {
+					NameYearBean search = searchiMDB(nameYearBean);
+					list.add(search);
+				}
 			} catch (OMDBException | IllegalAccessException | InvocationTargetException ex) {
 				NOT_FOUND.add(nameYearBean);
 				LOG.info(nameYearBean);
