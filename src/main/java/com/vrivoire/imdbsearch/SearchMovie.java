@@ -83,7 +83,7 @@ public class SearchMovie {
 		OmdbParameters build;
 		Integer year = null;
 		try {
-			year = Integer.parseInt(nameYearBean.getYear());
+			year = Integer.valueOf(nameYearBean.getYear());
 		} catch (Exception nfe) {
 			// ignore, no year
 		}
@@ -94,6 +94,7 @@ public class SearchMovie {
 		}
 
 		LOG.info("Looking for: " + nameYearBean.getName() + " (" + nameYearBean.getOriginalName() + ") " + (nameYearBean.getYear() == null ? "" : nameYearBean.getYear()));
+		LOG.info(nameYearBean);
 		OmdbVideoFull info;
 		try {
 			info = OMDB_API.getInfo(build);
@@ -174,7 +175,7 @@ public class SearchMovie {
 		while (iterator.hasNext()) {
 			String next = ((String) iterator.next()).trim();
 			try {
-				year = Integer.parseInt(next);
+				year = Integer.valueOf(next);
 				if (year > 1800) {
 					break;
 				}

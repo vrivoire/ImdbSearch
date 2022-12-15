@@ -104,13 +104,12 @@ public class NameYearBean extends OmdbVideoFull {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("fileDate=").append(fileDate);
-		builder.append(", isDirectory=").append(isDirectory);
-		builder.append(", name=").append(name);
-		builder.append(", originalName=").append(originalName);
-		builder.append(", size=").append(size);
-		builder.append(", this.getLanguages=").append(getLanguages());
-		builder.append(", this.getCountries=").append(getCountries());
+		builder.append("getFileDate=").append(getFileDate());
+		builder.append(", getName=").append(getName());
+		builder.append(", getOriginalName=").append(getOriginalName());
+		builder.append(", getSize=").append(getSize());
+		builder.append(", isDirectory=").append(isDirectory());
+		builder.append(", isIsDirectory=").append(isIsDirectory());
 		builder.append(", getActors=").append(getActors());
 		builder.append(", getAwards=").append(getAwards());
 		builder.append(", getCountries=").append(getCountries());
@@ -142,6 +141,14 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", getTomatoUserReviews=").append(getTomatoUserReviews());
 		builder.append(", getTomatoWebsite=").append(getTomatoWebsite());
 		builder.append(", getWriter=").append(getWriter());
+		builder.append(", getImdbID=").append(getImdbID());
+		builder.append(", getPoster=").append(getPoster());
+		builder.append(", getTitle=").append(getTitle());
+		builder.append(", getType=").append(getType());
+		builder.append(", getYear=").append(getYear());
+		builder.append(", getError=").append(getError());
+		builder.append(", isResponse=").append(isResponse());
+
 		builder.append("]");
 		return builder.toString();
 	}
