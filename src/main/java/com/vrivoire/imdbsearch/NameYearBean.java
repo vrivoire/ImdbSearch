@@ -5,6 +5,8 @@ import com.omertron.omdbapi.model.OmdbVideoFull;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
+import java.time.Duration;
+import java.time.LocalTime;
 
 /**
  *
@@ -21,11 +23,22 @@ public class NameYearBean extends OmdbVideoFull {
 	private long fileDate;
 	private boolean isDirectory;
 	private String size;
+	private String runtimeHM;
 
 	/**
 	 *
 	 */
 	public NameYearBean() {
+	}
+
+	public String getRuntimeHM() {
+		String s = getRuntime();
+		if (s == null || s == "" || s.contains("N/A")) {
+			s = "0";
+		}
+		s = s.replace("min", "").trim();
+		System.out.println(s);
+		return LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
 	}
 
 	/**
@@ -124,6 +137,7 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", getRated=").append(getRated());
 		builder.append(", getReleased=").append(getReleased());
 		builder.append(", getRuntime=").append(getRuntime());
+		builder.append(", getRuntimeHM=").append(getRuntimeHM());
 		builder.append(", getSeason=").append(getSeason());
 		builder.append(", getTomatoBoxOffice=").append(getTomatoBoxOffice());
 		builder.append(", getTomatoConsensus=").append(getTomatoConsensus());
