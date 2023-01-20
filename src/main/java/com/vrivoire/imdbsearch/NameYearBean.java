@@ -3,7 +3,6 @@ package com.vrivoire.imdbsearch;
 import com.omertron.omdbapi.model.OmdbVideoFull;
 
 import java.text.CharacterIterator;
-import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -15,15 +14,12 @@ import java.time.LocalTime;
 public class NameYearBean extends OmdbVideoFull {
 
 	private static final long serialVersionUID = -8717940658283105093L;
-	private transient static final SimpleDateFormat DATE_FORMATER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	private static final double ONE_K = 1_024.0;
 
 	private String name;
 	private String originalName;
 	private long fileDate;
 	private boolean isDirectory;
 	private String size;
-	private String runtimeHM;
 
 	/**
 	 *
@@ -33,11 +29,10 @@ public class NameYearBean extends OmdbVideoFull {
 
 	public String getRuntimeHM() {
 		String s = getRuntime();
-		if (s == null || s == "" || s.contains("N/A")) {
+		if (s == null || "".equals(s) || s.contains("N/A")) {
 			s = "0";
 		}
 		s = s.replace("min", "").trim();
-		System.out.println(s);
 		return LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
 	}
 
