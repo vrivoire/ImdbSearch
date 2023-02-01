@@ -33,7 +33,13 @@ public class NameYearBean extends OmdbVideoFull {
 			s = "0";
 		}
 		s = s.replace("min", "").trim();
-		return LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
+		try {
+			s = LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
+		} catch (NumberFormatException e) {
+			System.out.println(getOriginalName() + " | " + getRuntime() + " | " + e);
+			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
+		}
+		return s;
 	}
 
 	/**
