@@ -47,6 +47,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 		try {
 			LOG.info("--------------------------------------------------------------------------------");
 			LOG.info("OS name:   " + System.getProperty("os.name") + ", version: " + System.getProperty("os.version") + ", architechture: " + System.getProperty("os.arch"));

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -195,7 +196,11 @@ public class SearchMovie {
 		nameYearBean.setYear(year == null ? null : year.toString());
 		nameYearBean.setFileDate(file.lastModified());
 		nameYearBean.setOriginalName(originalName);
-		nameYearBean.setSize(file.length());
+		if (isDirectory) {
+			nameYearBean.setSize(FileUtils.sizeOfDirectory(file));
+		} else {
+			nameYearBean.setSize(file.length());
+		}
 		return nameYearBean;
 	}
 }
