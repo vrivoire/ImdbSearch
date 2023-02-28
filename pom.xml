@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.release>3.8.4</maven.release>
+		<maven.release>3.9.0</maven.release>
 		<maven.compiler.release>19</maven.compiler.release>
 		<maven.compiler.source>19</maven.compiler.source>
 		<maven.compiler.target>19</maven.compiler.target>
@@ -47,7 +47,6 @@
 			<version>2.11.0</version>
 			<type>jar</type>
 		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
@@ -76,7 +75,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<id>enforce</id>
@@ -128,8 +127,8 @@
 				<version>3.10.1</version>
 				<configuration>
 					<release>${maven.compiler.release}</release>
-					<source>19</source>
-					<target>19</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<showDeprecation>true</showDeprecation>
 					<compilerArgument>-Xlint:unchecked</compilerArgument>
@@ -138,7 +137,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M7</version>
+				<version>3.0.0-M9</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -153,7 +152,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -253,7 +252,7 @@
 								<fileVersion>1.0.0.0</fileVersion>
 								<txtFileVersion>1.0.0.0</txtFileVersion>
 								<fileDescription>${project.name}</fileDescription>
-								<copyright>2020 vrivoire.com</copyright>
+								<copyright>2023 vrivoire.com</copyright>
 								<productVersion>1.0.0.0</productVersion>
 								<txtProductVersion>1.0.0.0</txtProductVersion>
 								<productName>${project.name}</productName>
@@ -272,7 +271,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.2.1</version>
 				<configuration>
 					<configLocation>config/sun_checks.xml</configLocation>
 				</configuration>
