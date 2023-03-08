@@ -36,15 +36,13 @@ import org.apache.logging.log4j.Logger;
 public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
-	private static final String DIALOG_TITLE = "Select a directory to scan.";
-	private final static JTextArea TEXT_AREA = new JTextArea();
+	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 	public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
 	private static String[] _args;
-	private static JFrame frame;
+	private static JFrame frame_logs;
 
 	static {
-		LogGrabberAppender.setPanel(TEXT_AREA);
-		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+		LogGrabberAppender.setPanel(TEXT_AREA_LOGS);
 	}
 
 	public static void main(String[] args) {
@@ -109,36 +107,36 @@ public class Main {
 	}
 
 	private static void createWindow() {
-		frame = new JFrame("ImdbSearch - Log window");
+		frame_logs = new JFrame("ImdbSearch - Log window");
 		URL imageURL = Main.class.getResource(Config.ICON.getString());
 		if (imageURL != null) {
-			frame.setIconImage(new ImageIcon(imageURL).getImage());
+			frame_logs.setIconImage(new ImageIcon(imageURL).getImage());
 		}
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame_logs.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel panel = new JPanel();
 		LayoutManager layout = new FlowLayout();
 		panel.setLayout(layout);
 
-		TEXT_AREA.setEditable(false);
-		TEXT_AREA.setBackground(Color.BLACK);
-		TEXT_AREA.setForeground(Color.ORANGE);
-		TEXT_AREA.setFont(new Font("Lucida Console", Font.PLAIN, 12));
-		JScrollPane scrollPane = new JScrollPane(TEXT_AREA, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		TEXT_AREA_LOGS.setEditable(false);
+		TEXT_AREA_LOGS.setBackground(Color.BLACK);
+		TEXT_AREA_LOGS.setForeground(Color.ORANGE);
+		TEXT_AREA_LOGS.setFont(new Font("Lucida Console", Font.PLAIN, 12));
+		JScrollPane scrollPane = new JScrollPane(TEXT_AREA_LOGS, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().addAdjustmentListener((AdjustmentEvent e) -> {
 			e.getAdjustable().setValue(e.getAdjustable().getMaximum());
 		});
-		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-		frame.setSize(1000, 800);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+		frame_logs.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		frame_logs.setSize(1000, 800);
+		frame_logs.setLocationRelativeTo(null);
+		frame_logs.setVisible(true);
 	}
 
 	private static boolean createFileChooser() throws HeadlessException {
 		JFileChooser fileChooser = new JFileChooser(default_path);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setDialogTitle("Select a directory to scan.");
-		int option = fileChooser.showOpenDialog(frame);
+		int option = fileChooser.showOpenDialog(frame_logs);
 		if (option == JFileChooser.APPROVE_OPTION) {
 
 			File file = fileChooser.getSelectedFile();

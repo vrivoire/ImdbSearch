@@ -227,7 +227,7 @@
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
-				<version>2.1.2</version>
+				<version>2.3.2</version>
 				<executions>
 					<execution>
 						<id>l4j-clui</id>
@@ -246,7 +246,10 @@
 							<icon>${project.build.directory}/../bin/IMDB.ico</icon>
 							<jre>
 								<minVersion>${maven.compiler.target}</minVersion>
-								<jdkPreference>preferJre</jdkPreference>
+								<path>%JAVA_HOME%;%PATH%</path>
+								<opts>
+									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
+								</opts>
 							</jre>
 							<versionInfo>
 								<fileVersion>1.0.0.0</fileVersion>

@@ -94,8 +94,6 @@ public class SearchMovie {
 			build = new OmdbBuilder().setTitle(nameYearBean.getName()).build();
 		}
 
-		LOG.info("Looking for: " + nameYearBean.getName() + " (" + nameYearBean.getOriginalName() + ") " + (nameYearBean.getYear() == null ? "" : nameYearBean.getYear()));
-		LOG.info(nameYearBean);
 		OmdbVideoFull info;
 		try {
 			info = OMDB_API.getInfo(build);
@@ -104,6 +102,8 @@ public class SearchMovie {
 			info = OMDB_API.getInfo(build);
 		}
 		BeanUtils.copyProperties(nameYearBean, info);
+		LOG.info("Looking for: " + nameYearBean.getName() + " (" + nameYearBean.getOriginalName() + ") " + (nameYearBean.getYear() == null ? "" : nameYearBean.getYear()));
+		LOG.info(nameYearBean);
 		return nameYearBean;
 	}
 

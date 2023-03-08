@@ -1,1 +1,1 @@
-"%JAVA_HOME%\bin\javaw.exe" -jar ImdbSearch.jar
+"%JAVA_HOME%\bin\javaw.exe" -Djava.util.Arrays.useLegacyMergeSort=true -jar ImdbSearch.jar

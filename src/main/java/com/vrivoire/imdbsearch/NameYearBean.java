@@ -90,7 +90,7 @@ public class NameYearBean extends OmdbVideoFull {
 		this.isDirectory = isDirectory;
 	}
 
-	void setSize(long bytes) {
+	public void setSize(long bytes) {
 		long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
 		if (absB < 1024) {
 			size = bytes + " B";
@@ -121,6 +121,7 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append("getFileDate=").append(getFileDate());
 		builder.append(", getName=").append(getName());
 		builder.append(", getOriginalName=").append(getOriginalName());
+		builder.append(", getRuntimeHM=").append(getRuntimeHM());
 		builder.append(", getSize=").append(getSize());
 		builder.append(", isDirectory=").append(isDirectory());
 		builder.append(", isIsDirectory=").append(isIsDirectory());
@@ -138,7 +139,6 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", getRated=").append(getRated());
 		builder.append(", getReleased=").append(getReleased());
 		builder.append(", getRuntime=").append(getRuntime());
-		builder.append(", getRuntimeHM=").append(getRuntimeHM());
 		builder.append(", getSeason=").append(getSeason());
 		builder.append(", getTomatoBoxOffice=").append(getTomatoBoxOffice());
 		builder.append(", getTomatoConsensus=").append(getTomatoConsensus());
@@ -161,9 +161,6 @@ public class NameYearBean extends OmdbVideoFull {
 		builder.append(", getTitle=").append(getTitle());
 		builder.append(", getType=").append(getType());
 		builder.append(", getYear=").append(getYear());
-		builder.append(", getError=").append(getError());
-		builder.append(", isResponse=").append(isResponse());
-
 		builder.append("]");
 		return builder.toString();
 	}
