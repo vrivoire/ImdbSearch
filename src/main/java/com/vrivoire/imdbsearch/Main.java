@@ -6,7 +6,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.HeadlessException;
 import java.awt.LayoutManager;
 import java.awt.event.AdjustmentEvent;
 import java.io.File;
@@ -36,10 +35,9 @@ import org.apache.logging.log4j.Logger;
 public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
-	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 	public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
 	private static String[] _args;
-	private static JFrame frame_logs;
+	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
 	static {
 		LogGrabberAppender.setPanel(TEXT_AREA_LOGS);
@@ -64,7 +62,7 @@ public class Main {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	}
 
-	private void start() throws FileNotFoundException, HeadlessException, InterruptedException {
+	private void start() throws Exception {
 		if (_args != null && _args.length > 0) {
 			for (String _arg : _args) {
 				LOG.info("_arg: " + _arg);
@@ -106,13 +104,13 @@ public class Main {
 		}
 	}
 
-	private static void createWindow() {
-		frame_logs = new JFrame("ImdbSearch - Log window");
+	private void createWindow() {
+		JFrame frameLogs = new JFrame("ImdbSearch - Log window");
 		URL imageURL = Main.class.getResource(Config.ICON.getString());
 		if (imageURL != null) {
-			frame_logs.setIconImage(new ImageIcon(imageURL).getImage());
+			frameLogs.setIconImage(new ImageIcon(imageURL).getImage());
 		}
-		frame_logs.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frameLogs.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel panel = new JPanel();
 		LayoutManager layout = new FlowLayout();
@@ -126,19 +124,18 @@ public class Main {
 		scrollPane.getVerticalScrollBar().addAdjustmentListener((AdjustmentEvent e) -> {
 			e.getAdjustable().setValue(e.getAdjustable().getMaximum());
 		});
-		frame_logs.getContentPane().add(scrollPane, BorderLayout.CENTER);
-		frame_logs.setSize(1000, 800);
-		frame_logs.setLocationRelativeTo(null);
-		frame_logs.setVisible(true);
+		frameLogs.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		frameLogs.setSize(1000, 800);
+		frameLogs.setLocationRelativeTo(null);
+		frameLogs.setVisible(true);
 	}
 
-	private static boolean createFileChooser() throws HeadlessException {
+	private boolean createFileChooser() throws Exception {
 		JFileChooser fileChooser = new JFileChooser(default_path);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setDialogTitle("Select a directory to scan.");
-		int option = fileChooser.showOpenDialog(frame_logs);
+		int option = fileChooser.showOpenDialog(null);
 		if (option == JFileChooser.APPROVE_OPTION) {
-
 			File file = fileChooser.getSelectedFile();
 			default_path = file.getAbsolutePath() + File.separator;
 			return true;
@@ -148,7 +145,7 @@ public class Main {
 		}
 	}
 
-	private boolean validatePath(String _arg) throws FileNotFoundException, HeadlessException {
+	private boolean validatePath(String _arg) throws Exception {
 		boolean isExit = true;
 		if (_arg != null && !_arg.isBlank()) {
 			default_path = _arg;
