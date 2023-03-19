@@ -2,6 +2,7 @@ package com.vrivoire.imdbsearch;
 
 import com.omertron.omdbapi.model.OmdbVideoFull;
 
+import java.io.File;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.time.Duration;
@@ -20,11 +21,29 @@ public class NameYearBean extends OmdbVideoFull {
 	private long fileDate;
 	private boolean isDirectory;
 	private String size;
+	private File file;
+	private int fileCount = 1;
 
 	/**
 	 *
 	 */
 	public NameYearBean() {
+	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
+	}
+
+	void setFileCount(int fileCount) {
+		this.fileCount = fileCount;
+	}
+
+	public int getFileCount() {
+		return fileCount;
 	}
 
 	public String getRuntimeHM() {
@@ -110,21 +129,18 @@ public class NameYearBean extends OmdbVideoFull {
 		return size;
 	}
 
-	public boolean isIsDirectory() {
-		return isDirectory;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
 		builder.append("getFileDate=").append(getFileDate());
 		builder.append(", getName=").append(getName());
+		builder.append(", getFile=").append(getFile().getAbsolutePath());
+		builder.append(", getFileCount=").append(getFileCount());
 		builder.append(", getOriginalName=").append(getOriginalName());
 		builder.append(", getRuntimeHM=").append(getRuntimeHM());
 		builder.append(", getSize=").append(getSize());
 		builder.append(", isDirectory=").append(isDirectory());
-		builder.append(", isIsDirectory=").append(isIsDirectory());
 		builder.append(", getActors=").append(getActors());
 		builder.append(", getAwards=").append(getAwards());
 		builder.append(", getCountries=").append(getCountries());

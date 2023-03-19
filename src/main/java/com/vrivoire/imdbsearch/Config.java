@@ -16,8 +16,10 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,11 +37,12 @@ public enum Config {
 	REPORT_FOOTER,
 	PATTERN,
 	SUPPORTED_EXTENSIONS,
+	SUPPORTED_EXTENSIONS_SHORT,
 	TORRENTS,
 	IGNORED_FOLDERS;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
-	private static final Map<String, Object> MAP = new HashMap<>();
+	private static final Map<String, Object> MAP = new TreeMap<>();
 	private static Thread thread = null;
 
 	public static void configure() {
@@ -58,7 +61,6 @@ public enum Config {
 			MAP.putAll(objectMapper.readValue(defaults, new TypeReference<Map<String, Object>>() {
 			}));
 			LOG.info("Default configuration " + (defaults != null && !defaults.isEmpty() ? "" : "not") + " found");
-			LOG.debug("Default configuration:\n" + defaults);
 
 			File file = new File("config.json");
 			if (!file.exists()) {
@@ -80,15 +82,24 @@ public enum Config {
 
 				MAP.putAll(objectMapper.readValue(file, new TypeReference<Map<String, Object>>() {
 				}));
+
+				List<String> supportedExtensionsShort = new ArrayList<>();
+				@SuppressWarnings("unchecked")
+				List<String> extensionsOld = (List<String>) SUPPORTED_EXTENSIONS.get();
+				extensionsOld.forEach((String extention) -> {
+					supportedExtensionsShort.add(extention.substring(1));
+				});
+				MAP.put(SUPPORTED_EXTENSIONS_SHORT.name(), (String[]) supportedExtensionsShort.toArray(new String[supportedExtensionsShort.size()]));
+
 				LOG.debug("Configuration:\n" + objectMapper.writeValueAsString(MAP));
 
 				StartFileWatchDog(file);
-
 			} else {
 				LOG.info("Using default configuration.");
 				MAP.putAll(objectMapper.readValue(defaults, new TypeReference<Map<String, Object>>() {
 				}));
 			}
+
 		} catch (IOException ex) {
 			LOG.fatal(ex.getMessage(), ex);
 			if (thread != null) {

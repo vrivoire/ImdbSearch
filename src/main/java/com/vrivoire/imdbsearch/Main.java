@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -48,6 +49,7 @@ public class Main {
 			LOG.info("--------------------------------------------------------------------------------");
 			LOG.info("OS name:   " + System.getProperty("os.name") + ", version: " + System.getProperty("os.version") + ", architechture: " + System.getProperty("os.arch"));
 			LOG.info("Java: " + System.getProperty("java.vendor") + ", version: " + System.getProperty("java.version") + ", home: " + System.getProperty("java.home"));
+			LOG.info("args: " + Arrays.toString(args));
 			_args = args;
 			Main main = new Main();
 			main.start();

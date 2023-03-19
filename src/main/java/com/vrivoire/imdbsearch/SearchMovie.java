@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,11 @@ public class SearchMovie {
 	 */
 	public SearchMovie() {
 		NOT_FOUND = new ArrayList<>();
+//		@SuppressWarnings("unchecked")
+//		List<String> extensionsOld = ((List<String>) Config.SUPPORTED_EXTENSIONS.get());
+//		extensionsOld.forEach((String extention) -> {
+//			SUPPORTED_EXTENSIONS_SHORT.add(extention.substring(1));
+//		});
 	}
 
 	/**
@@ -56,11 +62,12 @@ public class SearchMovie {
 	public List<NameYearBean> search() throws FileNotFoundException {
 		Set<NameYearBean> movieSet = listFiles();
 		final List<NameYearBean> list = new ArrayList<>();
+
 		movieSet.forEach((var nameYearBean) -> {
 			try {
 				if (!nameYearBean.getOriginalName().toLowerCase().contains("system volume information")) {
-					NameYearBean search = searchiMDB(nameYearBean);
-					list.add(search);
+					NameYearBean searchNameYearBean = searchiMDB(nameYearBean);
+					list.add(searchNameYearBean);
 				}
 			} catch (OMDBException | IllegalAccessException | InvocationTargetException ex) {
 				NOT_FOUND.add(nameYearBean);
@@ -195,8 +202,12 @@ public class SearchMovie {
 		nameYearBean.setYear(year == null ? null : year.toString());
 		nameYearBean.setFileDate(file.lastModified());
 		nameYearBean.setOriginalName(originalName);
+		nameYearBean.setFile(file);
+
 		if (file.isDirectory()) {
 			nameYearBean.setSize(FileUtils.sizeOfDirectory(file));
+			Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), (String[]) Config.SUPPORTED_EXTENSIONS_SHORT.get(), true);
+			nameYearBean.setFileCount(listFiles.size());
 		} else {
 			nameYearBean.setSize(file.length());
 		}
