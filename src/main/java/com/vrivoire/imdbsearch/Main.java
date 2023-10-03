@@ -41,6 +41,7 @@ public class Main {
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
 	static {
+		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
 		LogGrabberAppender.setPanel(TEXT_AREA_LOGS);
 	}
 
