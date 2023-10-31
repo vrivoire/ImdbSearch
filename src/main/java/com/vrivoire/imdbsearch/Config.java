@@ -17,10 +17,13 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +42,9 @@ public enum Config {
 	SUPPORTED_EXTENSIONS,
 	SUPPORTED_EXTENSIONS_SHORT,
 	TORRENTS,
-	IGNORED_FOLDERS;
+	IGNORED_FOLDERS,
+	OUTPUT_JSON_FILE,
+	IMDBSEARCHPY_PATH;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
 	private static final Map<String, Object> MAP = new TreeMap<>();
@@ -89,9 +94,7 @@ public enum Config {
 				extensionsOld.forEach((String extention) -> {
 					supportedExtensionsShort.add(extention.substring(1));
 				});
-				MAP.put(SUPPORTED_EXTENSIONS_SHORT.name(), (String[]) supportedExtensionsShort.toArray(new String[supportedExtensionsShort.size()]));
-
-				LOG.debug("Configuration:\n" + objectMapper.writeValueAsString(MAP));
+				MAP.put(SUPPORTED_EXTENSIONS_SHORT.name(), (String[]) supportedExtensionsShort.toArray(String[]::new));
 
 				StartFileWatchDog(file);
 			} else {
@@ -99,6 +102,18 @@ public enum Config {
 				MAP.putAll(objectMapper.readValue(defaults, new TypeReference<Map<String, Object>>() {
 				}));
 			}
+			Map<String, Object> mapProperties = new HashMap<>();
+			System.getenv().entrySet().forEach(x -> {
+				mapProperties.put((String) x.getKey().toUpperCase(), x.getValue());
+			});
+			for (Entry<String, Object> x : MAP.entrySet()) {
+				if (x.getValue() instanceof String && !x.getKey().equals("PATTERN")) {
+					MAP.put(x.getKey(), fill((String) x.getValue(), mapProperties));
+				}
+			}
+			LOG.debug("0 - Configuration:\n" + System.getenv());
+			LOG.debug("1 - Configuration:\n" + MAP);
+			LOG.debug("2 - Configuration:\n" + objectMapper.writeValueAsString(MAP));
 
 		} catch (IOException ex) {
 			LOG.fatal(ex.getMessage(), ex);
@@ -111,6 +126,12 @@ public enum Config {
 			}
 			System.exit(-1);
 		}
+	}
+
+	public static String fill(String template, Map<String, Object> movieMap) {
+		var sub = new StringSubstitutor(movieMap);
+		var resolvedString = sub.replace(template);
+		return resolvedString;
 	}
 
 	private static void StartFileWatchDog(File file) {

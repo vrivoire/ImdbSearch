@@ -1,31 +1,35 @@
 package com.vrivoire.imdbsearch;
 
-import com.omertron.omdbapi.OMDBException;
-import com.omertron.omdbapi.OmdbApi;
-import com.omertron.omdbapi.model.OmdbVideoFull;
-import com.omertron.omdbapi.tools.OmdbBuilder;
-import com.omertron.omdbapi.tools.OmdbParameters;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,122 +40,62 @@ import org.apache.logging.log4j.Logger;
 public class SearchMovie {
 
 	private static final Logger LOG = LogManager.getLogger(SearchMovie.class);
-
-	// BanMePlz
-	// 6cc19241
-	private final static OmdbApi OMDB_API = new OmdbApi("6cc19241");
 	private final List<NameYearBean> NOT_FOUND;
 	private final Pattern PATTERN = Pattern.compile(Config.PATTERN.getString());
 
-	/**
-	 *
-	 */
 	public SearchMovie() {
 		NOT_FOUND = new ArrayList<>();
-//		@SuppressWarnings("unchecked")
-//		List<String> extensionsOld = ((List<String>) Config.SUPPORTED_EXTENSIONS.get());
-//		extensionsOld.forEach((String extention) -> {
-//			SUPPORTED_EXTENSIONS_SHORT.add(extention.substring(1));
-//		});
 	}
 
-	/**
-	 *
-	 * @return @throws FileNotFoundException
-	 */
-	public List<NameYearBean> search() throws FileNotFoundException {
+	public List<NameYearBean> search() throws Exception {
 		Set<NameYearBean> movieSet = listFiles();
-		final List<NameYearBean> list = new ArrayList<>();
+		List<NameYearBean> list = new ArrayList<>();
 
-		movieSet.forEach((var nameYearBean) -> {
-			try {
-				if (!nameYearBean.getOriginalName().toLowerCase().contains("system volume information")) {
-					NameYearBean searchNameYearBean = searchiMDB(nameYearBean);
-					list.add(searchNameYearBean);
-				}
-			} catch (OMDBException | IllegalAccessException | InvocationTargetException ex) {
-				NOT_FOUND.add(nameYearBean);
-				LOG.info(nameYearBean);
-				LOG.info(ex.getMessage());
-				LOG.info(' ');
-			}
-		});
+		newWay(movieSet, list);
+
 		return list;
 	}
 
-	/**
-	 *
-	 * @return
-	 */
 	public List<NameYearBean> getNoFound() {
 		return NOT_FOUND;
 	}
 
-	private NameYearBean searchiMDB(NameYearBean nameYearBean) throws OMDBException, IllegalAccessException, InvocationTargetException {
-		OmdbParameters build;
-		Integer year = null;
-		try {
-			year = Integer.valueOf(nameYearBean.getYear());
-		} catch (Exception nfe) {
-			// ignore, no year
-		}
-		if (year != null && year > 1800) {
-			build = new OmdbBuilder().setTitle(nameYearBean.getName()).setYear(year).build();
-		} else {
-			build = new OmdbBuilder().setTitle(nameYearBean.getName()).build();
-		}
-
-		OmdbVideoFull info;
-		try {
-			info = OMDB_API.getInfo(build);
-		} catch (OMDBException ex) {
-			build = new OmdbBuilder().setTitle(nameYearBean.getName()).build();
-			info = OMDB_API.getInfo(build);
-		}
-		BeanUtils.copyProperties(nameYearBean, info);
-		LOG.info("Looking for: " + nameYearBean.getName() + " (" + nameYearBean.getOriginalName() + ") " + (nameYearBean.getYear() == null ? "" : nameYearBean.getYear()));
-		LOG.info(nameYearBean);
-		return nameYearBean;
-	}
-
-	private Set<NameYearBean> listFiles() throws FileNotFoundException {
+	private Set<NameYearBean> listFiles() throws Exception {
 		var path = Path.of(Main.default_path);
 		Set<NameYearBean> nameYearBeanSet = new HashSet<>();
-		LOG.info(Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) + " " + path);
 		if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
-			try {
-				@SuppressWarnings("unchecked")
-				List<String> ignoredFolders = (List<String>) Config.IGNORED_FOLDERS.get();
-				@SuppressWarnings("unchecked")
-				List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
-				StringBuilder sb = new StringBuilder("glob:**.{");
-				extensions.forEach((extension) -> {
-					sb.append(extension.strip().replace(".", "")).append(',');
-				});
-				sb.deleteCharAt(sb.lastIndexOf(","));
-				sb.append("}");
-
-				var includeFilter = path.getFileSystem().getPathMatcher(sb.toString());
-
-				Files.list(path).filter(p -> Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS) || includeFilter.matches(p))
-						.forEach((Path p) -> {
-							String fileName = p.getFileName().toString();
-							List<String> tokenized = tokenize(fileName);
-							String fullFileName = p.getParent().toString() + File.separator + fileName;
-							File file = new File(fullFileName);
-							if (file.isDirectory() && ignoredFolders.contains(fileName)) {
-								LOG.info("Ignoring folder: " + fileName);
-							} else {
-								NameYearBean nameYearBean = getFileNameYear(tokenized, p.getFileName().toString(), file);
-								nameYearBeanSet.add(nameYearBean);
-							}
-						});
-
-			} catch (IOException ex) {
-				LOG.error(ex.getMessage(), ex);
-			}
+			filter(path, nameYearBeanSet);
 		}
 		return nameYearBeanSet;
+	}
+
+	private void filter(Path path, Set<NameYearBean> nameYearBeanSet) throws IOException {
+		@SuppressWarnings("unchecked")
+		List<String> ignoredFolders = (List<String>) Config.IGNORED_FOLDERS.get();
+		@SuppressWarnings("unchecked")
+		List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
+		StringBuilder sb = new StringBuilder("glob:**.{");
+		extensions.forEach((extension) -> {
+			sb.append(extension.strip().replace(".", "")).append(',');
+		});
+		sb.deleteCharAt(sb.lastIndexOf(","));
+		sb.append("}");
+
+		var includeFilter = path.getFileSystem().getPathMatcher(sb.toString());
+
+		Files.list(path).filter(p -> Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS) || includeFilter.matches(p))
+				.forEach((Path p) -> {
+					String fileName = p.getFileName().toString();
+					List<String> tokenized = tokenize(fileName);
+					String fullFileName = p.getParent().toString() + File.separator + fileName;
+					File file = new File(fullFileName);
+					if (file.isDirectory() && ignoredFolders.contains(fileName)) {
+						LOG.info("Ignoring folder: " + fileName);
+					} else {
+						NameYearBean nameYearBean = getFileNameYear(tokenized, p.getFileName().toString(), file);
+						nameYearBeanSet.add(nameYearBean);
+					}
+				});
 	}
 
 	@SuppressWarnings("unchecked")
@@ -186,7 +130,7 @@ public class SearchMovie {
 				if (year > 1800) {
 					break;
 				}
-			} catch (Exception nfe) {
+			} catch (NumberFormatException nfe) {
 			}
 
 			Matcher matcher = PATTERN.matcher(next);
@@ -199,7 +143,7 @@ public class SearchMovie {
 		NameYearBean nameYearBean = new NameYearBean();
 		nameYearBean.setIsDirectory(file.isDirectory());
 		nameYearBean.setName(stringBuilder.toString().trim().toLowerCase());
-		nameYearBean.setYear(year == null ? null : year.toString());
+		nameYearBean.setMainYear(year == null ? null : year);
 		nameYearBean.setFileDate(file.lastModified());
 		nameYearBean.setOriginalName(originalName);
 		nameYearBean.setFile(file);
@@ -213,4 +157,172 @@ public class SearchMovie {
 		}
 		return nameYearBean;
 	}
+
+	//	*************************************************************************
+	//	********************************** NEW **********************************
+	//	*************************************************************************
+	private void newWay(Set<NameYearBean> movieSet, List<NameYearBean> list) throws Exception {
+		searchByNames(movieSet);
+		Map<String, Map<String, Object>> jsonMap = readOutputJson();
+
+		for (NameYearBean nameYearBean : movieSet) {
+			String searchKey = getSearchKey(nameYearBean);
+			Map<String, Object> map = jsonMap.get(searchKey);
+			for (String subKey : map.keySet()) {
+				if (subKey.endsWith("ERROR")) {
+					nameYearBean.setName(searchKey);
+					nameYearBean.setError(map.get(subKey).toString());
+					NOT_FOUND.add(nameYearBean);
+				}
+			}
+		}
+		for (NameYearBean nameYearBean : NOT_FOUND) {
+			movieSet.remove(nameYearBean);
+		}
+
+		Map<String, String> mapKeys = new TreeMap<>();
+
+		for (NameYearBean nameYearBean : movieSet) {
+			String searchKey = getSearchKey(nameYearBean);
+			Map<String, Object> map = jsonMap.get(searchKey);
+			if (map == null) {
+				LOG.warn("************************************* " + searchKey + " --> " + map);
+			} else {
+				for (String key : map.keySet()) {
+					mapKeys.put(key, map.get(key).getClass().getSimpleName());
+				}
+				nameYearBean.setName(searchKey);
+				autoMapping(nameYearBean, mapKeys, map);
+				LOG.info(nameYearBean);
+				list.add(nameYearBean);
+			}
+		}
+	}
+
+	private void autoMapping(NameYearBean searchNameYearBean, Map<String, String> mapKeys, Map<String, Object> map) {
+		Class<? extends Object> clazz = searchNameYearBean.getClass();
+		Class cClazz;
+		for (Map.Entry<String, String> entry2 : mapKeys.entrySet()) {
+			String uCamelCase = CaseUtils.toCamelCase(entry2.getKey(), true, '.');
+			if (!uCamelCase.contains("Error")) {
+				cClazz = switch (entry2.getValue()) {
+					case "ArrayList" ->
+						List.class;
+					case "Double" ->
+						Double.class;
+					case "Integer" ->
+						Integer.class;
+					case "LinkedHashMap" ->
+						Map.class;
+					default ->
+						String.class;
+				};
+				try {
+					Method setMethod = clazz.getMethod("set" + uCamelCase, new Class[]{cClazz});
+					Object result = setMethod.invoke(searchNameYearBean, new Object[]{map.get(entry2.getKey())});
+					if (result != null) {
+						// Because: There may be more than one method with matching name and parameter types in a class because while the Java language
+						// forbids a class to declare multiple methods with the same signature but different return types, the Java virtual machine does not.
+						throw new IllegalArgumentException("The argument of class " + clazz.getName() + " MUST NOT have a return: " + result);
+					}
+				} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+					LOG.error("Cannot set: " + searchNameYearBean + " message: " + e.getMessage(), e);
+				}
+			}
+		}
+	}
+
+	private void searchByNames(Set<NameYearBean> movieSet) throws Exception {
+		List<String> args = new ArrayList<>();
+		args.add("python.exe");
+		LOG.info("IMDBSEARCHPY_PATH=" + Config.IMDBSEARCHPY_PATH.getString());
+		args.add(Config.IMDBSEARCHPY_PATH.getString());
+		List<String> args2 = new ArrayList<>();
+		for (NameYearBean nby : movieSet) {
+			args2.add(getSearchKey(nby));
+		}
+		args2.sort(null);
+		args.addAll(args2);
+		try {
+			Runtime rt = Runtime.getRuntime();
+			Process proc = rt.exec(args.toArray(String[]::new));
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+			// Read the output from the command
+			LOG.info("Here is the standard output of the command:");
+			String s;
+			while ((s = stdInput.readLine()) != null) {
+				LOG.info(s);
+			}
+			// Read any errors from the attempted command
+			LOG.info("Here is the standard error of the command (if any):");
+			while ((s = stdError.readLine()) != null) {
+				LOG.error(s);
+			}
+		} catch (IOException ex) {
+			LOG.fatal(ex.getMessage(), ex);
+			throw ex;
+		}
+	}
+
+	private static String getSearchKey(NameYearBean nby) {
+		return (nby.getName() + " " + (nby.getMainYear() == null ? "" : nby.getMainYear())).trim();
+	}
+
+	private Map<String, Map<String, Object>> readOutputJson() throws Exception {
+		try {
+			final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+			StringBuilder sb = new StringBuilder();
+			Path jsonPath = Paths.get(Config.OUTPUT_JSON_FILE.getString());
+			List<String> allLines = Files.readAllLines(jsonPath, StandardCharsets.UTF_8);
+			for (String line : allLines) {
+				sb.append(line);
+			}
+			String jsonString = sb.toString();
+			Map<String, Map<String, Object>> jsonMap = new TreeMap<>();
+			jsonMap.putAll(objectMapper.readValue(jsonString, new TypeReference<Map<String, Map<String, Object>>>() {
+			}));
+			return jsonMap;
+		} catch (IOException ex) {
+			LOG.fatal(ex.getMessage(), ex);
+			throw ex;
+		}
+	}
+
+//	private void faireUnBidule(Map<String, String> mapKeys) {
+//		StringBuffer sb = new StringBuffer();
+//		for (Map.Entry<String, String> entry : mapKeys.entrySet()) {
+//			String uCamelCase = CaseUtils.toCamelCase(entry.getKey(), true, '.');
+//			String lCamelCase = CaseUtils.toCamelCase(entry.getKey(), false, '.');
+//			String className = entry.getValue();
+//			if (className.endsWith("ArrayList")) {
+//				className = "List<String>";
+//			}
+//			if (className.endsWith("LinkedHashMap")) {
+//				className = "Map<String, String>";
+//			}
+//			sb.append("\tprivate ").append(className).append(' ').append(lCamelCase).append(" = null;\n");
+//		}
+//		sb.append('\n');
+//		for (Map.Entry<String, String> entry : mapKeys.entrySet()) {
+//			String uCamelCase = CaseUtils.toCamelCase(entry.getKey(), true, '.');
+//			String lCamelCase = CaseUtils.toCamelCase(entry.getKey(), false, '.');
+//			String className = entry.getValue();
+//			if (className.endsWith("ArrayList")) {
+//				className = "List<String>";
+//			}
+//			if (className.endsWith("LinkedHashMap")) {
+//				className = "Map<String, String>";
+//			}
+//			System.out.println(entry.getKey() + " --> " + className + " --> " + uCamelCase);
+//			sb.append("\tpublic void set").append(uCamelCase).append('(').append(className).append(' ').append(lCamelCase).append(") {\n");
+//			sb.append("\t\tthis.").append(lCamelCase).append(" = ").append(lCamelCase).append(";\n");
+//			sb.append("\t}\n\n");
+//			sb.append("\tpublic ").append(className).append(" get").append(uCamelCase).append("() {\n");
+//			sb.append("\t\treturn ").append(lCamelCase).append(";\n");
+//			sb.append("\t}\n\n");
+//		}
+//		System.out.println(sb.toString());
+//	}
 }

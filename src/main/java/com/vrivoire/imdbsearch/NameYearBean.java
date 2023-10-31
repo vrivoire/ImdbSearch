@@ -1,18 +1,14 @@
 package com.vrivoire.imdbsearch;
 
-import com.omertron.omdbapi.model.OmdbVideoFull;
-
 import java.io.File;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Map;
 
-/**
- *
- * @author Vincent
- */
-public class NameYearBean extends OmdbVideoFull {
+public class NameYearBean {
 
 	private static final long serialVersionUID = -8717940658283105093L;
 
@@ -23,11 +19,52 @@ public class NameYearBean extends OmdbVideoFull {
 	private String size;
 	private File file;
 	private int fileCount = 1;
+	private List<String> mainAkas = null;
+	private String mainAspectRatio = "";
+	private Map<String, String> mainBoxOffice = null;
+	private List<String> mainCertificates = null;
+	private List<String> mainColorInfo = null;
+	private List<String> mainCountries = null;
+	private List<String> mainCountryCodes = null;
+	private String mainCoverUrl = null;
+	private List<String> mainDirectors = null;
+	private List<String> mainGenres = null;
+	private String mainImdbid = null;
+	private String mainKind = null;
+	private List<String> mainLanguageCodes = null;
+	private List<String> mainLanguages = null;
+	private String mainLocalizedTitle = null;
+	private String mainOriginalAirDate = null;
+	private String mainOriginalTitle = null;
+	private String mainPlotOutline = null;
+	private Double mainRating;
+	private List<String> mainRuntimes = null;
+	private List<String> mainSoundMix = null;
+	private List<String> mainStars = null;
+	private String mainTitle = null;
+	private Integer mainTop250Rank = null;
+	private List<String> mainVideos = null;
+	private Integer mainVotes = null;
+	private List<String> mainWriters = null;
+	private Integer mainYear = null;
+	private List<String> plotPlot = null;
+	private List<String> plotSynopsis = null;
+	private Integer mainSeasons = null;
+	private String mainSeriesYears = null;
+	private Integer mainNumberOfSeasons = null;
+	private String mainProductionStatusUpdated = null;
+	private String mainProductionStatus = null;
+	private String error = null;
 
-	/**
-	 *
-	 */
 	public NameYearBean() {
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
 	}
 
 	public File getFile() {
@@ -46,8 +83,24 @@ public class NameYearBean extends OmdbVideoFull {
 		return fileCount;
 	}
 
+	public String getMainProductionStatusUpdated() {
+		return mainProductionStatusUpdated;
+	}
+
+	public void setMainProductionStatusUpdated(String mainProductionStatusUpdated) {
+		this.mainProductionStatusUpdated = mainProductionStatusUpdated;
+	}
+
+	public String getMainProductionStatus() {
+		return mainProductionStatus;
+	}
+
+	public void setMainProductionStatus(String mainProductionStatus) {
+		this.mainProductionStatus = mainProductionStatus;
+	}
+
 	public String getRuntimeHM() {
-		String s = getRuntime();
+		String s = (getMainRuntimes() == null ? "N/A" : getMainRuntimes().get(0));
 		if (s == null || "".equals(s) || s.contains("N/A")) {
 			s = "0";
 		}
@@ -55,7 +108,6 @@ public class NameYearBean extends OmdbVideoFull {
 		try {
 			s = LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
 		} catch (NumberFormatException e) {
-			System.out.println(getOriginalName() + " | " + getRuntime() + " | " + e);
 			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
 		}
 		return s;
@@ -77,18 +129,10 @@ public class NameYearBean extends OmdbVideoFull {
 		this.originalName = originalName;
 	}
 
-	/**
-	 *
-	 * @return
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 *
-	 * @param name
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -110,10 +154,13 @@ public class NameYearBean extends OmdbVideoFull {
 	}
 
 	public void setSize(long bytes) {
+		size = convertBytesToHumanReadable(bytes);
+	}
+
+	public static String convertBytesToHumanReadable(long bytes) {
 		long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
 		if (absB < 1024) {
-			size = bytes + " B";
-			return;
+			return bytes + " B";
 		}
 		long value = absB;
 		CharacterIterator ci = new StringCharacterIterator("KMGTPE");
@@ -122,61 +169,334 @@ public class NameYearBean extends OmdbVideoFull {
 			ci.next();
 		}
 		value *= Long.signum(bytes);
-		size = String.format("%.1f %ciB", value / 1024.0, ci.current());
+		return String.format("%.1f %ciB", value / 1024.0, ci.current());
 	}
 
 	public String getSize() {
 		return size;
 	}
 
+	public void setMainAkas(List<String> mainAkas) {
+		this.mainAkas = mainAkas;
+	}
+
+	public List<String> getMainAkas() {
+		return mainAkas;
+	}
+
+	public void setMainAspectRatio(String mainAspectRatio) {
+		this.mainAspectRatio = mainAspectRatio;
+	}
+
+	public String getMainAspectRatio() {
+		return mainAspectRatio == null ? "" : mainAspectRatio;
+	}
+
+	public void setMainBoxOffice(Map<String, String> mainBoxOffice) {
+		this.mainBoxOffice = mainBoxOffice;
+	}
+
+	public Map<String, String> getMainBoxOffice() {
+		return mainBoxOffice;
+	}
+
+	public void setMainCertificates(List<String> mainCertificates) {
+		this.mainCertificates = mainCertificates;
+	}
+
+	public List<String> getMainCertificates() {
+		return mainCertificates;
+	}
+
+	public void setMainColorInfo(List<String> mainColorInfo) {
+		this.mainColorInfo = mainColorInfo;
+	}
+
+	public List<String> getMainColorInfo() {
+		return mainColorInfo;
+	}
+
+	public void setMainCountries(List<String> mainCountries) {
+		this.mainCountries = mainCountries;
+	}
+
+	public List<String> getMainCountries() {
+		return mainCountries;
+	}
+
+	public void setMainCountryCodes(List<String> mainCountryCodes) {
+		this.mainCountryCodes = mainCountryCodes;
+	}
+
+	public List<String> getMainCountryCodes() {
+		return mainCountryCodes;
+	}
+
+	public void setMainCoverUrl(String mainCoverUrl) {
+		this.mainCoverUrl = mainCoverUrl;
+	}
+
+	public String getMainCoverUrl() {
+		if (mainCoverUrl != null) {
+			int index = mainCoverUrl.substring(0, mainCoverUrl.lastIndexOf(".")).lastIndexOf(".");
+			if (index != -1) {
+				return mainCoverUrl.substring(0, index) + "._V1_SX300.jpg";
+			} else {
+				return mainCoverUrl;
+			}
+		} else {
+			return mainCoverUrl;
+		}
+	}
+
+	public void setMainDirectors(List<String> mainDirectors) {
+		this.mainDirectors = mainDirectors;
+	}
+
+	public List<String> getMainDirectors() {
+		return mainDirectors;
+	}
+
+	public void setMainGenres(List<String> mainGenres) {
+		this.mainGenres = mainGenres;
+	}
+
+	public List<String> getMainGenres() {
+		return mainGenres;
+	}
+
+	public void setMainImdbid(String mainImdbid) {
+		this.mainImdbid = mainImdbid;
+	}
+
+	public String getMainImdbid() {
+		return mainImdbid;
+	}
+
+	public void setMainKind(String mainKind) {
+		this.mainKind = mainKind;
+	}
+
+	public String getMainKind() {
+		return mainKind;
+	}
+
+	public void setMainLanguageCodes(List<String> mainLanguageCodes) {
+		this.mainLanguageCodes = mainLanguageCodes;
+	}
+
+	public List<String> getMainLanguageCodes() {
+		return mainLanguageCodes;
+	}
+
+	public void setMainLanguages(List<String> mainLanguages) {
+		this.mainLanguages = mainLanguages;
+	}
+
+	public List<String> getMainLanguages() {
+		return mainLanguages;
+	}
+
+	public void setMainLocalizedTitle(String mainLocalizedTitle) {
+		this.mainLocalizedTitle = mainLocalizedTitle;
+	}
+
+	public String getMainLocalizedTitle() {
+		return mainLocalizedTitle;
+	}
+
+	public void setMainOriginalAirDate(String mainOriginalAirDate) {
+		this.mainOriginalAirDate = mainOriginalAirDate;
+	}
+
+	public String getMainOriginalAirDate() {
+		return mainOriginalAirDate;
+	}
+
+	public void setMainOriginalTitle(String mainOriginalTitle) {
+		this.mainOriginalTitle = mainOriginalTitle;
+	}
+
+	public String getMainOriginalTitle() {
+		return mainOriginalTitle;
+	}
+
+	public void setMainPlotOutline(String mainPlotOutline) {
+		this.mainPlotOutline = mainPlotOutline;
+	}
+
+	public String getMainPlotOutline() {
+		return mainPlotOutline;
+	}
+
+	public void setMainRating(Double mainRating) {
+		this.mainRating = mainRating;
+	}
+
+	public Double getMainRating() {
+		return mainRating == null ? 0.0 : mainRating;
+	}
+
+	public void setMainRuntimes(List<String> mainRuntimes) {
+		this.mainRuntimes = mainRuntimes;
+	}
+
+	public List<String> getMainRuntimes() {
+		return mainRuntimes;
+	}
+
+	public void setMainSoundMix(List<String> mainSoundMix) {
+		this.mainSoundMix = mainSoundMix;
+	}
+
+	public List<String> getMainSoundMix() {
+		return mainSoundMix;
+	}
+
+	public void setMainStars(List<String> mainStars) {
+		this.mainStars = mainStars;
+	}
+
+	public List<String> getMainStars() {
+		return mainStars;
+	}
+
+	public void setMainTitle(String mainTitle) {
+		this.mainTitle = mainTitle;
+	}
+
+	public String getMainTitle() {
+		return mainTitle;
+	}
+
+	public void setMainTop250Rank(Integer mainTop250Rank) {
+		this.mainTop250Rank = mainTop250Rank;
+	}
+
+	public Integer getMainTop250Rank() {
+		return mainTop250Rank;
+	}
+
+	public void setMainVideos(List<String> mainVideos) {
+		this.mainVideos = mainVideos;
+	}
+
+	public List<String> getMainVideos() {
+		return mainVideos;
+	}
+
+	public void setMainVotes(Integer mainVotes) {
+		this.mainVotes = mainVotes;
+	}
+
+	public Integer getMainVotes() {
+		return mainVotes;
+	}
+
+	public void setMainWriters(List<String> mainWriters) {
+		this.mainWriters = mainWriters;
+	}
+
+	public List<String> getMainWriters() {
+		return mainWriters;
+	}
+
+	public void setMainYear(Integer mainYear) {
+		this.mainYear = mainYear;
+	}
+
+	public Integer getMainYear() {
+		return mainYear;
+	}
+
+	public void setPlotPlot(List<String> plotPlot) {
+		this.plotPlot = plotPlot;
+	}
+
+	public List<String> getPlotPlot() {
+		return plotPlot;
+	}
+
+	public void setPlotSynopsis(List<String> plotSynopsis) {
+		this.plotSynopsis = plotSynopsis;
+	}
+
+	public List<String> getPlotSynopsis() {
+		return plotSynopsis;
+	}
+
+	public void setMainSeasons(Integer mainSeasons) {
+		this.mainSeasons = mainSeasons;
+	}
+
+	public void setMainSeriesYears(String mainSeriesYears) {
+		this.mainSeriesYears = mainSeriesYears;
+	}
+
+	public Integer getMainSeasons() {
+		return mainSeasons;
+	}
+
+	public String getMainSeriesYears() {
+		return mainSeriesYears;
+	}
+
+	public Integer getMainNumberOfSeasons() {
+		return mainNumberOfSeasons;
+	}
+
+	public void setMainNumberOfSeasons(Integer mainNumberOfSeasons) {
+		this.mainNumberOfSeasons = mainNumberOfSeasons;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("getFileDate=").append(getFileDate());
-		builder.append(", getName=").append(getName());
-		builder.append(", getFile=").append(getFile().getAbsolutePath());
-		builder.append(", getFileCount=").append(getFileCount());
-		builder.append(", getOriginalName=").append(getOriginalName());
-		builder.append(", getRuntimeHM=").append(getRuntimeHM());
-		builder.append(", getSize=").append(getSize());
-		builder.append(", isDirectory=").append(isDirectory());
-		builder.append(", getActors=").append(getActors());
-		builder.append(", getAwards=").append(getAwards());
-		builder.append(", getCountries=").append(getCountries());
-		builder.append(", getDirector=").append(getDirector());
-		builder.append(", getEpisode=").append(getEpisode());
-		builder.append(", getGenre=").append(getGenre());
-		builder.append(", getImdbRating=").append(getImdbRating());
-		builder.append(", getImdbVotes=").append(getImdbVotes());
-		builder.append(", getLanguages=").append(getLanguages());
-		builder.append(", getMetascore=").append(getMetascore());
-		builder.append(", getPlot=").append(getPlot());
-		builder.append(", getRated=").append(getRated());
-		builder.append(", getReleased=").append(getReleased());
-		builder.append(", getRuntime=").append(getRuntime());
-		builder.append(", getSeason=").append(getSeason());
-		builder.append(", getTomatoBoxOffice=").append(getTomatoBoxOffice());
-		builder.append(", getTomatoConsensus=").append(getTomatoConsensus());
-		builder.append(", getTomatoDvd=").append(getTomatoDvd());
-		builder.append(", getTomatoFresh=").append(getTomatoFresh());
-		builder.append(", getTomatoImage=").append(getTomatoImage());
-		builder.append(", getTomatoMeter=").append(getTomatoMeter());
-		builder.append(", getTomatoProduction=").append(getTomatoProduction());
-		builder.append(", getTomatoRating=").append(getTomatoRating());
-		builder.append(", getTomatoReviews=").append(getTomatoReviews());
-		builder.append(", getTomatoRotten=").append(getTomatoRotten());
-		builder.append(", getTomatoURL=").append(getTomatoURL());
-		builder.append(", getTomatoUserMeter=").append(getTomatoUserMeter());
-		builder.append(", getTomatoUserRating=").append(getTomatoUserRating());
-		builder.append(", getTomatoUserReviews=").append(getTomatoUserReviews());
-		builder.append(", getTomatoWebsite=").append(getTomatoWebsite());
-		builder.append(", getWriter=").append(getWriter());
-		builder.append(", getImdbID=").append(getImdbID());
-		builder.append(", getPoster=").append(getPoster());
-		builder.append(", getTitle=").append(getTitle());
-		builder.append(", getType=").append(getType());
-		builder.append(", getYear=").append(getYear());
+		builder.append("error=").append(error);
+		builder.append(", file=").append(file);
+		builder.append(", fileCount=").append(fileCount);
+		builder.append(", fileDate=").append(fileDate);
+		builder.append(", isDirectory=").append(isDirectory);
+		builder.append(", mainAkas=").append(mainAkas);
+		builder.append(", mainAspectRatio=").append(mainAspectRatio);
+		builder.append(", mainBoxOffice=").append(mainBoxOffice);
+		builder.append(", mainCertificates=").append(mainCertificates);
+		builder.append(", mainColorInfo=").append(mainColorInfo);
+		builder.append(", mainCountries=").append(mainCountries);
+		builder.append(", mainCountryCodes=").append(mainCountryCodes);
+		builder.append(", mainCoverUrl=").append(mainCoverUrl);
+		builder.append(", mainDirectors=").append(mainDirectors);
+		builder.append(", mainGenres=").append(mainGenres);
+		builder.append(", mainImdbid=").append(mainImdbid);
+		builder.append(", mainKind=").append(mainKind);
+		builder.append(", mainLanguageCodes=").append(mainLanguageCodes);
+		builder.append(", mainLanguages=").append(mainLanguages);
+		builder.append(", mainLocalizedTitle=").append(mainLocalizedTitle);
+		builder.append(", mainNumberOfSeasons=").append(mainNumberOfSeasons);
+		builder.append(", mainOriginalAirDate=").append(mainOriginalAirDate);
+		builder.append(", mainOriginalTitle=").append(mainOriginalTitle);
+		builder.append(", mainPlotOutline=").append(mainPlotOutline);
+		builder.append(", mainProductionStatus=").append(mainProductionStatus);
+		builder.append(", mainProductionStatusUpdated=").append(mainProductionStatusUpdated);
+		builder.append(", mainRating=").append(mainRating);
+		builder.append(", mainRuntimes=").append(mainRuntimes);
+		builder.append(", mainSeasons=").append(mainSeasons);
+		builder.append(", mainSeriesYears=").append(mainSeriesYears);
+		builder.append(", mainSoundMix=").append(mainSoundMix);
+		builder.append(", mainStars=").append(mainStars);
+		builder.append(", mainTitle=").append(mainTitle);
+		builder.append(", mainTop250Rank=").append(mainTop250Rank);
+		builder.append(", mainVideos=").append(mainVideos);
+		builder.append(", mainVotes=").append(mainVotes);
+		builder.append(", mainWriters=").append(mainWriters);
+		builder.append(", mainYear=").append(mainYear);
+		builder.append(", name=").append(name);
+		builder.append(", originalName=").append(originalName);
+		builder.append(", plotPlot=").append(plotPlot);
+		builder.append(", plotSynopsis=").append(plotSynopsis);
+		builder.append(", serialVersionUID=").append(serialVersionUID);
+		builder.append(", size=").append(size);
 		builder.append("]");
 		return builder.toString();
 	}

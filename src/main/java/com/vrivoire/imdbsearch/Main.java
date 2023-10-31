@@ -10,7 +10,6 @@ import java.awt.LayoutManager;
 import java.awt.event.AdjustmentEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,19 +23,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * https://stackoverflow.com/questions/8380425/get-video-file-metadata-in-java/8380514
  *
  * @author Vincent Rivoire
  */
 public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
-	public static String default_path = SystemUtils.USER_HOME + SystemUtils.FILE_SEPARATOR + "Videos" + SystemUtils.FILE_SEPARATOR;
+	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
@@ -84,27 +82,36 @@ public class Main {
 	}
 
 	private void process() {
+		long start = System.currentTimeMillis();
+		List<NameYearBean> listFound = null;
+		List<NameYearBean> listNotFound = null;
 		try {
 			var searchMovie = new SearchMovie();
-			List<NameYearBean> list = searchMovie.search();
-			var noFound = searchMovie.getNoFound();
+			listFound = searchMovie.search();
+			listNotFound = searchMovie.getNoFound();
 
-			setNewFileName(list);
-			setNewFileName(noFound);
+			setNewFileName(listFound);
+			setNewFileName(listNotFound);
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
-			generateHtmlReport.generate(list, noFound);
+			generateHtmlReport.generate(listFound, listNotFound);
 
-			LOG.info("Found " + list.size() + " movie" + (list.size() > 1 ? "s" : ""));
-			LOG.info("Not found " + noFound.size() + " movie" + (noFound.size() > 1 ? "s" : ""));
+			LOG.info("Found " + listFound.size() + " movie" + (listFound.size() > 1 ? "s" : ""));
+			LOG.info("Not found " + listNotFound.size() + " movie" + (listNotFound.size() > 1 ? "s" : ""));
 
-			String[] cmd = {Config.WEB_BROWSER.getString(), '"' + default_path + "_report.html\""};
+			String[] cmd = {'"' + Config.WEB_BROWSER.getString() + '"', '"' + default_path + "_report.html\""};
+			LOG.info("cmd: " + Arrays.toString(cmd));
 			Runtime.getRuntime().exec(cmd);
-		} catch (IOException ioe) {
+		} catch (Exception ioe) {
 			LOG.fatal(ioe.getMessage(), ioe);
 			System.exit(-1);
+		} finally {
+			float duration = System.currentTimeMillis() - start;
+			int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size()) + ((listNotFound == null || listNotFound.isEmpty()) ? 0 : listNotFound.size());
+			LOG.info("Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
 		}
+
 	}
 
 	private void createWindow() {
@@ -175,30 +182,34 @@ public class Main {
 	private void setNewFileName(List<NameYearBean> list) {
 		list.forEach((NameYearBean nameYearBean) -> {
 			var originalName = nameYearBean.getOriginalName();
-			var name = nameYearBean.getName();
+			var name = nameYearBean.getMainOriginalTitle();
 
 			List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
-			for (String extension : extensions) {
-				if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
-					String newName = (name + " " + nameYearBean.getYear() + extension).toLowerCase();
-					if (!newName.equalsIgnoreCase(originalName)) {
-						LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
-						var oldF = new File(Main.default_path + originalName);
-						if (oldF.exists()) {
-							var newF = new File(Main.default_path + newName);
-							if (newF.toString().equalsIgnoreCase(oldF.toString())) {
-								LOG.warn("--> The new file name '" + originalName + "' already exist.");
-							} else {
-								var isRenamed = oldF.renameTo(newF);
-								if (!isRenamed) {
-									LOG.warn("--> Renaming file '" + originalName + "' failed.");
+			if (name != null) {
+				for (String extension : extensions) {
+					if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
+						String newName = WordUtils.capitalize((name + " " + nameYearBean.getMainYear() + extension).toLowerCase()
+								.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
+								.replace('|', ' '), new char[]{});
+						if (!newName.equalsIgnoreCase(originalName)) {
+							LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
+							var oldF = new File(Main.default_path + originalName);
+							if (oldF.exists()) {
+								var newF = new File(Main.default_path + newName);
+								if (newF.toString().equalsIgnoreCase(oldF.toString())) {
+									LOG.warn("--> The new file name '" + originalName + "' already exist.");
+								} else {
+									var isRenamed = oldF.renameTo(newF);
+									if (!isRenamed) {
+										LOG.warn("--> Renaming file '" + originalName + "' failed.");
+									}
 								}
+							} else {
+								LOG.warn("--> The file '" + originalName + "' do not exist.");
 							}
-						} else {
-							LOG.warn("--> The file '" + originalName + "' do not exist.");
 						}
+						break;
 					}
-					break;
 				}
 			}
 		});

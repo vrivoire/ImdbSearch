@@ -27,11 +27,11 @@
 			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M.%L - %m%n"/>
 		</LogGrabber>
 
-		<Async name="ASYNC">
+		<!--		<Async name="ASYNC">
 			<AppenderRef ref="FILE"/>
 			<AppenderRef ref="CONSOLE"/>
 			<AppenderRef ref="GRABBER"/>
-		</Async>
+		</Async>-->
 	</Appenders>
 
 	<Loggers>

@@ -5,22 +5,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 /**
  *
@@ -34,16 +40,13 @@ public class GenerateHtmlReport {
 	private static final String UNKNOWN = "&#x2753;";
 	private final String fullReportPath;
 
-	/**
-	 *
-	 */
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
+//		toto("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/overcast/jquery-ui.min.css");
+//		toto("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
+//		toto("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js");
 	}
 
-	/**
-	 *
-	 */
 	public void deleteReport() {
 		try {
 			if (Files.exists(Paths.get(fullReportPath), LinkOption.NOFOLLOW_LINKS)) {
@@ -64,19 +67,20 @@ public class GenerateHtmlReport {
 		var sb = new StringBuilder();
 		notFound.forEach((var item) -> {
 			var name = escapeHtml4(item.getName());
-			var year = (item.getYear() != null ? item.getYear() : "");
+			var year = (item.getMainYear() != null ? item.getMainYear() : "");
 			var originalName = escapeHtml4(item.getOriginalName());
 			sb.append("<a href=\"https://www.imdb.com/find?ref_=nv_sr_fn&q=")
 					.append(name.replace(' ', '+'))
 					.append('+')
 					.append(year)
 					.append("&s=all\" target =\"_blank\"><button  class=\"ui-button ui-widget ui-corner-all\">");
-			if (item.getType().equals("series")) {
+			String kind = item.getMainKind();
+			if (kind != null && kind.equals("series")) {
 				sb.append(SERIES);
-			} else if (item.getType().equals("movie")) {
+			} else if (kind != null && kind.equals("movie")) {
 				sb.append(MOVIES);
 			} else {
-				sb.append(UNKNOWN).append(" '").append(item.getType()).append("'");
+				sb.append(UNKNOWN).append(" '").append(item.getMainKind()).append("'");
 			}
 			sb.append("&nbsp;")
 					.append(name)
@@ -97,8 +101,11 @@ public class GenerateHtmlReport {
 			sb1.append("</code>");
 		}
 
+		String spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
+
 		Map<String, Object> map = new HashMap<>();
 		map.put("report_location", fullReportPath);
+		map.put("spaceUsed", spaceUsed);
 		map.put("foundCount", movieList.size());
 		map.put("found_s", movieList.size() > 1 ? "s" : "");
 		map.put("notFoundCount", notFound.size());
@@ -106,11 +113,11 @@ public class GenerateHtmlReport {
 		map.put("total", notFound.size() + movieList.size());
 		map.put("logsData", sb1.toString());
 		map.put("NOT_FOUND", sb.toString());
-		var header = fill(read(Config.REPORT_HEADER.getString()), map);
+		var header = Config.fill(read(Config.REPORT_HEADER.getString()), map);
 
 		StringBuilder stringBuilder = new StringBuilder();
 
-		Collections.sort(movieList, (var ovf2, var ovf1) -> ovf1.getImdbRating().compareTo(ovf2.getImdbRating()));
+		Collections.sort(movieList, (var ovf2, var ovf1) -> ovf1.getMainRating().compareTo(ovf2.getMainRating()));
 		createBody(movieList, stringBuilder, 2);
 
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
@@ -124,23 +131,11 @@ public class GenerateHtmlReport {
 		stringBuilder.append("<div id = \"tabs-").append(index).append("\"><table><tbody>");
 		List<Map<String, Object>> list = getMapList(movieList);
 		list.forEach((var movieMap) -> {
-			var body = fill(read(Config.REPORT_BODY.getString()), movieMap);
+			var body = Config.fill(read(Config.REPORT_BODY.getString()), movieMap);
 			stringBuilder.append(body);
 		});
 		stringBuilder.append("</tbody></table></div>");
 		return stringBuilder;
-	}
-
-	private String fill(String template, Map<String, Object> movieMap) {
-//		LOG.info("////////////////////////////////////");
-//		for (String string : movieMap.keySet()) {
-//			LOG.info(string + " : " + movieMap.get(string));
-//		}
-//		LOG.info("////////////////////////////////////");
-
-		var sub = new StrSubstitutor(movieMap);
-		var resolvedString = sub.replace(template);
-		return resolvedString;
 	}
 
 	private List<Map<String, Object>> getMapList(List<NameYearBean> movieList) {
@@ -160,15 +155,88 @@ public class GenerateHtmlReport {
 		map.entrySet().stream().filter((entry) -> (entry.getValue() instanceof String)).forEachOrdered((entry) -> {
 			entry.setValue(escapeHtml4((String) entry.getValue()));
 		});
-		String type = (String) map.get("Type");
-		if (type.equals("series")) {
-			map.put("Type", SERIES);
-		} else if (type.equals("movie")) {
-			map.put("Type", MOVIES);
-		} else {
-			map.put("Type", UNKNOWN + " '" + map.get("Type") + "'");
+
+		String type = (String) map.get("mainKind");
+		if (type != null) {
+			type = type.trim().toLowerCase();
+			if (type.contains("series")) {
+				map.put("mainKind", SERIES);
+				if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {;
+					map.put("mainYear", type);
+				} else {
+					map.put("mainYear", movie.getMainSeriesYears() + (movie.getMainNumberOfSeasons() == null ? "" : " (<b>Seasons:</b> " + movie.getMainNumberOfSeasons() + ")"));
+				}
+			} else if (type.toLowerCase().contains("movie")) {
+				map.put("mainKind", MOVIES);
+			} else {
+				map.put("mainKind", UNKNOWN + " '" + map.get("mainKind") + "'");
+			}
 		}
+
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			if (entry.getValue() != null && entry.getValue() instanceof List) {
+				String s = entry.getValue().toString().substring(1, entry.getValue().toString().length() - 1);
+				map.put(entry.getKey(), s);
+			}
+		}
+
+		if (movie.getMainCountries() != null && !movie.getMainCountries().isEmpty()) {
+			map.put("mainCountries", (movie.getMainCountries().size() > 1 ? ", <b>Countries:</b> " : ", <b>Country:</b> ") + map.get("mainCountries"));
+		}
+
+		if (movie.getMainVotes() != null) {
+			map.put("mainVotes", new DecimalFormat("###,###,###").format(movie.getMainVotes()));
+		}
+
+		insertBase64(movie, map);
+
+		if (movie.getFileCount() > 1) {
+			map.put("fileCount", ", <b>Count:</b> " + movie.getFileCount() + " files");
+		} else {
+			map.put("fileCount", "");
+		}
+
+		if (movie.getPlotPlot() != null) {
+			map.put("plotPlot", movie.getPlotPlot().get(0));
+		} else if (movie.getMainPlotOutline() != null) {
+			map.put("plotPlot", movie.getMainPlotOutline().substring(0));
+		}
+		if (movie.getMainPlotOutline() != null && !movie.getMainPlotOutline().isEmpty()) {
+			map.put("plotSynopsis", movie.getMainPlotOutline());
+		} else {
+			map.put("plotSynopsis", "");
+		}
+
 		return map;
+	}
+
+	private void insertBase64(NameYearBean movie, Map<String, Object> map) {
+		if (movie.getMainCoverUrl() != null) {
+			try {
+				var url = URI.create(movie.getMainCoverUrl()).toURL();
+				try (InputStream is = url.openStream();) {
+					byte[] imageBytes = IOUtils.toByteArray(is);
+					String encodedString = Base64.getEncoder().encodeToString(imageBytes);
+					map.put("mainCoverUrl", "data:image/x-icon;base64," + encodedString);
+				}
+			} catch (IOException ex) {
+				LOG.error(ex.getMessage(), ex);
+			}
+		}
+	}
+
+	private void toto(String urlStr) {
+		try {
+			var url = URI.create(urlStr).toURL();
+			try (InputStream is = url.openStream();) {
+				byte[] imageBytes = IOUtils.toByteArray(is);
+				String encodedString = Base64.getEncoder().encodeToString(imageBytes);
+				LOG.info(urlStr);
+				LOG.info("data:image/x-icon;base64," + encodedString);
+			}
+		} catch (IOException ex) {
+			LOG.error(ex.getMessage(), ex);
+		}
 	}
 
 	private static String read(String resourceName) {

@@ -3,13 +3,47 @@
 
 </section>
 <script>
-    $(function () {
-        $("#accordion").accordion({
-            heightStyle: "content"
-        });
-        $("#tabs-1").tabs();
-    });
+	$(function () {
+		$(".accordion").accordion({
+			heightStyle: "content"
+		});
+		$("#tabs-1").tabs();
+	});
 
+	$(function () {
+		$(".tabs").tabs();
+	});
+
+	$(document).ready(function () {
+
+		var mc = {
+			'0-4.9': 'red',
+			'5.0-5.9': 'orange',
+			'6.0-7.9': 'blue',
+			'8.0-10.0': 'green'
+		};
+
+		function between(x, min, max) {
+			return x >= min && x <= max;
+		}
+
+		var dc;
+		var first;
+		var second;
+		var th;
+
+		$('span').each(function (index) {
+			th = $(this);
+			dc = parseInt($(this).attr('data-color'), 10);
+			$.each(mc, function (name, value) {
+				first = parseInt(name.split('-')[0], 10);
+				second = parseInt(name.split('-')[1], 10);
+				if (between(dc, first, second)) {
+					th.addClass(value);
+				}
+			});
+		});
+	});
 </script>
 </body>
 </html>
