@@ -161,7 +161,7 @@ public class GenerateHtmlReport {
 			type = type.trim().toLowerCase();
 			if (type.contains("series")) {
 				map.put("mainKind", SERIES);
-				if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {;
+				if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {
 					map.put("mainYear", type);
 				} else {
 					map.put("mainYear", movie.getMainSeriesYears() + (movie.getMainNumberOfSeasons() == null ? "" : " (<b>Seasons:</b> " + movie.getMainNumberOfSeasons() + ")"));

@@ -237,13 +237,14 @@ public class SearchMovie {
 		args.add("python.exe");
 		File file = new File(Config.IMDBSEARCHPY_PATH.getString());
 		if (!file.exists()) {
+			LOG.warn("NOT FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
 			file = new File("bin/" + Config.IMDBSEARCHPY_PATH.getString());
 			if (!file.exists()) {
 				throw new Exception("NOT FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
 			}
 		}
-		LOG.info("IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
-		args.add(Config.IMDBSEARCHPY_PATH.getString());
+		LOG.info("FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
+		args.add(file.getAbsolutePath());
 		List<String> args2 = new ArrayList<>();
 		for (NameYearBean nby : movieSet) {
 			args2.add(getSearchKey(nby));
