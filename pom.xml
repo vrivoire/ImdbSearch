@@ -140,6 +140,7 @@
 									<include>ImdbSearch.bat</include>
 									<include>IMDb.ico</include>
 									<include>videos.bat</include>
+									<include>ImdbSearchPY.py</include>
 								</resource>
 							</resources>
 						</configuration>

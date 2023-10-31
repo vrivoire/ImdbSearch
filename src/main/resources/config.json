@@ -2,7 +2,7 @@
 	"REPORT_BODY": "/report_body.html",
 	"PATTERN": "[SsNn]\\d\\d",
 	"WEB_BROWSER": "${PROGRAMFILES}/Google/Chrome/Application/chrome.exe",
-	"IMDBSEARCHPY_PATH": "${HOMEDRIVE}${HOMEPATH}/Documents/NetBeansProjects/PycharmProjects/ImdbSearchPY/main.py",
+	"IMDBSEARCHPY_PATH": "ImdbSearchPY.py",
 	"REPORT_NAME": "_report.html",
 	"REPORT_HEADER": "/report_header.html",
 	"ICON": "/IMDB.jpg",

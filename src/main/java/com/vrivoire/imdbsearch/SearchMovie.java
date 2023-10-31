@@ -235,7 +235,14 @@ public class SearchMovie {
 	private void searchByNames(Set<NameYearBean> movieSet) throws Exception {
 		List<String> args = new ArrayList<>();
 		args.add("python.exe");
-		LOG.info("IMDBSEARCHPY_PATH=" + Config.IMDBSEARCHPY_PATH.getString());
+		File file = new File(Config.IMDBSEARCHPY_PATH.getString());
+		if (!file.exists()) {
+			file = new File("bin/" + Config.IMDBSEARCHPY_PATH.getString());
+			if (!file.exists()) {
+				throw new Exception("NOT FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
+			}
+		}
+		LOG.info("IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
 		args.add(Config.IMDBSEARCHPY_PATH.getString());
 		List<String> args2 = new ArrayList<>();
 		for (NameYearBean nby : movieSet) {
@@ -290,39 +297,4 @@ public class SearchMovie {
 		}
 	}
 
-//	private void faireUnBidule(Map<String, String> mapKeys) {
-//		StringBuffer sb = new StringBuffer();
-//		for (Map.Entry<String, String> entry : mapKeys.entrySet()) {
-//			String uCamelCase = CaseUtils.toCamelCase(entry.getKey(), true, '.');
-//			String lCamelCase = CaseUtils.toCamelCase(entry.getKey(), false, '.');
-//			String className = entry.getValue();
-//			if (className.endsWith("ArrayList")) {
-//				className = "List<String>";
-//			}
-//			if (className.endsWith("LinkedHashMap")) {
-//				className = "Map<String, String>";
-//			}
-//			sb.append("\tprivate ").append(className).append(' ').append(lCamelCase).append(" = null;\n");
-//		}
-//		sb.append('\n');
-//		for (Map.Entry<String, String> entry : mapKeys.entrySet()) {
-//			String uCamelCase = CaseUtils.toCamelCase(entry.getKey(), true, '.');
-//			String lCamelCase = CaseUtils.toCamelCase(entry.getKey(), false, '.');
-//			String className = entry.getValue();
-//			if (className.endsWith("ArrayList")) {
-//				className = "List<String>";
-//			}
-//			if (className.endsWith("LinkedHashMap")) {
-//				className = "Map<String, String>";
-//			}
-//			System.out.println(entry.getKey() + " --> " + className + " --> " + uCamelCase);
-//			sb.append("\tpublic void set").append(uCamelCase).append('(').append(className).append(' ').append(lCamelCase).append(") {\n");
-//			sb.append("\t\tthis.").append(lCamelCase).append(" = ").append(lCamelCase).append(";\n");
-//			sb.append("\t}\n\n");
-//			sb.append("\tpublic ").append(className).append(" get").append(uCamelCase).append("() {\n");
-//			sb.append("\t\treturn ").append(lCamelCase).append(";\n");
-//			sb.append("\t}\n\n");
-//		}
-//		System.out.println(sb.toString());
-//	}
 }

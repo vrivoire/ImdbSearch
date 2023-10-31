@@ -42,9 +42,9 @@ public class GenerateHtmlReport {
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
-//		toto("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/overcast/jquery-ui.min.css");
-//		toto("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
-//		toto("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js");
+//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/overcast/jquery-ui.min.css");
+//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
+//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js");
 	}
 
 	public void deleteReport() {
@@ -225,7 +225,7 @@ public class GenerateHtmlReport {
 		}
 	}
 
-	private void toto(String urlStr) {
+	private void Base64FromStr(String urlStr) {
 		try {
 			var url = URI.create(urlStr).toURL();
 			try (InputStream is = url.openStream();) {
