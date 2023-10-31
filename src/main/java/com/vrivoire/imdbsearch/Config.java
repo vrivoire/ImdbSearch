@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.text.StringSubstitutor;
@@ -106,11 +105,9 @@ public enum Config {
 			System.getenv().entrySet().forEach(x -> {
 				mapProperties.put((String) x.getKey().toUpperCase(), x.getValue());
 			});
-			for (Entry<String, Object> x : MAP.entrySet()) {
-				if (x.getValue() instanceof String && !x.getKey().equals("PATTERN")) {
-					MAP.put(x.getKey(), fill((String) x.getValue(), mapProperties));
-				}
-			}
+			MAP.entrySet().stream().filter(x -> (x.getValue() instanceof String && !x.getKey().equals("PATTERN"))).forEachOrdered(x -> {
+				MAP.put(x.getKey(), fill((String) x.getValue(), mapProperties));
+			});
 			LOG.debug("0 - Configuration:\n" + System.getenv());
 			LOG.debug("1 - Configuration:\n" + MAP);
 			LOG.debug("2 - Configuration:\n" + objectMapper.writeValueAsString(MAP));
@@ -130,8 +127,7 @@ public enum Config {
 
 	public static String fill(String template, Map<String, Object> movieMap) {
 		var sub = new StringSubstitutor(movieMap);
-		var resolvedString = sub.replace(template);
-		return resolvedString;
+		return sub.replace(template);
 	}
 
 	private static void StartFileWatchDog(File file) {

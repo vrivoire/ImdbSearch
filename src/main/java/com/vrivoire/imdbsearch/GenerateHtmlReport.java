@@ -173,12 +173,10 @@ public class GenerateHtmlReport {
 			}
 		}
 
-		for (Map.Entry<String, Object> entry : map.entrySet()) {
-			if (entry.getValue() != null && entry.getValue() instanceof List) {
-				String s = entry.getValue().toString().substring(1, entry.getValue().toString().length() - 1);
-				map.put(entry.getKey(), s);
-			}
-		}
+		map.entrySet().stream().filter(entry -> (entry.getValue() != null && entry.getValue() instanceof List)).forEachOrdered(entry -> {
+			String s = entry.getValue().toString().substring(1, entry.getValue().toString().length() - 1);
+			map.put(entry.getKey(), s);
+		});
 
 		if (movie.getMainCountries() != null && !movie.getMainCountries().isEmpty()) {
 			map.put("mainCountries", (movie.getMainCountries().size() > 1 ? ", <b>Countries:</b> " : ", <b>Country:</b> ") + map.get("mainCountries"));

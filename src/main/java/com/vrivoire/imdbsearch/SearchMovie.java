@@ -165,38 +165,38 @@ public class SearchMovie {
 		searchByNames(movieSet);
 		Map<String, Map<String, Object>> jsonMap = readOutputJson();
 
-		for (NameYearBean nameYearBean : movieSet) {
+		movieSet.forEach(nameYearBean -> {
 			String searchKey = getSearchKey(nameYearBean);
 			Map<String, Object> map = jsonMap.get(searchKey);
-			for (String subKey : map.keySet()) {
-				if (subKey.endsWith("ERROR")) {
-					nameYearBean.setName(searchKey);
-					nameYearBean.setError(map.get(subKey).toString());
-					NOT_FOUND.add(nameYearBean);
-				}
-			}
-		}
-		for (NameYearBean nameYearBean : NOT_FOUND) {
+			map.keySet().stream().filter(subKey -> (subKey.endsWith("ERROR"))).map(subKey -> {
+				nameYearBean.setName(searchKey);
+				nameYearBean.setError(map.get(subKey).toString());
+				return subKey;
+			}).forEachOrdered(_item -> {
+				NOT_FOUND.add(nameYearBean);
+			});
+		});
+		NOT_FOUND.forEach(nameYearBean -> {
 			movieSet.remove(nameYearBean);
-		}
+		});
 
 		Map<String, String> mapKeys = new TreeMap<>();
 
-		for (NameYearBean nameYearBean : movieSet) {
+		movieSet.forEach(nameYearBean -> {
 			String searchKey = getSearchKey(nameYearBean);
 			Map<String, Object> map = jsonMap.get(searchKey);
 			if (map == null) {
 				LOG.warn("************************************* " + searchKey + " --> " + map);
 			} else {
-				for (String key : map.keySet()) {
+				map.keySet().forEach(key -> {
 					mapKeys.put(key, map.get(key).getClass().getSimpleName());
-				}
+				});
 				nameYearBean.setName(searchKey);
 				autoMapping(nameYearBean, mapKeys, map);
 				LOG.info(nameYearBean);
 				list.add(nameYearBean);
 			}
-		}
+		});
 	}
 
 	private void autoMapping(NameYearBean searchNameYearBean, Map<String, String> mapKeys, Map<String, Object> map) {
@@ -246,9 +246,9 @@ public class SearchMovie {
 		LOG.info("FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
 		args.add(file.getAbsolutePath());
 		List<String> args2 = new ArrayList<>();
-		for (NameYearBean nby : movieSet) {
+		movieSet.forEach(nby -> {
 			args2.add(getSearchKey(nby));
-		}
+		});
 		args2.sort(null);
 		args.addAll(args2);
 		try {
@@ -284,9 +284,9 @@ public class SearchMovie {
 			StringBuilder sb = new StringBuilder();
 			Path jsonPath = Paths.get(Config.OUTPUT_JSON_FILE.getString());
 			List<String> allLines = Files.readAllLines(jsonPath, StandardCharsets.UTF_8);
-			for (String line : allLines) {
+			allLines.forEach(line -> {
 				sb.append(line);
-			}
+			});
 			String jsonString = sb.toString();
 			Map<String, Map<String, Object>> jsonMap = new TreeMap<>();
 			jsonMap.putAll(objectMapper.readValue(jsonString, new TypeReference<Map<String, Map<String, Object>>>() {
