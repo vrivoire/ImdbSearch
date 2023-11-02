@@ -43,7 +43,9 @@ public enum Config {
 	TORRENTS,
 	IGNORED_FOLDERS,
 	OUTPUT_JSON_FILE,
-	IMDBSEARCHPY_PATH;
+	IMDBSEARCHPY_PATH,
+	JQUERYUI_VER,
+	JQUERY_VER;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
 	private static final Map<String, Object> MAP = new TreeMap<>();

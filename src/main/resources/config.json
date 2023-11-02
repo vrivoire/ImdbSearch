@@ -21,5 +21,7 @@
 		"Captures", "W", "W2"
 	],
 	"THREAD_NB": 10,
-	"OUTPUT_JSON_FILE": "${TEMP}/IMDB.json"
+	"OUTPUT_JSON_FILE": "${TEMP}/IMDB.json",
+	"JQUERY_VER": "3.7.1",
+	"JQUERYUI_VER": "1.13.2"
 }

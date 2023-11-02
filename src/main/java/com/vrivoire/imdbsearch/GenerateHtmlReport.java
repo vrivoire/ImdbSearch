@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -113,6 +114,11 @@ public class GenerateHtmlReport {
 		map.put("total", notFound.size() + movieList.size());
 		map.put("logsData", sb1.toString());
 		map.put("NOT_FOUND", sb.toString());
+
+		map.put("jqueryui_css", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+		map.put("jquery_js", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js", "<script type=\"text/javascript\" src=\"data:text/js;base64,", "\"></script>\n"));
+		map.put("jqueryui_js", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js", "<script type=\"text/javascript\" src=\"data:text/js;base64,", "\"></script>\n"));
+
 		var header = Config.fill(read(Config.REPORT_HEADER.getString()), map);
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -223,17 +229,14 @@ public class GenerateHtmlReport {
 		}
 	}
 
-	private void Base64FromStr(String urlStr) {
-		try {
-			var url = URI.create(urlStr).toURL();
-			try (InputStream is = url.openStream();) {
-				byte[] imageBytes = IOUtils.toByteArray(is);
-				String encodedString = Base64.getEncoder().encodeToString(imageBytes);
-				LOG.info(urlStr);
-				LOG.info("data:image/x-icon;base64," + encodedString);
-			}
-		} catch (IOException ex) {
-			LOG.error(ex.getMessage(), ex);
+	private String Base64FromStr(String urlStr, String protocol, String post) throws MalformedURLException, IOException {
+		var url = URI.create(urlStr).toURL();
+		try (InputStream is = url.openStream();) {
+			byte[] imageBytes = IOUtils.toByteArray(is);
+			String encodedString = Base64.getEncoder().encodeToString(imageBytes);
+			encodedString = '\n' + protocol + encodedString + post;
+//			LOG.info(encodedString);
+			return encodedString;
 		}
 	}
 
