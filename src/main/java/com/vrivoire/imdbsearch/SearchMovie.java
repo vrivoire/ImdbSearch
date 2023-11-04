@@ -251,31 +251,25 @@ public class SearchMovie {
 		});
 		args2.sort(null);
 		args.addAll(args2);
+		LOG.info("Command line: " + args);
 		try {
-			Runtime rt = Runtime.getRuntime();
-			Process proc = rt.exec(args.toArray(String[]::new));
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-			// Read the output from the command
-			LOG.info("Here is the standard output of the command:");
-			String s;
-			while ((s = stdInput.readLine()) != null) {
-				LOG.info(s);
+			ProcessBuilder pb = new ProcessBuilder(args);
+			pb.redirectErrorStream(true);
+			Process process = pb.start();
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line;
+			while ((line = stdInput.readLine()) != null) {
+				LOG.info("ImdbSearchPY\t" + line);
 			}
-			// Read any errors from the attempted command
-			LOG.info("Here is the standard error of the command (if any):");
-			while ((s = stdError.readLine()) != null) {
-				LOG.error(s);
-			}
+			LOG.info("Exit value: " + process.waitFor() + ", info: " + process.info());
 		} catch (IOException ex) {
 			LOG.fatal(ex.getMessage(), ex);
 			throw ex;
 		}
 	}
 
-	private static String getSearchKey(NameYearBean nby) {
-		return (nby.getName() + " " + (nby.getMainYear() == null ? "" : nby.getMainYear())).trim();
+	private static String getSearchKey(NameYearBean nameYearBean) {
+		return (nameYearBean.getName() + " " + (nameYearBean.getMainYear() == null ? "" : nameYearBean.getMainYear())).trim();
 	}
 
 	private Map<String, Map<String, Object>> readOutputJson() throws Exception {
