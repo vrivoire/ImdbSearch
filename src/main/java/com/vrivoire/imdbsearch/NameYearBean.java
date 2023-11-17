@@ -6,6 +6,7 @@ import java.text.StringCharacterIterator;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class NameYearBean {
@@ -169,7 +170,7 @@ public class NameYearBean {
 			ci.next();
 		}
 		value *= Long.signum(bytes);
-		return String.format("%.1f %ciB", value / 1024.0, ci.current());
+		return String.format(Locale.ENGLISH, "%.1f %ciB", value / 1024.0, ci.current());
 	}
 
 	public String getSize() {

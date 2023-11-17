@@ -43,9 +43,6 @@ public class GenerateHtmlReport {
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
-//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/overcast/jquery-ui.min.css");
-//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
-//		Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js");
 	}
 
 	public void deleteReport() {
@@ -188,14 +185,22 @@ public class GenerateHtmlReport {
 			map.put("mainCountries", (movie.getMainCountries().size() > 1 ? ", <b>Countries:</b> " : ", <b>Country:</b> ") + map.get("mainCountries"));
 		}
 
-		if (movie.getMainVotes() != null) {
-			map.put("mainVotes", new DecimalFormat("###,###,###").format(movie.getMainVotes()));
+		if (movie.getMainVotes() != null && movie.getMainVotes() >= 1) {
+			String s = new DecimalFormat("###,###,###").format(movie.getMainVotes());
+			s = '(' + s + " vote" + (s.equals("1") ? "" : 's') + ')';
+			map.put("mainVotes", s);
+		} else {
+			map.put("mainVotes", "");
+		}
+
+		if (movie.getMainRating() == 0.0) {
+			map.put("mainRating", "");
 		}
 
 		insertBase64(movie, map);
 
 		if (movie.getFileCount() > 1) {
-			map.put("fileCount", ", <b>Count:</b> " + movie.getFileCount() + " files");
+			map.put("fileCount", ", " + movie.getFileCount() + " files");
 		} else {
 			map.put("fileCount", "");
 		}
