@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.vrivoire</groupId>
 	<artifactId>ImdbSearch</artifactId>
-	<version>2.0-alpha</version>
+	<version>2.0</version>
 	<name>IMDB Search and report</name>
 	<inceptionYear>2017</inceptionYear>
 	<description>
@@ -62,13 +62,13 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.10.0</version>
+			<version>1.11.0</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.14.0</version>
+			<version>2.15.0</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
@@ -79,17 +79,17 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.20.0</version>
+			<version>2.21.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.20.0</version>
+			<version>2.21.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.10.0-M1</version>
+			<version>5.10.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -152,7 +152,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.11.0</version>
 				<configuration>
-					<release>21</release>
+					<release>${maven.compiler.release}</release>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<showDeprecation>true</showDeprecation>
 					<compilerArgument>-Xlint:unchecked</compilerArgument>
@@ -161,7 +161,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.2.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -176,7 +176,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>3.6.1</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -298,7 +298,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<configLocation>config/sun_checks.xml</configLocation>
 				</configuration>
