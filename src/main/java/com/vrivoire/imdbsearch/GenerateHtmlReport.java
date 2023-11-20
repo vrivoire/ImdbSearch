@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -127,41 +128,19 @@ public class GenerateHtmlReport {
 		String indexTs = sb2.toString();
 		map.put("index_ts", "\n<script type=\"text/babel\">\n" + indexTs + "\n</script>\n");
 
-		var header = Config.fill(read(Config.REPORT_HEADER.getString()), map);
-
-		StringBuilder stringBuilder = new StringBuilder();
-
 		Collections.sort(movieList, (var ovf2, var ovf1) -> ovf1.getMainRating().compareTo(ovf2.getMainRating()));
-		createBody(movieList, stringBuilder, 2);
 		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 		String jsonByRating = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByRating", "\n<script>\nvar jsonByRating = " + jsonByRating + "\n</script>\n");
 
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
-		createBody(movieList, stringBuilder, 3);
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
 
 		LOG.info("Report file: " + Paths.get(fullReportPath));
 
-		var footer = Config.fill(read(Config.REPORT_FOOTER.getString()), map);
-
 		var index = Config.fill(read("/index.html"), map);
-//		Files.writeString(Paths.get("index2.html"), index);
-
 		Files.writeString(Paths.get(fullReportPath), index);
-//		Files.writeString(Paths.get(fullReportPath), header + stringBuilder.toString() + footer);
-	}
-
-	private StringBuilder createBody(List<NameYearBean> movieList, StringBuilder stringBuilder, int index) {
-		stringBuilder.append("<div id = \"tabs-").append(index).append("\"><table><tbody>");
-		List<Map<String, Object>> list = getMapList(movieList);
-		list.forEach((var movieMap) -> {
-			var body = Config.fill(read(Config.REPORT_BODY.getString()), movieMap);
-			stringBuilder.append(body);
-		});
-		stringBuilder.append("</tbody></table></div>");
-		return stringBuilder;
 	}
 
 	private List<Map<String, Object>> getMapList(List<NameYearBean> movieList) {
@@ -245,12 +224,9 @@ public class GenerateHtmlReport {
 	private void insertBase64(NameYearBean movie, Map<String, Object> map) {
 		if (movie.getMainCoverUrl() != null) {
 			try {
-				var url = URI.create(movie.getMainCoverUrl()).toURL();
-				try (InputStream is = url.openStream();) {
-					byte[] imageBytes = IOUtils.toByteArray(is);
-					String encodedString = Base64.getEncoder().encodeToString(imageBytes);
-					map.put("mainCoverUrl", "data:image/x-icon;base64," + encodedString);
-				}
+				URL url = URI.create(movie.getMainCoverUrl()).toURL();
+				String encodedString = urlToBase64(url.toString());
+				map.put("mainCoverUrl", "data:image/x-icon;base64," + encodedString);
 			} catch (IOException ex) {
 				LOG.error(ex.getMessage(), ex);
 			}
@@ -265,8 +241,7 @@ public class GenerateHtmlReport {
 		var url = URI.create(urlStr).toURL();
 		try (InputStream is = url.openStream();) {
 			byte[] imageBytes = IOUtils.toByteArray(is);
-			String encodedString = Base64.getEncoder().encodeToString(imageBytes);
-			return encodedString;
+			return Base64.getEncoder().encodeToString(imageBytes);
 		}
 	}
 

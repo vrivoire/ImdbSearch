@@ -1,12 +1,9 @@
 {
-	"REPORT_BODY": "/report_body.html",
 	"PATTERN": "[SsNn]\\d\\d",
 	"WEB_BROWSER": "${PROGRAMFILES}/Google/Chrome/Application/chrome.exe",
 	"IMDBSEARCHPY_PATH": "ImdbSearchPY.py",
 	"REPORT_NAME": "_report.html",
-	"REPORT_HEADER": "/report_header.html",
 	"ICON": "/IMDB.jpg",
-	"REPORT_FOOTER": "/report_footer.html",
 	"SUPPORTED_EXTENSIONS": [
 		".xa", ".wav", ".dts", ".tta", ".tac", ".ts", ".mpg", ".ra", ".ram", ".rm",
 		".rv", ".rmbv", ".ogm", ".ogg", ".nut", ".nsv", ".nsc", ".mpg", ".mp3", ".mp2",
