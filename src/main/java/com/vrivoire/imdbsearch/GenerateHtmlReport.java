@@ -2,6 +2,7 @@ package com.vrivoire.imdbsearch;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
 import java.io.BufferedReader;
@@ -112,9 +113,19 @@ public class GenerateHtmlReport {
 		map.put("logsData", sb1.toString());
 		map.put("NOT_FOUND", sb.toString());
 
-		map.put("jqueryui_css", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
-		map.put("jquery_js", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js", "<script type=\"text/javascript\" src=\"data:text/js;base64,", "\"></script>\n"));
-		map.put("jqueryui_js", Base64FromStr("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js", "<script type=\"text/javascript\" src=\"data:text/js;base64,", "\"></script>\n"));
+		map.put("jqueryui_css", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+		map.put("jquery_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+		map.put("jqueryui_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+		map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream("/index.ts")));
+		StringBuilder sb2 = new StringBuilder();
+		reader.lines().forEachOrdered((String line) -> {
+			sb2.append(line);
+		}
+		);
+		String indexTs = sb2.toString();
+		map.put("index_ts", "\n<script type=\"text/babel\">\n" + indexTs + "\n</script>\n");
 
 		var header = Config.fill(read(Config.REPORT_HEADER.getString()), map);
 
@@ -122,12 +133,24 @@ public class GenerateHtmlReport {
 
 		Collections.sort(movieList, (var ovf2, var ovf1) -> ovf1.getMainRating().compareTo(ovf2.getMainRating()));
 		createBody(movieList, stringBuilder, 2);
+		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		String jsonByRating = ow.writeValueAsString(getMapList(movieList));
+		map.put("jsonByRating", "\n<script>\nvar jsonByRating = " + jsonByRating + "\n</script>\n");
 
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
 		createBody(movieList, stringBuilder, 3);
+		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
+		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
 
 		LOG.info("Report file: " + Paths.get(fullReportPath));
-		Files.writeString(Paths.get(fullReportPath), header + stringBuilder.toString() + read(Config.REPORT_FOOTER.getString()));
+
+		var footer = Config.fill(read(Config.REPORT_FOOTER.getString()), map);
+
+		var index = Config.fill(read("/index.html"), map);
+//		Files.writeString(Paths.get("index2.html"), index);
+
+		Files.writeString(Paths.get(fullReportPath), index);
+//		Files.writeString(Paths.get(fullReportPath), header + stringBuilder.toString() + footer);
 	}
 
 	private StringBuilder createBody(List<NameYearBean> movieList, StringBuilder stringBuilder, int index) {
@@ -234,21 +257,23 @@ public class GenerateHtmlReport {
 		}
 	}
 
-	private String Base64FromStr(String urlStr, String protocol, String post) throws MalformedURLException, IOException {
+	private String base64ToHtml(String urlStr, String protocol, String post) throws MalformedURLException, IOException {
+		return '\n' + protocol + urlToBase64(urlStr) + post;
+	}
+
+	private String urlToBase64(String urlStr) throws MalformedURLException, IOException {
 		var url = URI.create(urlStr).toURL();
 		try (InputStream is = url.openStream();) {
 			byte[] imageBytes = IOUtils.toByteArray(is);
 			String encodedString = Base64.getEncoder().encodeToString(imageBytes);
-			encodedString = '\n' + protocol + encodedString + post;
-//			LOG.info(encodedString);
 			return encodedString;
 		}
 	}
 
 	private static String read(String resourceName) {
-		var builder = new StringBuilder();
-		var in = GenerateHtmlReport.class.getResourceAsStream(resourceName);
-		var reader = new BufferedReader(new InputStreamReader(in));
+		StringBuilder builder = new StringBuilder();
+		InputStream in = GenerateHtmlReport.class.getResourceAsStream(resourceName);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		reader.lines().forEach(line -> {
 			builder.append(line);
 		});

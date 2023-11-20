@@ -2,6 +2,21 @@
 </main>
 
 </section>
+<div id="status"></div>
+
+<!--<script type="text/babel" data-presets="env,typescript" data-type="module">-->
+<script type="text/babel">
+	/// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
+</script>
+<script type="text/babel">
+
+	console.log("00000000000000000000000000000");
+	$(document).ready(function () {
+		$("#status")[0].innerHTML = "helelelelelelelelel";
+		console.log("111111111111111111111111111");
+	});
+</script>
+
 <script>
 	$(function () {
 		$(".accordion").accordion({
@@ -9,13 +24,11 @@
 		});
 		$("#tabs-1").tabs();
 	});
-
 	$(function () {
 		$(".tabs").tabs();
 	});
-
 	$(document).ready(function () {
-
+		console.log("2222222222222222222222222222222");
 		var mc = {
 			'0-4.9': 'red',
 			'5.0-5.9': 'orangered',
@@ -23,7 +36,6 @@
 			'7.5-7.9': 'green',
 			'8.0-10.0': 'gold'
 		};
-
 		function between(x, min, max) {
 			return x >= min && x <= max;
 		}
@@ -32,7 +44,6 @@
 		var first;
 		var second;
 		var th;
-
 		$('span').each(function (index) {
 			th = $(this);
 			dc = parseInt($(this).attr('data-color'), 10);
