@@ -69,6 +69,7 @@ public class Main {
 				LOG.info("_arg: " + _arg);
 				if (validatePath(_arg)) {
 					process();
+					saveDB();
 					LogGrabberAppender.resetLogs();
 				}
 			}
@@ -213,6 +214,20 @@ public class Main {
 				}
 			}
 		});
+	}
+
+	private void saveDB() {
+//		try (Connection conn = DriverManager.getConnection(url); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(SQL)) {
+//			while (rs.next()) {
+//				int sys = rs.getInt("sys");
+//				int dia = rs.getInt("dia");
+//				int pulse = rs.getInt("pulse");
+//				String tranxDate = rs.getString("tranxDate");
+//				String tranxTime = rs.getString("tranxTime");
+//			}
+//		} catch (Exception e) {
+//			LOG.error(e.getMessage(), e);
+//		}
 	}
 
 }
