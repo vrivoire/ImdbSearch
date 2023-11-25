@@ -100,20 +100,6 @@ public class NameYearBean {
 		this.mainProductionStatus = mainProductionStatus;
 	}
 
-	public String getRuntimeHM() {
-		String s = (getMainRuntimes() == null ? "N/A" : getMainRuntimes().get(0));
-		if (s == null || "".equals(s) || s.contains("N/A")) {
-			s = "0";
-		}
-		s = s.replace("min", "").trim();
-		try {
-			s = LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
-		} catch (NumberFormatException e) {
-			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
-		}
-		return s;
-	}
-
 	/**
 	 *
 	 * @return
@@ -346,6 +332,21 @@ public class NameYearBean {
 		return mainRuntimes;
 	}
 
+	public String getRuntimeHM() {
+		String s = (getMainRuntimes() == null ? "N/A" : getMainRuntimes().get(0));
+		if (s == null || "".equals(s) || s.contains("N/A")) {
+			s = "0";
+		}
+		s = s.replace("min", "").trim();
+		try {
+			s = LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
+		} catch (NumberFormatException e) {
+			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
+		}
+		s = s.replace(':', 'h') + 'm';
+		return s;
+	}
+
 	public void setMainSoundMix(List<String> mainSoundMix) {
 		this.mainSoundMix = mainSoundMix;
 	}
@@ -454,50 +455,50 @@ public class NameYearBean {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("error=").append(error);
-		builder.append(", file=").append(file);
-		builder.append(", fileCount=").append(fileCount);
-		builder.append(", fileDate=").append(fileDate);
-		builder.append(", isDirectory=").append(isDirectory);
-		builder.append(", mainAkas=").append(mainAkas);
-		builder.append(", mainAspectRatio=").append(mainAspectRatio);
-		builder.append(", mainBoxOffice=").append(mainBoxOffice);
-		builder.append(", mainCertificates=").append(mainCertificates);
-		builder.append(", mainColorInfo=").append(mainColorInfo);
-		builder.append(", mainCountries=").append(mainCountries);
-		builder.append(", mainCountryCodes=").append(mainCountryCodes);
-		builder.append(", mainCoverUrl=").append(mainCoverUrl);
-		builder.append(", mainDirectors=").append(mainDirectors);
-		builder.append(", mainGenres=").append(mainGenres);
-		builder.append(", mainImdbid=").append(mainImdbid);
-		builder.append(", mainKind=").append(mainKind);
-		builder.append(", mainLanguageCodes=").append(mainLanguageCodes);
-		builder.append(", mainLanguages=").append(mainLanguages);
-		builder.append(", mainLocalizedTitle=").append(mainLocalizedTitle);
-		builder.append(", mainNumberOfSeasons=").append(mainNumberOfSeasons);
-		builder.append(", mainOriginalAirDate=").append(mainOriginalAirDate);
-		builder.append(", mainOriginalTitle=").append(mainOriginalTitle);
-		builder.append(", mainPlotOutline=").append(mainPlotOutline);
-		builder.append(", mainProductionStatus=").append(mainProductionStatus);
-		builder.append(", mainProductionStatusUpdated=").append(mainProductionStatusUpdated);
-		builder.append(", mainRating=").append(mainRating);
-		builder.append(", mainRuntimes=").append(mainRuntimes);
-		builder.append(", mainSeasons=").append(mainSeasons);
-		builder.append(", mainSeriesYears=").append(mainSeriesYears);
-		builder.append(", mainSoundMix=").append(mainSoundMix);
-		builder.append(", mainStars=").append(mainStars);
-		builder.append(", mainTitle=").append(mainTitle);
-		builder.append(", mainTop250Rank=").append(mainTop250Rank);
-		builder.append(", mainVideos=").append(mainVideos);
-		builder.append(", mainVotes=").append(mainVotes);
-		builder.append(", mainWriters=").append(mainWriters);
-		builder.append(", mainYear=").append(mainYear);
-		builder.append(", name=").append(name);
-		builder.append(", originalName=").append(originalName);
-		builder.append(", plotPlot=").append(plotPlot);
-		builder.append(", plotSynopsis=").append(plotSynopsis);
-		builder.append(", serialVersionUID=").append(serialVersionUID);
-		builder.append(", size=").append(size);
+		builder.append("getError=").append(getError());
+		builder.append(", getFile=").append(getFile());
+		builder.append(", getFileCount=").append(getFileCount());
+		builder.append(", getFileDate=").append(getFileDate());
+		builder.append(", getMainAkas=").append(getMainAkas());
+		builder.append(", getMainAspectRatio=").append(getMainAspectRatio());
+		builder.append(", getMainBoxOffice=").append(getMainBoxOffice());
+		builder.append(", getMainCertificates=").append(getMainCertificates());
+		builder.append(", getMainColorInfo=").append(getMainColorInfo());
+		builder.append(", getMainCountries=").append(getMainCountries());
+		builder.append(", getMainCountryCodes=").append(getMainCountryCodes());
+		builder.append(", getMainCoverUrl=").append(getMainCoverUrl());
+		builder.append(", getMainDirectors=").append(getMainDirectors());
+		builder.append(", getMainGenres=").append(getMainGenres());
+		builder.append(", getMainImdbid=").append(getMainImdbid());
+		builder.append(", getMainKind=").append(getMainKind());
+		builder.append(", getMainLanguageCodes=").append(getMainLanguageCodes());
+		builder.append(", getMainLanguages=").append(getMainLanguages());
+		builder.append(", getMainLocalizedTitle=").append(getMainLocalizedTitle());
+		builder.append(", getMainNumberOfSeasons=").append(getMainNumberOfSeasons());
+		builder.append(", getMainOriginalAirDate=").append(getMainOriginalAirDate());
+		builder.append(", getMainOriginalTitle=").append(getMainOriginalTitle());
+		builder.append(", getMainPlotOutline=").append(getMainPlotOutline());
+		builder.append(", getMainProductionStatus=").append(getMainProductionStatus());
+		builder.append(", getMainProductionStatusUpdated=").append(getMainProductionStatusUpdated());
+		builder.append(", getMainRating=").append(getMainRating());
+		builder.append(", getMainRuntimes=").append(getMainRuntimes());
+		builder.append(", getRuntimeHM=").append(getRuntimeHM());
+		builder.append(", getMainSeasons=").append(getMainSeasons());
+		builder.append(", getMainSeriesYears=").append(getMainSeriesYears());
+		builder.append(", getMainSoundMix=").append(getMainSoundMix());
+		builder.append(", getMainStars=").append(getMainStars());
+		builder.append(", getMainTitle=").append(getMainTitle());
+		builder.append(", getMainTop250Rank=").append(getMainTop250Rank());
+		builder.append(", getMainVideos=").append(getMainVideos());
+		builder.append(", getMainVotes=").append(getMainVotes());
+		builder.append(", getMainWriters=").append(getMainWriters());
+		builder.append(", getMainYear=").append(getMainYear());
+		builder.append(", getName=").append(getName());
+		builder.append(", getOriginalName=").append(getOriginalName());
+		builder.append(", getPlotPlot=").append(getPlotPlot());
+		builder.append(", getPlotSynopsis=").append(getPlotSynopsis());
+		builder.append(", getSize=").append(getSize());
+		builder.append(", isDirectory=").append(isDirectory());
 		builder.append("]");
 		return builder.toString();
 	}

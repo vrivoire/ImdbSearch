@@ -49,9 +49,14 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.44.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.15.3</version>
+			<version>2.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-beanutils</groupId>
@@ -79,12 +84,12 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.21.1</version>
+			<version>2.22.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.21.1</version>
+			<version>2.22.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -300,8 +305,20 @@
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.3.1</version>
 				<configuration>
-					<configLocation>config/sun_checks.xml</configLocation>
+					<includeResources>true</includeResources>
+					<resourceIncludes>**/*.html</resourceIncludes>
 				</configuration>
+				<reportSets>
+					<reportSet>
+						<configuration>
+							<includeResources>true</includeResources>
+							<resourceIncludes>**/*.html</resourceIncludes>
+						</configuration>
+						<reports>
+							<report>checkstyle</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 		</plugins>
 	</reporting>

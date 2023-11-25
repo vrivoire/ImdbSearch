@@ -218,6 +218,8 @@ public class GenerateHtmlReport {
 			map.put("plotSynopsis", "");
 		}
 
+		map.put("mainStars", movie.getMainStars() == null ? "" : movie.getMainStars());
+
 		return map;
 	}
 
