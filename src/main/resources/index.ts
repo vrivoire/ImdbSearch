@@ -3,7 +3,7 @@ declare var $: JQueryStatic;
 
 function insertAll(film: any) {
 	return `
-				<div style="width: 25em; display: inline-block; white-space: nowrap; text-align: center;" align="center">
+				<div style="border-style: hidden; width: 25em; height: 38em; display: inline-block; white-space: nowrap; text-align: center;" align="center">
 					<a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 						<img style="padding-top: 1em;" src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300"/>
 					</a>
