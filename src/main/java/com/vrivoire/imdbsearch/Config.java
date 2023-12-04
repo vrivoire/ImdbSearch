@@ -42,7 +42,9 @@ public enum Config {
 	OUTPUT_JSON_FILE,
 	IMDBSEARCHPY_PATH,
 	JQUERYUI_VER,
-	JQUERY_VER;
+	JQUERY_VER,
+	DB_PROTOCOL,
+	DB_URL;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
 	private static final Map<String, Object> MAP = new TreeMap<>();

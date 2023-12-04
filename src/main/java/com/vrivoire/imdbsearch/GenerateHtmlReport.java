@@ -16,6 +16,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -41,6 +46,7 @@ public class GenerateHtmlReport {
 	private static final String MOVIES = "&#x1F4FD;";
 	private static final String SERIES = "&#x1F4FA;";
 	private static final String UNKNOWN = "&#x2753;";
+	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
 	private final String fullReportPath;
 
 	public GenerateHtmlReport() {
@@ -128,14 +134,13 @@ public class GenerateHtmlReport {
 		String indexTs = sb2.toString();
 		map.put("index_ts", "\n<script type=\"text/babel\">\n" + indexTs + "\n</script>\n");
 
-		Collections.sort(movieList, (var ovf2, var ovf1) -> ovf1.getMainRating().compareTo(ovf2.getMainRating()));
 		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-		String jsonByRating = ow.writeValueAsString(getMapList(movieList));
-		map.put("jsonByRating", "\n<script>\nvar jsonByRating = " + jsonByRating + "\n</script>\n");
-
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
+
+		String jsonListAll = ow.writeValueAsString(sqlFindAll());
+		map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 
 		LOG.info("Report file: " + Paths.get(fullReportPath));
 
@@ -152,7 +157,7 @@ public class GenerateHtmlReport {
 		return list;
 	}
 
-	private Map<String, Object> getMapFromBean(NameYearBean movie) {
+	public Map<String, Object> getMapFromBean(NameYearBean movie) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, Object> map = objectMapper.convertValue(movie, new TypeReference<Map<String, Object>>() {
 		});
@@ -167,7 +172,7 @@ public class GenerateHtmlReport {
 			if (type.contains("series")) {
 				map.put("mainKind", SERIES);
 				if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {
-					map.put("mainYear", type);
+					map.put("mainYear", map.get("mainYear"));
 				} else {
 					map.put("mainYear", movie.getMainSeriesYears() + (movie.getMainNumberOfSeasons() == null ? "" : " (<b>Seasons:</b> " + movie.getMainNumberOfSeasons() + ")"));
 				}
@@ -177,6 +182,7 @@ public class GenerateHtmlReport {
 				map.put("mainKind", UNKNOWN + " '" + map.get("mainKind") + "'");
 			}
 		}
+		map.put("mainYear", map.get("mainYear") == null ? "" : map.get("mainYear").toString());
 
 		map.entrySet().stream().filter(entry -> (entry.getValue() != null && entry.getValue() instanceof List)).forEachOrdered(entry -> {
 			String s = entry.getValue().toString().substring(1, entry.getValue().toString().length() - 1);
@@ -195,10 +201,9 @@ public class GenerateHtmlReport {
 			map.put("mainVotes", "");
 		}
 
-		if (movie.getMainRating() == 0.0) {
-			map.put("mainRating", "");
-		}
-
+//		if (movie.getMainRating() == 0.0) {
+//			map.put("mainRating", movie.getMainRating() == 0.0 ? "" : movie.getMainRating());
+//		}
 		insertBase64(movie, map);
 
 		if (movie.getFileCount() > 1) {
@@ -255,5 +260,33 @@ public class GenerateHtmlReport {
 			builder.append(line);
 		});
 		return builder.toString();
+	}
+
+	private List<Map<String, Object>> sqlFindAll() {
+		List<Map<String, Object>> list = new ArrayList<>();
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT)) {
+			ResultSet rs = pstmt.executeQuery();
+			int rank = 0;
+			while (rs.next()) {
+				Map<String, Object> map = new HashMap<>();
+				list.add(map);
+				map.put("rank", ++rank);
+				map.put("id", rs.getInt("id"));
+				map.put("mainOriginalTitle", rs.getString("title"));
+				map.put("mainImdbid", rs.getString("imdb_id"));
+				map.put("mainYear", rs.getString("year"));
+				map.put("mainKind", rs.getString("kind"));
+				map.put("mainRating", rs.getDouble("rating"));
+				map.put("mainCoverUrl", rs.getString("cover_url"));
+				map.put("mainVotes", rs.getString("votes"));
+				map.put("runtimeHM", rs.getString("runtimeHM"));
+				map.put("mainCountries", rs.getString("countries"));
+				map.put("mainGenres", rs.getString("genres"));
+			}
+			LOG.info("Read all history, " + list.size() + " records.");
+		} catch (SQLException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return list;
 	}
 }

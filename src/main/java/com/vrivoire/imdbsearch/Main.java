@@ -12,8 +12,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -26,6 +33,7 @@ import javax.swing.UIManager;
 import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteException;
 
 /**
  *
@@ -37,6 +45,27 @@ public class Main {
 	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
+
+	private static final int SQLITE_BUSY = 5; // The database file is locked
+	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=? where imdb_id=?;";
+	private static final String SQL_SELECT_1 = "select * from films where imdb_id=?;";
+	private static final String DDL1 = "drop index if exists idx_imdb_id;";
+	private static final String DDL2 = """
+										create table if not exists films (
+											id integer primary key not null,
+											title varchar(255) not null,
+											imdb_id varchar(255) not null,
+											year varchar(25) not null,
+											kind varchar(8) not null,
+											rating double not null,
+											cover_url text,
+											votes text,
+											runtimeHM varchar(6),
+											countries text,
+											genres text
+										);
+            """;
+	private static final String DDL3 = "create unique index idx_imdb_id on films(imdb_id);";
 
 	static {
 		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
@@ -69,7 +98,6 @@ public class Main {
 				LOG.info("_arg: " + _arg);
 				if (validatePath(_arg)) {
 					process();
-					saveDB();
 					LogGrabberAppender.resetLogs();
 				}
 			}
@@ -93,6 +121,8 @@ public class Main {
 
 			setNewFileName(listFound);
 			setNewFileName(listNotFound);
+
+			saveDB(listFound);
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
@@ -216,18 +246,116 @@ public class Main {
 		});
 	}
 
-	private void saveDB() {
-//		try (Connection conn = DriverManager.getConnection(url); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(SQL)) {
-//			while (rs.next()) {
-//				int sys = rs.getInt("sys");
-//				int dia = rs.getInt("dia");
-//				int pulse = rs.getInt("pulse");
-//				String tranxDate = rs.getString("tranxDate");
-//				String tranxTime = rs.getString("tranxTime");
-//			}
-//		} catch (Exception e) {
-//			LOG.error(e.getMessage(), e);
-//		}
+	private void saveDB(List<NameYearBean> listFound) {
+		if (!new File(Config.DB_URL.getString()).exists()) {
+			DDLs();
+		}
+		GenerateHtmlReport generateHtmlReport = new GenerateHtmlReport();
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
+			try (PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_1)) {
+				for (NameYearBean nameYearBean : listFound) {
+					Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
+					pstmt.setString(1, (String) mapFromBean.get("mainImdbid"));
+					ResultSet rs = pstmt.executeQuery();
+					if (rs.next()) {
+						sqlUpdate(conn, mapFromBean, 0);
+					} else {
+						sqlInsert(conn, mapFromBean, 0);
+					}
+				}
+			}
+		} catch (SQLException e) {
+			LOG.error(e.getMessage(), e);
+		}
 	}
 
+	private void sqlUpdate(Connection conn, Map<String, Object> mapFromBean, Integer countSQLiteException) {
+		LOG.info("\t" + mapFromBean.get("mainImdbid") + "\t" + (String) mapFromBean.get("mainOriginalTitle"));
+		try (PreparedStatement pstmt = conn.prepareStatement(SQL_UPDATE)) {
+			int i = 0;
+			pstmt.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainYear"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainKind"));
+			pstmt.setDouble(++i, (Double) mapFromBean.get("mainRating"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainVotes"));
+			pstmt.setString(++i, (String) mapFromBean.get("runtimeHM"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainCountries"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainGenres"));
+
+			pstmt.setString(++i, (String) mapFromBean.get("mainImdbid"));
+			pstmt.executeUpdate();
+		} catch (SQLiteException e) {
+			busy(e, countSQLiteException, mapFromBean, conn, true);
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+	}
+
+	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres) values(?,?,?,?,?,?,?,?,?,?);";
+
+	private void sqlInsert(Connection conn, Map<String, Object> mapFromBean, Integer countSQLiteException) {
+		LOG.info("\t" + mapFromBean.get("mainImdbid") + "\t" + (String) mapFromBean.get("mainOriginalTitle"));
+		try (PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
+			int i = 0;
+			pstmt.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainYear"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainKind"));
+			pstmt.setDouble(++i, (Double) mapFromBean.get("mainRating"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainImdbid"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainVotes"));
+			pstmt.setString(++i, (String) mapFromBean.get("runtimeHM"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainCountries"));
+			pstmt.setString(++i, (String) mapFromBean.get("mainGenres"));
+			pstmt.executeUpdate();
+		} catch (SQLiteException e) {
+			busy(e, countSQLiteException, mapFromBean, conn, false);
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+	}
+
+	private void DDLs() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
+			try (Statement stmt = conn.createStatement()) {
+				boolean b = stmt.execute(DDL1);
+			}
+			try (Statement stmt = conn.createStatement()) {
+				boolean b = stmt.execute(DDL2);
+			}
+			try (Statement stmt = conn.createStatement()) {
+				boolean b = stmt.execute(DDL3);
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			File file = new File(Config.DB_URL.getString());
+			if (file.exists()) {
+				file.delete();
+			}
+		}
+	}
+
+	private void busy(SQLiteException e, Integer countSQLiteException, Map<String, Object> mapFromBean, Connection conn, boolean isUpdate) {
+		if (e.getErrorCode() == SQLITE_BUSY) {
+			countSQLiteException++;
+			if (countSQLiteException > 5) {
+				LOG.error(e.getMessage() + " 5 times.", e);
+			} else {
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException ex) {
+					// ignore
+				}
+				LOG.warn(mapFromBean.get("mainOriginalTitle") + " retrying " + countSQLiteException + " times");
+				if (isUpdate) {
+					sqlUpdate(conn, mapFromBean, countSQLiteException);
+				} else {
+					sqlInsert(conn, mapFromBean, countSQLiteException);
+				}
+			}
+		} else {
+			LOG.error(e.getMessage(), e);
+		}
+	}
 }

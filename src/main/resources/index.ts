@@ -1,6 +1,28 @@
 declare var jQuery: JQueryStatic;
 declare var $: JQueryStatic;
 
+function insertAll(film: any) {
+	return `
+				<div style="width: 25em; display: inline-block; white-space: nowrap; text-align: center;" align="center">
+					<a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
+						<img style="padding-top: 1em;" src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300"/>
+					</a>
+					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+						<span>${film.rank}&nbsp;
+							<span style="font-weight: bold; border:0px; text-wrap: balance;">
+								<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
+									${film.mainOriginalTitle}
+								</a>
+							</span>
+						</span>
+						<br/>
+						<span style="text-wrap: balance;">${film.mainKind}&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span>&nbsp;${film.mainVotes}</span>
+						<span style="text-wrap: balance;"><b>Year:</b> ${film.mainYear}${film.mainCountries}</span>
+						<span style="text-wrap: balance;"><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i></span>
+					</div>
+				</div>`;
+}
+
 function insertBody(film: any) {
 	return `<tr >
 				<td width="66%" align="center" style="text-align: left;">
@@ -56,17 +78,18 @@ var second;
 var th: {addClass: (arg0: any) => void;};
 
 $(document).ready(function () {
-	var text = "";
-	for (let film of jsonByRating) {
-		text += insertBody(film)
-	}
-	$("#status2")[0].innerHTML = `${$("#status2")[0].innerHTML} \n <div id="tabs-${2}"><table><tbody>${text}</tbody></table></div>`;
 
 	var text = "";
 	for (let film of jsonByDate) {
 		text += insertBody(film)
 	}
-	$("#status2")[0].innerHTML = `${$("#status2")[0].innerHTML} \n <div id="tabs-${3}"><table><tbody>${text}</tbody></table></div>`;
+	$("#status2")[0].innerHTML = `${$("#status2")[0].innerHTML} \n <div"><table><tbody>${text}</tbody></table></div>`;
+
+	var text = "";
+	for (let film of jsonListAll) {
+		text += insertAll(film)
+	}
+	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML} \n <div style="display:inline;">${text}</div>`;
 
 	$(function () {
 		$(".accordion").accordion({

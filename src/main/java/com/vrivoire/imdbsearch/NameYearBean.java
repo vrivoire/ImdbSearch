@@ -56,8 +56,53 @@ public class NameYearBean {
 	private String mainProductionStatusUpdated = null;
 	private String mainProductionStatus = null;
 	private String error = null;
+	private String mainEpisode = null;
+	private Integer mainNumberOfEpisodes = null;
+	private String mainPreviousEpisode = null;
+	private String mainNextEpisode = null;
+	private String mainSeason = null;
 
 	public NameYearBean() {
+	}
+
+	public String getMainEpisode() {
+		return mainEpisode;
+	}
+
+	public void setMainEpisode(String mainEpisode) {
+		this.mainEpisode = mainEpisode;
+	}
+
+	public Integer getMainNumberOfEpisodes() {
+		return mainNumberOfEpisodes;
+	}
+
+	public void setMainNumberOfEpisodes(Integer mainNumberOfEpisodes) {
+		this.mainNumberOfEpisodes = mainNumberOfEpisodes;
+	}
+
+	public String getMainPreviousEpisode() {
+		return mainPreviousEpisode;
+	}
+
+	public void setMainPreviousEpisode(String mainPreviousEpisode) {
+		this.mainPreviousEpisode = mainPreviousEpisode;
+	}
+
+	public String getMainNextEpisode() {
+		return mainNextEpisode;
+	}
+
+	public void setMainNextEpisode(String mainNextEpisode) {
+		this.mainNextEpisode = mainNextEpisode;
+	}
+
+	public String getMainSeason() {
+		return mainSeason;
+	}
+
+	public void setMainSeason(String mainSeason) {
+		this.mainSeason = mainSeason;
 	}
 
 	public String getError() {
@@ -468,21 +513,25 @@ public class NameYearBean {
 		builder.append(", getMainCountryCodes=").append(getMainCountryCodes());
 		builder.append(", getMainCoverUrl=").append(getMainCoverUrl());
 		builder.append(", getMainDirectors=").append(getMainDirectors());
+		builder.append(", getMainEpisode=").append(getMainEpisode());
 		builder.append(", getMainGenres=").append(getMainGenres());
 		builder.append(", getMainImdbid=").append(getMainImdbid());
 		builder.append(", getMainKind=").append(getMainKind());
 		builder.append(", getMainLanguageCodes=").append(getMainLanguageCodes());
 		builder.append(", getMainLanguages=").append(getMainLanguages());
 		builder.append(", getMainLocalizedTitle=").append(getMainLocalizedTitle());
+		builder.append(", getMainNextEpisode=").append(getMainNextEpisode());
+		builder.append(", getMainNumberOfEpisodes=").append(getMainNumberOfEpisodes());
 		builder.append(", getMainNumberOfSeasons=").append(getMainNumberOfSeasons());
 		builder.append(", getMainOriginalAirDate=").append(getMainOriginalAirDate());
 		builder.append(", getMainOriginalTitle=").append(getMainOriginalTitle());
 		builder.append(", getMainPlotOutline=").append(getMainPlotOutline());
+		builder.append(", getMainPreviousEpisode=").append(getMainPreviousEpisode());
 		builder.append(", getMainProductionStatus=").append(getMainProductionStatus());
 		builder.append(", getMainProductionStatusUpdated=").append(getMainProductionStatusUpdated());
 		builder.append(", getMainRating=").append(getMainRating());
 		builder.append(", getMainRuntimes=").append(getMainRuntimes());
-		builder.append(", getRuntimeHM=").append(getRuntimeHM());
+		builder.append(", getMainSeason=").append(getMainSeason());
 		builder.append(", getMainSeasons=").append(getMainSeasons());
 		builder.append(", getMainSeriesYears=").append(getMainSeriesYears());
 		builder.append(", getMainSoundMix=").append(getMainSoundMix());
@@ -497,6 +546,7 @@ public class NameYearBean {
 		builder.append(", getOriginalName=").append(getOriginalName());
 		builder.append(", getPlotPlot=").append(getPlotPlot());
 		builder.append(", getPlotSynopsis=").append(getPlotSynopsis());
+		builder.append(", getRuntimeHM=").append(getRuntimeHM());
 		builder.append(", getSize=").append(getSize());
 		builder.append(", isDirectory=").append(isDirectory());
 		builder.append("]");

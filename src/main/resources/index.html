@@ -30,10 +30,12 @@
 				color:green
 			}
 			.gold {
-				color:gold
+				color:gold;
+				-webkit-text-stroke: 1px #282828;
+				text-shadow: 4px 4px 4px #282828;
 			}
         </style>
-
+		${jsonListAll}
         ${jqueryui_css}
 		${jquery_js}
 		${jqueryui_js}
@@ -60,14 +62,16 @@
                     <div>
                         ${logsData}
                     </div>
+					<h3>History</h3>
+                    <div>
+						<div id="historyData"></div>
+					</div>
                 </div>
                 <br/>
                 <div id ="tabs-1">
                     <ul>
-						<li><a href="#tabs-3">By date</a></li>
-                        <li><a href="#tabs-2">By rating</a></li>
+						<a href="#tabs-3"></a>
                     </ul>
-
 					<div id="status2"></div>
 
 				</div>
@@ -78,7 +82,7 @@
 		<script type="text/babel">
 			/// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
 		</script>
-		${jsonByRating}
+		${jsonListAll}
 		${jsonByDate}
 		${index_ts}
 

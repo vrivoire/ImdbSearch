@@ -1,24 +1,17 @@
 {
-	"PATTERN": "[SsNn]\\d\\d",
-	"WEB_BROWSER": "${PROGRAMFILES}/Google/Chrome/Application/chrome.exe",
-	"IMDBSEARCHPY_PATH": "ImdbSearchPY.py",
-	"REPORT_NAME": "_report.html",
+	"DB_PROTOCOL": "jdbc:sqlite:",
+	"DB_URL": "C:/Users/rivoi/Documents/ImdbSearch.db",
 	"ICON": "/IMDB.jpg",
-	"SUPPORTED_EXTENSIONS": [
-		".xa", ".wav", ".dts", ".tta", ".tac", ".ts", ".mpg", ".ra", ".ram", ".rm",
-		".rv", ".rmbv", ".ogm", ".ogg", ".nut", ".nsv", ".nsc", ".mpg", ".mp3", ".mp2",
-		".mp4", ".mov", ".mkv", ".mka", ".flv", ".avi", ".au", ".asf", ".wmv", ".asf",
-		".wmv", ".a52", ".dts", ".aac", ".flac", ".dv", ".vid", ".3gp", ".m4v"],
-	"TORRENTS": [
-		"afi-", ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw", ".cc", ".ws", ".ph", ".io", ".pl", ".vc", ".be",
-		"x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch", "Torrent911", "Torrenting",
-		"Torrent9", "CpasBien", "vostfr", "1080", "720", "null", ".pe", ".me"
-	],
-	"IGNORED_FOLDERS": [
-		"Captures", "W", "W2"
-	],
-	"THREAD_NB": 10,
-	"OUTPUT_JSON_FILE": "${TEMP}/IMDB.json",
+	"IGNORED_FOLDERS": ["Captures", "W", "W2"],
+	"IMDBSEARCHPY_PATH": "ImdbSearchPY.py",
+	"JQUERYUI_VER": "1.13.2",
 	"JQUERY_VER": "3.7.1",
-	"JQUERYUI_VER": "1.13.2"
+	"OUTPUT_JSON_FILE": "C:\\Users\\rivoi\\AppData\\Local\\Temp/IMDB.json",
+	"PATTERN": "[SsNn]\\d\\d",
+	"REPORT_NAME": "_report.html",
+	"SUPPORTED_EXTENSIONS": [".xa", ".wav", ".dts", ".tta", ".tac", ".ts", ".mpg", ".ra", ".ram", ".rm", ".rv", ".rmbv", ".ogm", ".ogg", ".nut", ".nsv", ".nsc", ".mpg", ".mp3", ".mp2", ".mp4", ".mov", ".mkv", ".mka", ".flv", ".avi", ".au", ".asf", ".wmv", ".asf", ".wmv", ".a52", ".dts", ".aac", ".flac", ".dv", ".vid", ".3gp", ".m4v"],
+	"SUPPORTED_EXTENSIONS_SHORT": ["xa", "wav", "dts", "tta", "tac", "ts", "mpg", "ra", "ram", "rm", "rv", "rmbv", "ogm", "ogg", "nut", "nsv", "nsc", "mpg", "mp3", "mp2", "mp4", "mov", "mkv", "mka", "flv", "avi", "au", "asf", "wmv", "asf", "wmv", "a52", "dts", "aac", "flac", "dv", "vid", "3gp", "m4v"],
+	"THREAD_NB": 10,
+	"TORRENTS": ["afi-", ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw", ".cc", ".ws", ".ph", ".io", ".pl", ".vc", ".be", "x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch", "Torrent911", "Torrenting", "Torrent9", "CpasBien", "vostfr", "1080", "720", "null", ".pe", ".me"],
+	"WEB_BROWSER": "C:\\Program Files/Google/Chrome/Application/chrome.exe"
 }
