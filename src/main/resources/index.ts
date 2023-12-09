@@ -3,11 +3,11 @@ declare var $: JQueryStatic;
 
 function insertAll(film: any) {
 	return `
-				<div style="border-style: hidden; width: 25em; height: 38em; display: inline-block; white-space: nowrap; text-align: center;" align="center">
+				<div class="hist-outer-cell" align="center">
 					<a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 						<img style="padding-top: 1em;" src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300"/>
 					</a>
-					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+					<div class="hist-text-cell">
 						<span>${film.rank}&nbsp;
 							<span style="font-weight: bold; border:0px; text-wrap: balance;">
 								<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
@@ -16,7 +16,7 @@ function insertAll(film: any) {
 							</span>
 						</span>
 						<br/>
-						<span style="text-wrap: balance;">${film.mainKind}&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span>&nbsp;${film.mainVotes}</span>
+						<span style="text-wrap: balance;">${film.mainKind}&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span>&nbsp;${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<span style="text-wrap: balance;"><b>Year:</b> ${film.mainYear}${film.mainCountries}</span>
 						<span style="text-wrap: balance;"><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i></span>
 					</div>
@@ -31,7 +31,7 @@ function insertBody(film: any) {
 							<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 								${film.mainOriginalTitle}
 							</a>
-							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}</span>
+							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<br/>
 						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
 						<span><b>Ratio:</b> ${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries}</span>
@@ -89,7 +89,14 @@ $(document).ready(function () {
 	for (let film of jsonListAll) {
 		text += insertAll(film)
 	}
-	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML} \n <div style="display:inline;">${text}</div>`;
+	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
+		<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
+			<img alt="Stats image" width="665" src="${statsImage}" />
+		</div>
+		</br>
+		${text}
+		</br>
+		<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
 
 	$(function () {
 		$(".accordion").accordion({

@@ -145,18 +145,10 @@ public class NameYearBean {
 		this.mainProductionStatus = mainProductionStatus;
 	}
 
-	/**
-	 *
-	 * @return
-	 */
 	public String getOriginalName() {
 		return originalName;
 	}
 
-	/**
-	 *
-	 * @param originalName
-	 */
 	public void setOriginalName(String originalName) {
 		this.originalName = originalName;
 	}

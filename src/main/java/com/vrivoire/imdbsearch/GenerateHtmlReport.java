@@ -48,6 +48,7 @@ public class GenerateHtmlReport {
 	private static final String UNKNOWN = "&#x2753;";
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
 	private final String fullReportPath;
+	private String base64String;
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
@@ -124,6 +125,7 @@ public class GenerateHtmlReport {
 		map.put("jquery_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		map.put("jqueryui_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+		map.put("statsImage", "data:image/x-icon;base64," + base64String);
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream("/index.ts")));
 		StringBuilder sb2 = new StringBuilder();
@@ -288,5 +290,9 @@ public class GenerateHtmlReport {
 			LOG.error(e.getMessage(), e);
 		}
 		return list;
+	}
+
+	void setStatsImage(String base64String) {
+		this.base64String = base64String;
 	}
 }

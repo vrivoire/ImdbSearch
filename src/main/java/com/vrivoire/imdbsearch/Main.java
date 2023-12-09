@@ -1,5 +1,12 @@
 package com.vrivoire.imdbsearch;
 
+import com.googlecode.charts4j.AxisLabelsFactory;
+import com.googlecode.charts4j.BarChart;
+import com.googlecode.charts4j.BarChartPlot;
+import com.googlecode.charts4j.DataUtil;
+import com.googlecode.charts4j.GCharts;
+import com.googlecode.charts4j.LegendPosition;
+import com.googlecode.charts4j.Plots;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
 import java.awt.BorderLayout;
@@ -8,8 +15,11 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.AdjustmentEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -18,10 +28,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -33,7 +46,6 @@ import javax.swing.UIManager;
 import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.sqlite.SQLiteException;
 
 /**
  *
@@ -47,8 +59,19 @@ public class Main {
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
 	private static final int SQLITE_BUSY = 5; // The database file is locked
+
+	static final String SQL_SELECT = "select * from films where imdb_id=?;";
 	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=? where imdb_id=?;";
-	private static final String SQL_SELECT_1 = "select * from films where imdb_id=?;";
+	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres) values(?,?,?,?,?,?,?,?,?,?);";
+	private static final String SQL_HISTOGRAM = """
+                                          SELECT
+											(case when rating < 0 then 0 else round(rating * 2,0) / 2 end) as rate,
+											count(case when rating < 0 then 0 else round(rating,0) end) as rateCount
+                                          FROM films
+                                          group by (case when rating < 0 then 0 else round(rating * 2,0) / 2 end)
+                                          order by rating;
+                                          """;
+
 	private static final String DDL1 = "drop index if exists idx_imdb_id;";
 	private static final String DDL2 = """
 										create table if not exists films (
@@ -70,6 +93,7 @@ public class Main {
 	static {
 		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
 		LogGrabberAppender.setPanel(TEXT_AREA_LOGS);
+		Config.configure();
 	}
 
 	public static void main(String[] args) {
@@ -87,7 +111,6 @@ public class Main {
 	}
 
 	public Main() throws Exception {
-		Config.configure();
 		createWindow();
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	}
@@ -123,9 +146,11 @@ public class Main {
 			setNewFileName(listNotFound);
 
 			saveDB(listFound);
+			String base64String = getHistogram();
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
+			generateHtmlReport.setStatsImage(base64String);
 			generateHtmlReport.generate(listFound, listNotFound);
 
 			LOG.info("Found " + listFound.size() + " movie" + (listFound.size() > 1 ? "s" : ""));
@@ -246,74 +271,141 @@ public class Main {
 		});
 	}
 
+	private String getHistogram() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtSelect = conn.prepareStatement(SQL_HISTOGRAM)) {
+			List<Double> listRate = new ArrayList<>();
+			List<Integer> listRateCount = new ArrayList<>();
+			List<Double> listToto = new ArrayList<>();
+			ResultSet rs = stmtSelect.executeQuery();
+			while (rs.next()) {
+				listRate.add(rs.getDouble("rate"));
+				listRateCount.add(rs.getInt("rateCount"));
+			}
+			for (int i = 0; i < 21; i++) {
+				listToto.add(i / 2.0);
+			}
+			for (int i = 0; i < listToto.size(); i++) {
+				if (!listRate.contains(listToto.get(i))) {
+					listRateCount.add(i, 0);
+				}
+			}
+
+			LOG.info("listToto=" + listToto);
+			LOG.info("listRate=" + listRate);
+			LOG.info("listRateCount=" + listRateCount);
+
+			BarChartPlot listRateCountPlot = Plots.newBarChartPlot(DataUtil.scale(listRateCount));
+			for (int i = 0; i < listRateCount.size(); i++) {
+				listRateCountPlot.addTextMarker(listRateCount.get(i).toString(), com.googlecode.charts4j.Color.BLACK, 12, i);
+			}
+			BarChart chart = GCharts.newBarChart(listRateCountPlot);
+			chart.addXAxisLabels(AxisLabelsFactory.newNumericRangeAxisLabels(0, 10, 0.5));
+			chart.setSize(665, 375);
+			chart.setTitle("Rating");
+			chart.setLegendPosition(LegendPosition.TOP);
+			String url = chart.toURLString();
+			LOG.info("URL=" + url);
+			BufferedImage bufferedImage = ImageIO.read(new URI(url.replace("|", "%7C")).toURL());
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(bufferedImage, "png", os);
+			return Base64.getEncoder().encodeToString(os.toByteArray());
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
 	private void saveDB(List<NameYearBean> listFound) {
 		if (!new File(Config.DB_URL.getString()).exists()) {
 			DDLs();
 		}
+		long start = System.currentTimeMillis();
 		GenerateHtmlReport generateHtmlReport = new GenerateHtmlReport();
 		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
-			try (PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_1)) {
-				for (NameYearBean nameYearBean : listFound) {
-					Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
-					pstmt.setString(1, (String) mapFromBean.get("mainImdbid"));
-					ResultSet rs = pstmt.executeQuery();
-					if (rs.next()) {
-						sqlUpdate(conn, mapFromBean, 0);
-					} else {
-						sqlInsert(conn, mapFromBean, 0);
+			try (PreparedStatement pstmtSelect = conn.prepareStatement(SQL_SELECT)) {
+				try (PreparedStatement pstmtUpdate = conn.prepareStatement(SQL_UPDATE); PreparedStatement pstmtInsert = conn.prepareStatement(SQL_INSERT)) {
+					List<String> imdbIdsUptade = new ArrayList<>();
+					List<String> imdbIdsInsert = new ArrayList<>();
+					int[] resultUpdate, resultInsert;
+					for (NameYearBean nameYearBean : listFound) {
+						Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
+						if (mapFromBean.get("mainImdbid") != null || mapFromBean.get("mainOriginalTitle") != null) {
+							pstmtSelect.setString(1, (String) mapFromBean.get("mainImdbid"));
+							ResultSet rs = pstmtSelect.executeQuery();
+							if (rs.next()) {
+								sqlUpdate(pstmtUpdate, mapFromBean);
+								imdbIdsUptade.add((String) mapFromBean.get("mainImdbid"));
+							} else {
+								sqlInsert(pstmtInsert, mapFromBean);
+								imdbIdsInsert.add((String) mapFromBean.get("mainImdbid"));
+							}
+						}
 					}
+					resultUpdate = pstmtUpdate.executeBatch();
+					pstmtUpdate.clearBatch();
+					resultInsert = pstmtInsert.executeBatch();
+					pstmtInsert.clearBatch();
+
+					StringBuilder sbUpdate = new StringBuilder("\n");
+					for (int i = 0; i < resultUpdate.length; i++) {
+						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" -> ").append(status(resultUpdate[i])).append('\n');
+					}
+					LOG.info(sbUpdate.toString());
+					StringBuilder sbInsert = new StringBuilder("\n");
+					for (int i = 0; i < resultInsert.length; i++) {
+						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" -> ").append(status(resultInsert[i])).append('\n');
+					}
+					LOG.info(sbInsert.toString());
 				}
 			}
 		} catch (SQLException e) {
 			LOG.error(e.getMessage(), e);
 		}
+		float duration = System.currentTimeMillis() - start;
+		int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size());
+		LOG.info("DB - Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
 	}
 
-	private void sqlUpdate(Connection conn, Map<String, Object> mapFromBean, Integer countSQLiteException) {
-		LOG.info("\t" + mapFromBean.get("mainImdbid") + "\t" + (String) mapFromBean.get("mainOriginalTitle"));
-		try (PreparedStatement pstmt = conn.prepareStatement(SQL_UPDATE)) {
-			int i = 0;
-			pstmt.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainYear"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainKind"));
-			pstmt.setDouble(++i, (Double) mapFromBean.get("mainRating"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainVotes"));
-			pstmt.setString(++i, (String) mapFromBean.get("runtimeHM"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainCountries"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainGenres"));
-
-			pstmt.setString(++i, (String) mapFromBean.get("mainImdbid"));
-			pstmt.executeUpdate();
-		} catch (SQLiteException e) {
-			busy(e, countSQLiteException, mapFromBean, conn, true);
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
+	private String status(int i) {
+		if (i >= 0) {
+			return i + " commands processed successfully";
+		} else if (i == Statement.SUCCESS_NO_INFO) {
+			return "SUCCESS_NO_INFO";
+		} else if (i == Statement.EXECUTE_FAILED) {
+			return "EXECUTE_FAILED";
 		}
+		return "";
 	}
 
-	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres) values(?,?,?,?,?,?,?,?,?,?);";
+	private void sqlUpdate(PreparedStatement pstmtUpdate, Map<String, Object> mapFromBean) throws SQLException {
+		int i = 0;
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainYear"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainKind"));
+		pstmtUpdate.setDouble(++i, (Double) mapFromBean.get("mainRating"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainVotes"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("runtimeHM"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainCountries"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainGenres"));
 
-	private void sqlInsert(Connection conn, Map<String, Object> mapFromBean, Integer countSQLiteException) {
-		LOG.info("\t" + mapFromBean.get("mainImdbid") + "\t" + (String) mapFromBean.get("mainOriginalTitle"));
-		try (PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
-			int i = 0;
-			pstmt.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainYear"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainKind"));
-			pstmt.setDouble(++i, (Double) mapFromBean.get("mainRating"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainImdbid"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainVotes"));
-			pstmt.setString(++i, (String) mapFromBean.get("runtimeHM"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainCountries"));
-			pstmt.setString(++i, (String) mapFromBean.get("mainGenres"));
-			pstmt.executeUpdate();
-		} catch (SQLiteException e) {
-			busy(e, countSQLiteException, mapFromBean, conn, false);
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-		}
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainImdbid"));
+		pstmtUpdate.addBatch();
+	}
+
+	private void sqlInsert(PreparedStatement pstmtInsert, Map<String, Object> mapFromBean) throws SQLException {
+		int i = 0;
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainYear"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainKind"));
+		pstmtInsert.setDouble(++i, (Double) mapFromBean.get("mainRating"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainImdbid"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainVotes"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("runtimeHM"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainCountries"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainGenres"));
+		pstmtInsert.addBatch();
 	}
 
 	private void DDLs() {
@@ -336,26 +428,26 @@ public class Main {
 		}
 	}
 
-	private void busy(SQLiteException e, Integer countSQLiteException, Map<String, Object> mapFromBean, Connection conn, boolean isUpdate) {
-		if (e.getErrorCode() == SQLITE_BUSY) {
-			countSQLiteException++;
-			if (countSQLiteException > 5) {
-				LOG.error(e.getMessage() + " 5 times.", e);
-			} else {
-				try {
-					Thread.sleep(250);
-				} catch (InterruptedException ex) {
-					// ignore
-				}
-				LOG.warn(mapFromBean.get("mainOriginalTitle") + " retrying " + countSQLiteException + " times");
-				if (isUpdate) {
-					sqlUpdate(conn, mapFromBean, countSQLiteException);
-				} else {
-					sqlInsert(conn, mapFromBean, countSQLiteException);
-				}
-			}
-		} else {
-			LOG.error(e.getMessage(), e);
-		}
-	}
+//	private void busy(SQLiteException e, Integer countSQLiteException, Map<String, Object> mapFromBean, Connection conn, boolean isUpdate) {
+//		if (e.getErrorCode() == SQLITE_BUSY) {
+//			countSQLiteException++;
+//			if (countSQLiteException > 5) {
+//				LOG.error(e.getMessage() + " 5 times.", e);
+//			} else {
+//				try {
+//					Thread.sleep(250);
+//				} catch (InterruptedException ex) {
+//					// ignore
+//				}
+//				LOG.warn(mapFromBean.get("mainOriginalTitle") + " retrying " + countSQLiteException + " times");
+//				if (isUpdate) {
+//					sqlUpdate(conn, mapFromBean, countSQLiteException);
+//				} else {
+//					sqlInsert(conn, mapFromBean, countSQLiteException);
+//				}
+//			}
+//		} else {
+//			LOG.error(e.getMessage(), e);
+//		}
+//	}
 }

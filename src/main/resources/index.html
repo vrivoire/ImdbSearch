@@ -17,6 +17,7 @@
                 vertical-align:top;
                 background:transparent;
             }
+
 			.red {
 				color:red
 			}
@@ -34,6 +35,21 @@
 				-webkit-text-stroke: 1px #282828;
 				text-shadow: 4px 4px 4px #282828;
 			}
+
+			.hist-outer-cell {
+				border-style: hidden;
+				width: 25em;
+				height: 38em;
+				display: inline-block;
+				white-space: nowrap;
+				text-align: center;
+			}
+			.hist-text-cell {
+				padding: 1em;
+				display: flex;
+				flex-direction: column;
+			}
+
         </style>
 		${jsonListAll}
         ${jqueryui_css}
@@ -51,21 +67,26 @@
                     <span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
                     <span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
                     <span><b>Total scanned:</b> ${total}</span><br/>
-					<span><b>Space used:</b> ${spaceUsed}</span>
+					<span><b>Space used:</b> ${spaceUsed}</span><br/>
+					<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
+						<img alt="Stats image" width="665" src="${statsImage}" />
+					</div>
                 </div>
                 <div class="accordion">
                     <h3>Not Found</h3>
                     <div>
                         <p>${NOT_FOUND}</p>
                     </div>
+
                     <h3>Logs</h3>
                     <div>
                         ${logsData}
+						</br>
+						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
                     </div>
+
 					<h3>History</h3>
-                    <div>
-						<div id="historyData"></div>
-					</div>
+					<div id="historyData" style="overflow: visible;"></div>
                 </div>
                 <br/>
                 <div id ="tabs-1">
