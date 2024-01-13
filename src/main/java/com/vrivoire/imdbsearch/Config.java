@@ -44,7 +44,8 @@ public enum Config {
 	JQUERYUI_VER,
 	JQUERY_VER,
 	DB_PROTOCOL,
-	DB_URL;
+	DB_URL,
+	IS_IMAGES_EMBEDED;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
 	private static final Map<String, Object> MAP = new TreeMap<>();
@@ -172,6 +173,10 @@ public enum Config {
 
 	public String getString() {
 		return (String) MAP.get(name());
+	}
+
+	public Boolean getBoolean() {
+		return (Boolean) MAP.get(name());
 	}
 
 	public Object get() {

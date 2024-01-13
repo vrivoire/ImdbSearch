@@ -8,7 +8,7 @@ function insertAll(film: any) {
 						<img style="padding-top: 1em;" src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300"/>
 					</a>
 					<div class="hist-text-cell">
-						<span>${film.rank}&nbsp;
+						<span>${film.rank}<span style="font-size: x-small;">/${historyrCount}</span>&nbsp;
 							<span style="font-weight: bold; border:0px; text-wrap: balance;">
 								<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 									${film.mainOriginalTitle}
@@ -34,7 +34,7 @@ function insertBody(film: any) {
 							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<br/>
 						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
-						<span><b>Ratio:</b> ${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries}</span>
+						<span><b>Ratio:</b> ${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries} <span style="font-size: x-small;">(${film.mainLanguages})</span></span>
 						<span><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i>, ${film.size} ${film.fileCount}</span>
 						<span><b>Director:</b> ${film.mainDirectors}</span>
 						<span><b>Writer:</b> ${film.mainWriters}</span>

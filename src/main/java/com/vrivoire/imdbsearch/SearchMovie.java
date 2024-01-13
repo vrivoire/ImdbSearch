@@ -165,17 +165,21 @@ public class SearchMovie {
 		searchByNames(movieSet);
 		Map<String, Map<String, Object>> jsonMap = readOutputJson();
 
-		movieSet.forEach(nameYearBean -> {
-			String searchKey = getSearchKey(nameYearBean);
-			Map<String, Object> map = jsonMap.get(searchKey);
-			map.keySet().stream().filter(subKey -> (subKey.endsWith("ERROR"))).map(subKey -> {
-				nameYearBean.setName(searchKey);
-				nameYearBean.setError(map.get(subKey).toString());
-				return subKey;
-			}).forEachOrdered(_item -> {
-				NOT_FOUND.add(nameYearBean);
-			});
-		});
+//		movieSet.forEach(nameYearBean -> {
+//			String searchKey = getSearchKey(nameYearBean);
+//			Map<String, Object> map = jsonMap.get(searchKey);
+//			if (map != null) {
+//				map.keySet().stream().filter(subKey -> (subKey.endsWith("ERROR"))).map(subKey -> {
+//					nameYearBean.setName(searchKey);
+//					nameYearBean.setError(map.get(subKey).toString());
+//					return subKey;
+//				}).forEachOrdered(_item -> {
+//					NOT_FOUND.add(nameYearBean);
+//				});
+//			} else {
+//				LOG.error(searchKey + " -> map=null");
+//			}
+//		});
 		NOT_FOUND.forEach(nameYearBean -> {
 			movieSet.remove(nameYearBean);
 		});
@@ -186,7 +190,7 @@ public class SearchMovie {
 			String searchKey = getSearchKey(nameYearBean);
 			Map<String, Object> map = jsonMap.get(searchKey);
 			if (map == null) {
-				LOG.warn("************************************* " + searchKey + " --> " + map);
+				LOG.warn(searchKey + " --> " + map);
 			} else {
 				map.keySet().forEach(key -> {
 					mapKeys.put(key, map.get(key).getClass().getSimpleName());
@@ -277,11 +281,13 @@ public class SearchMovie {
 			final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 			StringBuilder sb = new StringBuilder();
 			Path jsonPath = Paths.get(Config.OUTPUT_JSON_FILE.getString());
+			LOG.info("jsonPath = " + jsonPath.toString());
 			List<String> allLines = Files.readAllLines(jsonPath, StandardCharsets.UTF_8);
 			allLines.forEach(line -> {
 				sb.append(line);
 			});
 			String jsonString = sb.toString();
+			LOG.info("jsonString = " + (jsonString == null || jsonString.isBlank() ? "VIDE" : jsonString.length()));
 			Map<String, Map<String, Object>> jsonMap = new TreeMap<>();
 			jsonMap.putAll(objectMapper.readValue(jsonString, new TypeReference<Map<String, Map<String, Object>>>() {
 			}));

@@ -47,6 +47,7 @@ public class GenerateHtmlReport {
 	private static final String SERIES = "&#x1F4FA;";
 	private static final String UNKNOWN = "&#x2753;";
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
+	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private final String fullReportPath;
 	private String base64String;
 
@@ -111,6 +112,7 @@ public class GenerateHtmlReport {
 		String spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
 
 		Map<String, Object> map = new HashMap<>();
+		map.put("historyrCount", historyrCount());
 		map.put("report_location", fullReportPath);
 		map.put("spaceUsed", spaceUsed);
 		map.put("foundCount", movieList.size());
@@ -233,9 +235,13 @@ public class GenerateHtmlReport {
 	private void insertBase64(NameYearBean movie, Map<String, Object> map) {
 		if (movie.getMainCoverUrl() != null) {
 			try {
-				URL url = URI.create(movie.getMainCoverUrl()).toURL();
-				String encodedString = urlToBase64(url.toString());
-				map.put("mainCoverUrl", "data:image/x-icon;base64," + encodedString);
+				if (Config.IS_IMAGES_EMBEDED.getBoolean()) {
+					URL url = URI.create(movie.getMainCoverUrl()).toURL();
+					String encodedString = urlToBase64(url.toString());
+					map.put("mainCoverUrl", "data:image/x-icon;base64," + encodedString);
+				} else {
+					map.put("mainCoverUrl", movie.getMainCoverUrl());
+				}
 			} catch (IOException ex) {
 				LOG.error(ex.getMessage(), ex);
 			}
@@ -294,5 +300,18 @@ public class GenerateHtmlReport {
 
 	void setStatsImage(String base64String) {
 		this.base64String = base64String;
+	}
+
+	private Integer historyrCount() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtCount = conn.prepareStatement(SQL_COUNT)) {
+			ResultSet rs = stmtCount.executeQuery();
+			if (rs.next()) {
+				int count = rs.getInt("count");
+				return count;
+			}
+		} catch (SQLException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return null;
 	}
 }
