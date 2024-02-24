@@ -19,9 +19,13 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -31,6 +35,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -57,8 +62,6 @@ public class Main {
 	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
-
-	private static final int SQLITE_BUSY = 5; // The database file is locked
 
 	static final String SQL_SELECT = "select * from films where imdb_id=?;";
 	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=? where imdb_id=?;";
@@ -101,10 +104,29 @@ public class Main {
 			LOG.info("--------------------------------------------------------------------------------");
 			LOG.info("OS name:   " + System.getProperty("os.name") + ", version: " + System.getProperty("os.version") + ", architechture: " + System.getProperty("os.arch"));
 			LOG.info("Java: " + System.getProperty("java.vendor") + ", version: " + System.getProperty("java.version") + ", home: " + System.getProperty("java.home"));
-			LOG.info("args: " + Arrays.toString(args));
+			LOG.info("args: " + Arrays.toString(args) + " " + args.length);
 			_args = args;
-			Main main = new Main();
-			main.start();
+			if (args.length == 1) {
+				if (args[0].equals("-h") || args[0].equals("--help")) {
+					LOG.info("Args: ");
+					LOG.info("-d --delete : Delete an entry of the DB history with the id Imsb.");
+					LOG.info("path(s)     : Scan path(s) to generate a HTML report.");
+					LOG.info("NONE        : No args display a file diaglog to select a path.");
+					LOG.info("-h --help   : Help");
+				} else if (args[0].equals("-d") || args[0].equals("--delete.")) {
+					RemoveImdbEntry te = new RemoveImdbEntry();
+					te.showDialog();
+				} else {
+					Main main = new Main();
+					main.start();
+				}
+			} else if (args.length == 0) {
+				Main main = new Main();
+				main.start();
+			} else {	// scan folder(s)
+				Main main = new Main();
+				main.start();
+			}
 		} catch (Exception ex) {
 			LOG.fatal(ex.getMessage(), ex);
 		}
@@ -249,15 +271,25 @@ public class Main {
 								.replace('|', ' '), new char[]{});
 						if (!newName.equalsIgnoreCase(originalName)) {
 							LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
-							var oldF = new File(Main.default_path + originalName);
+							File oldF = new File(Main.default_path + originalName);
 							if (oldF.exists()) {
-								var newF = new File(Main.default_path + newName);
+								File newF = new File(Main.default_path + newName);
 								if (newF.toString().equalsIgnoreCase(oldF.toString())) {
 									LOG.warn("--> The new file name '" + originalName + "' already exist.");
 								} else {
 									var isRenamed = oldF.renameTo(newF);
 									if (!isRenamed) {
 										LOG.warn("--> Renaming file '" + originalName + "' failed.");
+									} else {
+										LOG.info("File renamed: " + oldF + " --> " + newF);
+										try {
+											BasicFileAttributeView attributes = Files.getFileAttributeView(newF.toPath(), BasicFileAttributeView.class);
+											FileTime time = FileTime.fromMillis(Date.from(new Date().toInstant()).getTime());
+											attributes.setTimes(time, time, time);
+											LOG.info("File " + newF + " updated creation date");
+										} catch (IOException ex) {
+											// Ignore
+										}
 									}
 								}
 							} else {
@@ -268,7 +300,8 @@ public class Main {
 					}
 				}
 			}
-		});
+		}
+		);
 	}
 
 	private String getHistogram() {
@@ -428,26 +461,4 @@ public class Main {
 		}
 	}
 
-//	private void busy(SQLiteException e, Integer countSQLiteException, Map<String, Object> mapFromBean, Connection conn, boolean isUpdate) {
-//		if (e.getErrorCode() == SQLITE_BUSY) {
-//			countSQLiteException++;
-//			if (countSQLiteException > 5) {
-//				LOG.error(e.getMessage() + " 5 times.", e);
-//			} else {
-//				try {
-//					Thread.sleep(250);
-//				} catch (InterruptedException ex) {
-//					// ignore
-//				}
-//				LOG.warn(mapFromBean.get("mainOriginalTitle") + " retrying " + countSQLiteException + " times");
-//				if (isUpdate) {
-//					sqlUpdate(conn, mapFromBean, countSQLiteException);
-//				} else {
-//					sqlInsert(conn, mapFromBean, countSQLiteException);
-//				}
-//			}
-//		} else {
-//			LOG.error(e.getMessage(), e);
-//		}
-//	}
 }

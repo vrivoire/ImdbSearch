@@ -5,7 +5,7 @@
 	"IGNORED_FOLDERS": ["Captures", "W", "W2"],
 	"IMDBSEARCHPY_PATH": "ImdbSearchPY.py",
 	"JQUERYUI_VER": "1.13.2",
-	"JQUERY_VER": "3.7.1",
+	"JQUERY_VER": "4.0.0-beta",
 	"OUTPUT_JSON_FILE": "C:\\Users\\rivoi\\AppData\\Local\\Temp/IMDB.json",
 	"PATTERN": "[SsNn]\\d\\d",
 	"REPORT_NAME": "_report.html",

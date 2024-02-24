@@ -67,18 +67,18 @@ public class RemoveImdbEntry extends JFrame implements ActionListener {
 					int val = pstmt2.executeUpdate();
 					LOG.info("Update val=" + val);
 					switch (val) {
-						case 1:
+						case 1 -> {
 							LOG.info("The row count for SQL Data Manipulation Language (DML) statements");
 							JOptionPane.showMessageDialog(null, "DELETE imdb_id='" + imdbId);
-							break;
-						case 2:
+						}
+						case 2 -> {
 							LOG.info("0 for SQL statements that return nothing");
 							JOptionPane.showMessageDialog(null, "NOTHING imdb_id='" + imdbId);
-							break;
-						default:
+						}
+						default -> {
 							LOG.info("Return '" + val + "' not understandable for param imdb_id='" + imdbId + "'.");
 							JOptionPane.showMessageDialog(null, "Return '" + val + "' not understandable for param imdb_id='" + imdbId + "'.");
-							break;
+						}
 					}
 				}
 			} else {
@@ -88,7 +88,7 @@ public class RemoveImdbEntry extends JFrame implements ActionListener {
 				frame.setVisible(true);
 
 			}
-			System.exit(0);
+//			System.exit(0);
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 			System.exit(-1);
@@ -106,7 +106,7 @@ public class RemoveImdbEntry extends JFrame implements ActionListener {
 //		}
 	}
 
-	private void showDialog() {
+	void showDialog() {
 //		frameLogs.setLocationRelativeTo(null);
 		frame = new JFrame("Remove Imdb Entry");
 		JPanel panel = new JPanel();
@@ -132,7 +132,7 @@ public class RemoveImdbEntry extends JFrame implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(150, 125);
 		frame.getContentPane().add(panel, BorderLayout.CENTER);
-		frame.setAlwaysOnTop(true);
+//		frame.setAlwaysOnTop(true);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);

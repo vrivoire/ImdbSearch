@@ -22,11 +22,24 @@ props = {}
 def load_data(title):
     prop = {}
     movie = None
+
     try:
-        ia = Cinemagoer()
-        movies = ia.search_movie(title)
-        movie = movies[0]
-        movie = ia.get_movie(movie.movieID, info=['main', 'plot', 'awards'])
+        isError = True
+        count = 0
+        while isError:
+            try:
+                print(f"\t\t\tLooking for '{title}'")
+                ia = Cinemagoer()
+                movies = ia.search_movie(title)
+                movie = movies[0]
+                movie = ia.get_movie(movie.movieID, info=['main', 'plot', 'awards'])
+                isError = False
+            except IMDbError as ex:
+                count = count + 1
+                isError = True
+                if count == 4:
+                    raise ex
+                print(f"\t\t\tRetrying {count} for '{title}'")
     except IMDbError as ex:
         print(f'2 ERROR {ex}: {title}')
         print(traceback.format_exc())
@@ -139,34 +152,37 @@ def path_search(path):
 
 
 def pre_test():
-    global line
-    master_version = ''
-    for line in urllib.request.urlopen('https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py'):
-        master_version = line.decode('utf-8')
-    master_version = master_version.removeprefix("__version__ = '").replace("'", "").strip()
-    print(f'imdb={imdb}')
-    print(f'imdb.VERSION={imdb.VERSION}, master_version={master_version}')
-    if imdb.VERSION != master_version:
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print(f'                                 UPDATE Cinemagoer to version {master_version}')
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
+    try:
+        global line
+        master_version = ''
+        for line in urllib.request.urlopen('https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py'):
+            master_version = line.decode('utf-8')
+        master_version = master_version.removeprefix("__version__ = '").replace("'", "").strip()
+        print(f'imdb={imdb}')
+        print(f'imdb.VERSION={imdb.VERSION}, master_version={master_version}')
+        if imdb.VERSION != master_version:
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print(f'                                 UPDATE Cinemagoer to version {master_version}')
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
 
-    cinemagoer = Cinemagoer()
-    test = cinemagoer.get_movie(34583, info=['main', 'awards'])
-    print('********************* Test to see if "awards" are still broken *********************')
-    print(f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}")
-    if "movie['title']: Casablanca, movie.get('awards'): None, ia.get_movie_awards(movie.movieID): {'data': {}, 'titlesRefs': {}, 'namesRefs': {}}" != f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}":
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print(f'                                 "awards" are changed')
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
-        print("********************************************************************************************************************************")
+        cinemagoer = Cinemagoer()
+        test = cinemagoer.get_movie(34583, info=['main', 'awards'])
+        print('********************* Test to see if "awards" are still broken *********************')
+        print(f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}")
+        if "movie['title']: Casablanca, movie.get('awards'): None, ia.get_movie_awards(movie.movieID): {'data': {}, 'titlesRefs': {}, 'namesRefs': {}}" != f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}":
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print(f'                                 "awards" are changed')
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+            print("********************************************************************************************************************************")
+    except Exception as ex:
+        print(f'0 ERROR {ex}: Check version')
 
 
 def get_config_path():
@@ -209,4 +225,4 @@ if __name__ == "__main__":
         # path_search(str(Path.home()) + os.sep + "Videos" + os.sep + "W" + os.sep)
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
-        path_search("C:/Users/rivoi/Videos/W2")
+        path_search("C:/Users/rivoi/Videos/W")
