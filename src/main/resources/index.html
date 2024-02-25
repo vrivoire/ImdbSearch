@@ -50,12 +50,34 @@
 				flex-direction: column;
 			}
 
+			#screenshot{
+				position:absolute;
+				border:1px solid #ccc;
+				background:#333;
+				padding:5px;
+				display:none;
+				color:#fff;
+			}
         </style>
+		<!--JQuery stuff-->
         ${jqueryui_css}
 		${jquery_js}
 		${jqueryui_js}
+
+		<!--datatables stuff-->
+		${datatables_css}
+		${colReorder_dataTables_css}
+		${datatables_js}
+		${datatables_ui_js}
+		${datatables_colreorder1_js}
+		${datatables_colreorder2_js}
+
+		<!--babel stuff-->
 		${babel_js}
+
+		<!--json stuff-->
 		${jsonListAll}
+		${jsonByDate}
     </head>
 
 	<body>
@@ -84,6 +106,13 @@
 						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
                     </div>
 
+					<h3>Table</h3>
+					<div style="overflow: visible;">
+						<table id="table_search" class="display" style="width:100%"></table>
+						</br>
+						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
+					</div>
+
 					<h3>History</h3>
 					<div id="historyData" style="overflow: visible;"></div>
                 </div>
@@ -102,9 +131,153 @@
 		<script type="text/babel">
 			/// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
 		</script>
-		${jsonListAll}
-		${jsonByDate}
-		${index_ts}
 
+		<script>
+			this.screenshotPreview = function () {
+				var xOffset = 10;
+				var yOffset = 30;
+
+				$("a.screenshot").hover(function (e) {
+					this.t = this.title;
+					this.title = "";
+					var c = (this.t !== "") ? "<br/>" + this.t : "";
+					$("body").append("<p id='screenshot'><img src='" + this.rel + "' alt='url preview' />" + c + "</p>");
+					$("#screenshot")
+							.css("top", (e.pageY - xOffset) + "px")
+							.css("left", (e.pageX + yOffset) + "px")
+							.fadeIn("fast");
+				},
+						function () {
+							this.title = this.t;
+							$("#screenshot").remove();
+						});
+				$("a.screenshot").mousemove(function (e) {
+					$("#screenshot")
+							.css("top", (e.pageY - xOffset) + "px")
+							.css("left", (e.pageX + yOffset) + "px");
+				});
+			};
+
+			$(function () {
+				const tabEl = document.getElementById("table_search");
+				const titles = Object.keys(jsonListAll[0])
+						.map((key) => `<th>${key}</th>`)
+						.join("");
+				const rows = jsonListAll.map((obj) =>
+						`<tr>${Object.values(obj)
+							.map((val) => `<td>${val}</td>`)
+							.join("")}</tr>`
+				).join("");
+				tabEl.innerHTML = `
+											<table class="tablesorter">
+												<thead>
+													<tr>
+														${titles}
+													</tr>
+												</thead>
+												<tbody>
+													${rows}
+												</tbody>
+											</table>`;
+
+				new DataTable('#table_search', {
+					info: false,
+					ordering: true,
+					paging: false,
+					colReorder: {
+						order: [6, 0, 7, 4, 5, 3, 2, 1, 9, 10, 11, 8]
+					},
+					order: {
+						name: 'rank',
+						dir: 'asc'
+					},
+					columnDefs: [
+						{
+							target: 2,
+							visible: false,
+							searchable: false
+						}, {
+							target: 5,
+							visible: false,
+							searchable: false
+						}, {
+							target: 9,
+							visible: false,
+							searchable: false
+						}
+					],
+					columns: [
+						{
+							data: "mainRating",
+							title: "Rating",
+							render: function (data, type, row, meta) {
+								if (type === 'display') {
+									return "<span data-color='" + data + "'>" + data + "</span>";
+								}
+								return data;
+							}
+						},
+						{
+							data: "runtimeHM",
+							title: "Duration"
+						},
+						{
+							data: "mainCoverUrl"
+						},
+						{
+							data: "mainKind",
+							title: "Kind"
+						},
+						{
+							data: "mainYear",
+							title: "Year"
+						},
+						{
+							data: "mainVotes",
+							title: "Votes"
+						},
+						{
+							data: "rank",
+							title: "Rank"
+						},
+						{
+							data: "mainOriginalTitle",
+							title: "Title",
+							render: function (data, type, row, meta) {
+								if (type === 'display') {
+									return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
+								}
+								return data;
+							}
+						},
+						{
+							data: "mainImdbid",
+							title: "IMDB"
+						},
+						{
+							data: "id"
+						},
+						{
+							data: "mainCountries",
+							title: "Countries",
+							render: function (data, type, row, meta) {
+								if (type === 'display') {
+									return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
+								}
+								return data;
+							}
+						},
+						{
+							data: "mainGenres",
+							title: "Genres"
+						}
+					]
+				});
+
+				screenshotPreview();
+			});
+		</script>
+
+		${index_ts}
 	</body>
 </html>

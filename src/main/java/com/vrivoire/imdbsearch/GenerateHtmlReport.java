@@ -123,14 +123,30 @@ public class GenerateHtmlReport {
 		map.put("logsData", sb1.toString());
 		map.put("NOT_FOUND", sb.toString());
 		if (!Config.IS_IMAGES_EMBEDED.getBoolean()) {
-			map.put("jqueryui_css", "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/themes/overcast/jquery-ui.min.css\"/>\n");
-			map.put("jquery_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js\"></script>\n");
-			map.put("jqueryui_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js\"></script>\n");
+			map.put("jqueryui_css", "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css\"/>\n");
+			map.put("jquery_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js\"></script>\n");
+			map.put("jqueryui_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/jquery-ui.min.js\"></script>\n");
+
+			map.put("datatables_css", "<link href=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.css\" rel=\"stylesheet\">\n");
+			map.put("colReorder_dataTables_css", "<link href=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/css/colReorder.dataTables.css\" rel=\"stylesheet\">\n");
+			map.put("datatables_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.js\"></script>\n");
+			map.put("datatables_ui_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.js\"></script>\n");
+			map.put("datatables_colreorder1_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.colReorder.js\"></script>\n");
+			map.put("datatables_colreorder2_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/colReorder.dataTables.js\"></script>\n");
+
 			map.put("babel_js", "<script src=\"https://unpkg.com/@babel/standalone/babel.min.js\"></script>\n");
 		} else {
-			map.put("jqueryui_css", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
-			map.put("jquery_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.JQUERY_VER.getString() + "/jquery.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
-			map.put("jqueryui_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.JQUERYUI_VER.getString() + "/jquery-ui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("jqueryui_css", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+			map.put("jquery_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("jqueryui_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/jquery-ui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+
+			map.put("datatables_css", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+			map.put("colReorder_dataTables_css", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/css/colReorder.dataTables.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+			map.put("datatables_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_ui_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_colreorder1_js", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.colReorder.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_colreorder2_js", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/colReorder.dataTables.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+
 			map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		}
 		map.put("statsImage", "data:image/x-icon;base64," + base64String);
