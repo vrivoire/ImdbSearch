@@ -127,12 +127,12 @@ public class GenerateHtmlReport {
 			map.put("jquery_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js\"></script>\n");
 			map.put("jqueryui_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/jquery-ui.min.js\"></script>\n");
 
-			map.put("datatables_css", "<link href=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.css\" rel=\"stylesheet\">\n");
-			map.put("colReorder_dataTables_css", "<link href=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/css/colReorder.dataTables.css\" rel=\"stylesheet\">\n");
-			map.put("datatables_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.js\"></script>\n");
-			map.put("datatables_ui_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.js\"></script>\n");
-			map.put("datatables_colreorder1_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.colReorder.js\"></script>\n");
-			map.put("datatables_colreorder2_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/colReorder.dataTables.js\"></script>\n");
+//			https://datatables.net/download/
+			map.put("datatables_css", "<link href=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.min.css\" rel=\"stylesheet\">\n");
+			map.put("datatables_colreorder_css", "<link href=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/css/colReorder.jqueryui.min.css\" rel=\"stylesheet\">\n");
+			map.put("datatables_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.min.js\"></script>\n");
+			map.put("datatables_jqueryui_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.min.js\"></script>\n");
+			map.put("datatables_colreorder_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/js/dataTables.colReorder.min.js\"></script>\n");
 
 			map.put("babel_js", "<script src=\"https://unpkg.com/@babel/standalone/babel.min.js\"></script>\n");
 		} else {
@@ -140,12 +140,11 @@ public class GenerateHtmlReport {
 			map.put("jquery_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 			map.put("jqueryui_js", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/jquery-ui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 
-			map.put("datatables_css", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
-			map.put("colReorder_dataTables_css", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/css/colReorder.dataTables.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
-			map.put("datatables_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
-			map.put("datatables_ui_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
-			map.put("datatables_colreorder1_js", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.colReorder.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
-			map.put("datatables_colreorder2_js", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES.getString() + "/js/colReorder.dataTables.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_css", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+			map.put("datatables_colreorder_css", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/css/colReorder.jqueryui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
+			map.put("datatables_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_jqueryui_js", base64ToHtml("https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
+			map.put("datatables_colreorder_js", base64ToHtml("https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/js/dataTables.colReorder.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 
 			map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		}
@@ -195,7 +194,7 @@ public class GenerateHtmlReport {
 		String type = (String) map.get("mainKind");
 		if (type != null) {
 			type = type.trim().toLowerCase();
-			if (type.contains("series")) {
+			if (type.contains("series") || type.contains("TV Special")) {
 				map.put("mainKind", SERIES);
 				if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {
 					map.put("mainYear", map.get("mainYear"));

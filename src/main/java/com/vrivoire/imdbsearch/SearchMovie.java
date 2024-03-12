@@ -239,12 +239,12 @@ public class SearchMovie {
 	private void searchByNames(Set<NameYearBean> movieSet) throws Exception {
 		List<String> args = new ArrayList<>();
 		args.add("python.exe");
-		File file = new File(Config.IMDBSEARCHPY_PATH.getString());
+		File file = new File(Config.IMDBSEARCH_PY_PATH.getString());
 		if (!file.exists()) {
 			LOG.warn("NOT FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
-			file = new File("bin/" + Config.IMDBSEARCHPY_PATH.getString());
+			file = new File("bin/" + Config.IMDBSEARCH_PY_PATH.getString());
 			if (!file.exists()) {
-				throw new Exception("NOT FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
+				throw new Exception("NOT FOUND IMDBSEARCH_PY_PATH=" + file.getAbsolutePath());
 			}
 		}
 		LOG.info("FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());

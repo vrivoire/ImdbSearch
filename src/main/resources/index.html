@@ -66,11 +66,10 @@
 
 		<!--datatables stuff-->
 		${datatables_css}
-		${colReorder_dataTables_css}
+		${datatables_colreorder_css}
 		${datatables_js}
-		${datatables_ui_js}
-		${datatables_colreorder1_js}
-		${datatables_colreorder2_js}
+		${datatables_jqueryui_js}
+		${datatables_colreorder_js}
 
 		<!--babel stuff-->
 		${babel_js}
@@ -252,7 +251,13 @@
 						},
 						{
 							data: "mainImdbid",
-							title: "IMDB"
+							title: "IMDB (id)",
+							render: function (data, type, row, meta) {
+								if (type === 'display') {
+									return data + "&nbsp;<small>(" + row.id + ")</small>";
+								}
+								return data;
+							}
 						},
 						{
 							data: "id"
