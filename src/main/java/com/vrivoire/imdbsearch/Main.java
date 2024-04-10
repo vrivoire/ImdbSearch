@@ -92,6 +92,10 @@ public class Main {
 										);
             """;
 	private static final String DDL3 = "create unique index idx_imdb_id on films(imdb_id);";
+	private static final String DDL4 = """
+                                   ALTER TABLE films drop COLUMN time_stamp;
+                                   ALTER TABLE films ADD column time_stamp TIMESTAMP DEFAULT DATETIME('now');
+                                   """;
 
 	static {
 		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
