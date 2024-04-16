@@ -91,7 +91,7 @@ $(document).ready(function () {
 	}
 	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
 		<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
-			<img alt="Stats image" width="665" src="${statsImage}" />
+			${statsImage}
 		</div>
 		</br>
 		${text}

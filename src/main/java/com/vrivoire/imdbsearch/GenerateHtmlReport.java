@@ -49,7 +49,7 @@ public class GenerateHtmlReport {
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
 	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private final String fullReportPath;
-	private String base64String;
+	private String histogram;
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
@@ -148,7 +148,7 @@ public class GenerateHtmlReport {
 
 			map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		}
-		map.put("statsImage", "data:image/x-icon;base64," + base64String);
+		map.put("statsImage", histogram);
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream("/index.ts")));
 		StringBuilder sb2 = new StringBuilder();
@@ -323,8 +323,8 @@ public class GenerateHtmlReport {
 		return list;
 	}
 
-	void setStatsImage(String base64String) {
-		this.base64String = base64String;
+	void setStatsImage(String histogram) {
+		this.histogram = histogram;
 	}
 
 	private Integer historyrCount() {

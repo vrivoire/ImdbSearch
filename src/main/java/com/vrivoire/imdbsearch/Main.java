@@ -1,26 +1,18 @@
 package com.vrivoire.imdbsearch;
 
-import com.googlecode.charts4j.AxisLabelsFactory;
-import com.googlecode.charts4j.BarChart;
-import com.googlecode.charts4j.BarChartPlot;
-import com.googlecode.charts4j.DataUtil;
-import com.googlecode.charts4j.GCharts;
-import com.googlecode.charts4j.LegendPosition;
-import com.googlecode.charts4j.Plots;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.LayoutManager;
+import java.awt.Rectangle;
 import java.awt.event.AdjustmentEvent;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,12 +26,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -51,6 +41,20 @@ import javax.swing.UIManager;
 import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.StatisticalBarRenderer;
+import org.jfree.chart.ui.TextAnchor;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
+import org.jfree.svg.SVGGraphics2D;
 
 /**
  *
@@ -110,26 +114,35 @@ public class Main {
 			LOG.info("Java: " + System.getProperty("java.vendor") + ", version: " + System.getProperty("java.version") + ", home: " + System.getProperty("java.home"));
 			LOG.info("args: " + Arrays.toString(args) + " " + args.length);
 			_args = args;
-			if (args.length == 1) {
-				if (args[0].equals("-h") || args[0].equals("--help")) {
-					LOG.info("Args: ");
-					LOG.info("-d --delete : Delete an entry of the DB history with the id Imsb.");
-					LOG.info("path(s)     : Scan path(s) to generate a HTML report.");
-					LOG.info("NONE        : No args display a file diaglog to select a path.");
-					LOG.info("-h --help   : Help");
-				} else if (args[0].equals("-d") || args[0].equals("--delete.")) {
-					RemoveImdbEntry te = new RemoveImdbEntry();
-					te.showDialog();
-				} else {
+			switch (args.length) {
+				case 1 -> {
+					switch (args[0]) {
+						case "-h", "--help" -> {
+							LOG.info("Args: ");
+							LOG.info("-d --delete : Delete an entry of the DB history with the id Imsb.");
+							LOG.info("path(s)     : Scan path(s) to generate a HTML report.");
+							LOG.info("NONE        : No args display a file diaglog to select a path.");
+							LOG.info("-h --help   : Help");
+						}
+						case "-d", "--delete." -> {
+							RemoveImdbEntry te = new RemoveImdbEntry();
+							te.showDialog();
+						}
+						default -> {
+							Main main = new Main();
+							main.start();
+						}
+					}
+				}
+				case 0 -> {
 					Main main = new Main();
 					main.start();
 				}
-			} else if (args.length == 0) {
-				Main main = new Main();
-				main.start();
-			} else {	// scan folder(s)
-				Main main = new Main();
-				main.start();
+				default -> {
+					// scan folder(s)
+					Main main = new Main();
+					main.start();
+				}
 			}
 		} catch (Exception ex) {
 			LOG.fatal(ex.getMessage(), ex);
@@ -172,11 +185,11 @@ public class Main {
 			setNewFileName(listNotFound);
 
 			saveDB(listFound);
-			String base64String = getHistogram();
+			String histogram = getHistogram();
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
-			generateHtmlReport.setStatsImage(base64String);
+			generateHtmlReport.setStatsImage(histogram);
 			generateHtmlReport.generate(listFound, listNotFound);
 
 			LOG.info("Found " + listFound.size() + " movie" + (listFound.size() > 1 ? "s" : ""));
@@ -331,25 +344,52 @@ public class Main {
 			LOG.info("listRate=" + listRate);
 			LOG.info("listRateCount=" + listRateCount);
 
-			BarChartPlot listRateCountPlot = Plots.newBarChartPlot(DataUtil.scale(listRateCount));
-			for (int i = 0; i < listRateCount.size(); i++) {
-				listRateCountPlot.addTextMarker(listRateCount.get(i).toString(), com.googlecode.charts4j.Color.BLACK, 12, i);
+			DefaultStatisticalCategoryDataset dataset = new DefaultStatisticalCategoryDataset();
+			for (int i = 0; i < listToto.size(); i++) {
+				dataset.add(listRateCount.get(i), null, "", listToto.get(i));
 			}
-			BarChart chart = GCharts.newBarChart(listRateCountPlot);
-			chart.addXAxisLabels(AxisLabelsFactory.newNumericRangeAxisLabels(0, 10, 0.5));
-			chart.setSize(665, 375);
-			chart.setTitle("Rating");
-			chart.setLegendPosition(LegendPosition.TOP);
-			String url = chart.toURLString();
-			LOG.info("URL=" + url);
-			BufferedImage bufferedImage = ImageIO.read(new URI(url.replace("|", "%7C")).toURL());
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			ImageIO.write(bufferedImage, "png", os);
-			return Base64.getEncoder().encodeToString(os.toByteArray());
+			JFreeChart chart = createChart(dataset);
+			SVGGraphics2D g2 = new SVGGraphics2D(900, 400);
+			Rectangle r = new Rectangle(0, 0, 900, 400);
+			chart.draw(g2, r);
+
+			return g2.getSVGElement();
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return null;
+	}
+
+	private static JFreeChart createChart(CategoryDataset dataset) {
+
+		JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
+
+		CategoryPlot plot = (CategoryPlot) chart.getPlot();
+
+		// customise the range axis...
+		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+		rangeAxis.setAutoRangeIncludesZero(false);
+
+		// customise the renderer...
+		StatisticalBarRenderer renderer = new StatisticalBarRenderer();
+		renderer.setDrawBarOutline(true);
+		renderer.setErrorIndicatorPaint(Color.black);
+		renderer.setIncludeBaseInRange(true);
+		plot.setRenderer(renderer);
+
+		// ensure the current theme is applied to the renderer just added
+		ChartUtils.applyCurrentTheme(chart);
+
+		renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+		renderer.setDefaultItemLabelsVisible(true);
+		renderer.setDefaultItemLabelPaint(Color.yellow);
+		renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
+
+		// set up gradient paints for series...
+		GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+		renderer.setSeriesPaint(0, gp0);
+		return chart;
 	}
 
 	private void saveDB(List<NameYearBean> listFound) {
