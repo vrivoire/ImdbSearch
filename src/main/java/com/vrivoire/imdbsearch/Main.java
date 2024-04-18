@@ -52,7 +52,6 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StatisticalBarRenderer;
 import org.jfree.chart.ui.TextAnchor;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
 import org.jfree.svg.SVGGraphics2D;
 
@@ -340,15 +339,38 @@ public class Main {
 				}
 			}
 
-			LOG.info("listToto=" + listToto);
-			LOG.info("listRate=" + listRate);
-			LOG.info("listRateCount=" + listRateCount);
-
 			DefaultStatisticalCategoryDataset dataset = new DefaultStatisticalCategoryDataset();
 			for (int i = 0; i < listToto.size(); i++) {
 				dataset.add(listRateCount.get(i), null, "", listToto.get(i));
 			}
-			JFreeChart chart = createChart(dataset);
+
+			JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
+
+			CategoryPlot plot = (CategoryPlot) chart.getPlot();
+
+			// customise the range axis...
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+			rangeAxis.setAutoRangeIncludesZero(false);
+
+			// customise the renderer...
+			StatisticalBarRenderer renderer = new StatisticalBarRenderer();
+			renderer.setDrawBarOutline(true);
+			renderer.setErrorIndicatorPaint(Color.black);
+			renderer.setIncludeBaseInRange(true);
+			plot.setRenderer(renderer);
+
+			// ensure the current theme is applied to the renderer just added
+			ChartUtils.applyCurrentTheme(chart);
+
+			renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+			renderer.setDefaultItemLabelsVisible(true);
+			renderer.setDefaultItemLabelPaint(Color.yellow);
+			renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
+
+			// set up gradient paints for series...
+			GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+			renderer.setSeriesPaint(0, gp0);
 			SVGGraphics2D g2 = new SVGGraphics2D(900, 400);
 			Rectangle r = new Rectangle(0, 0, 900, 400);
 			chart.draw(g2, r);
@@ -358,38 +380,6 @@ public class Main {
 			LOG.error(e.getMessage(), e);
 		}
 		return null;
-	}
-
-	private static JFreeChart createChart(CategoryDataset dataset) {
-
-		JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
-
-		CategoryPlot plot = (CategoryPlot) chart.getPlot();
-
-		// customise the range axis...
-		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-		rangeAxis.setAutoRangeIncludesZero(false);
-
-		// customise the renderer...
-		StatisticalBarRenderer renderer = new StatisticalBarRenderer();
-		renderer.setDrawBarOutline(true);
-		renderer.setErrorIndicatorPaint(Color.black);
-		renderer.setIncludeBaseInRange(true);
-		plot.setRenderer(renderer);
-
-		// ensure the current theme is applied to the renderer just added
-		ChartUtils.applyCurrentTheme(chart);
-
-		renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
-		renderer.setDefaultItemLabelsVisible(true);
-		renderer.setDefaultItemLabelPaint(Color.yellow);
-		renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
-
-		// set up gradient paints for series...
-		GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
-		renderer.setSeriesPaint(0, gp0);
-		return chart;
 	}
 
 	private void saveDB(List<NameYearBean> listFound) {
