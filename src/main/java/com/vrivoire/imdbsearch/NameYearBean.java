@@ -62,8 +62,30 @@ public class NameYearBean {
 	private String mainPreviousEpisode = null;
 	private String mainNextEpisode = null;
 	private String mainSeason = null;
+	private boolean isOnDrive = false;
+	private String resolutionDescription = null;
+	private Integer width = null;
+	private Integer heigth = null;
+	private String codecDescription = null;
+	private String timeInHHMMSS = null;
 
 	public NameYearBean() {
+	}
+
+	public boolean isIsOnDrive() {
+		return isOnDrive;
+	}
+
+	public String getCodecDescription() {
+		return codecDescription;
+	}
+
+	public void setCodecDescription(String codecDescription) {
+		this.codecDescription = codecDescription;
+	}
+
+	public void setIsOnDrive(boolean isOnDrive) {
+		this.isOnDrive = isOnDrive;
 	}
 
 	public String getMainEpisode() {
@@ -390,6 +412,7 @@ public class NameYearBean {
 			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
 		}
 		s = s.replace(':', 'h') + 'm';
+		s = s.equals("00h00m") ? getTimeInHHMMSS() : s;
 		return s;
 	}
 
@@ -497,15 +520,50 @@ public class NameYearBean {
 		this.mainNumberOfSeasons = mainNumberOfSeasons;
 	}
 
+	public String getResolutionDescription() {
+		return resolutionDescription;
+	}
+
+	public void setResolutionDescription(String resolutionDescription) {
+		this.resolutionDescription = resolutionDescription;
+	}
+
+	public Integer getWidth() {
+		return width;
+	}
+
+	public void setWidth(Integer width) {
+		this.width = width;
+	}
+
+	public Integer getHeigth() {
+		return heigth;
+	}
+
+	public void setHeight(Integer heigth) {
+		this.heigth = heigth;
+	}
+
+	public String getTimeInHHMMSS() {
+		return timeInHHMMSS;
+	}
+
+	public void setTimeInHHMMSS(String timeInHHMMSS) {
+		this.timeInHHMMSS = timeInHHMMSS;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("error=").append(error);
+		builder.append("codecDescription=").append(codecDescription);
+		builder.append(", error=").append(error);
 		builder.append(", file=").append(file);
 		builder.append(", fileCount=").append(fileCount);
 		builder.append(", fileDate=").append(fileDate);
+		builder.append(", heigth=").append(heigth);
 		builder.append(", isDirectory=").append(isDirectory);
+		builder.append(", isOnDrive=").append(isOnDrive);
 		builder.append(", mainAkas=").append(mainAkas);
 		builder.append(", mainAlternativeKind=").append(mainAlternativeKind);
 		builder.append(", mainAspectRatio=").append(mainAspectRatio);
@@ -549,8 +607,11 @@ public class NameYearBean {
 		builder.append(", originalName=").append(originalName);
 		builder.append(", plotPlot=").append(plotPlot);
 		builder.append(", plotSynopsis=").append(plotSynopsis);
+		builder.append(", resolutionDescription=").append(resolutionDescription);
 		builder.append(", serialVersionUID=").append(serialVersionUID);
 		builder.append(", size=").append(size);
+		builder.append(", timeInHHMMSS=").append(timeInHHMMSS);
+		builder.append(", width=").append(width);
 		builder.append("]");
 		return builder.toString();
 	}

@@ -34,23 +34,24 @@ function insertBody(film: any) {
 							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<br/>
 						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
-						<span><b>Ratio:</b> ${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries} <span style="font-size: x-small;">(${film.mainLanguages})</span></span>
-						<span><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i>, ${film.size} ${film.fileCount}</span>
-						<span><b>Director:</b> ${film.mainDirectors}</span>
-						<span><b>Writer:</b> ${film.mainWriters}</span>
-						<span><b>Actors:</b> ${film.mainStars}</span>
+						<span><i>${film.mainGenres}</i></span>
+						<span><b>Ratio: </b>${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries} <span style="font-size: x-small;">(${film.mainLanguages})</span></span>
+						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
+			<span><b>Director: </b> ${film.mainDirectors}</span >
+				<span><b>Writer: </b> ${film.mainWriters}</span >
+					<span><b>Actors: </b> ${film.mainStars}</span >
 						<br>
 						<div class="tabs">
 							<ul>
 								<li><a href="#tabs-1">Plot</a></li>
 								<li><a href="#tabs-2">Synopsis</a></li>
-							</ul>
+									</ul>
 							<div id="tabs-1">
-								${film.plotPlot}
-							</div>
+										${film.plotPlot}
+	</div>
 							<div id="tabs-2">
-								${film.plotSynopsis}
-							</div>
+			${film.plotSynopsis}
+	</div>
 						</div>
 					</div>
 				</td>

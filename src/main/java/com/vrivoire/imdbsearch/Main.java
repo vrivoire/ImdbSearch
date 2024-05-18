@@ -67,8 +67,9 @@ public class Main {
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
 	static final String SQL_SELECT = "select * from films where imdb_id=?;";
-	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=? where imdb_id=?;";
-	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres) values(?,?,?,?,?,?,?,?,?,?);";
+	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=?, is_on_drive=? where imdb_id=?;";
+	private static final String SQL_UPDATE_FALSE = "update films set is_on_drive=false;";
+	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres, is_on_drive) values(?,?,?,?,?,?,?,?,?,?,?);";
 	private static final String SQL_HISTOGRAM = """
                                           SELECT
 											(case when rating < 0 then 0 else round(rating * 2,0) / 2 end) as rate,
@@ -96,8 +97,8 @@ public class Main {
             """;
 	private static final String DDL3 = "create unique index idx_imdb_id on films(imdb_id);";
 	private static final String DDL4 = """
-                                   ALTER TABLE films drop COLUMN time_stamp;
-                                   ALTER TABLE films ADD column time_stamp TIMESTAMP DEFAULT DATETIME('now');
+                                   ALTER TABLE films drop COLUMN is_on_drive;
+                                   ALTER TABLE films ADD column is_on_drive boolean DEFAULT false;
                                    """;
 
 	static {
@@ -168,6 +169,7 @@ public class Main {
 				LogGrabberAppender.resetLogs();
 			}
 		}
+
 		System.exit(0);
 	}
 
@@ -388,7 +390,13 @@ public class Main {
 		}
 		long start = System.currentTimeMillis();
 		GenerateHtmlReport generateHtmlReport = new GenerateHtmlReport();
+
 		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
+			try (PreparedStatement pstmtUpdateFalse = conn.prepareStatement(SQL_UPDATE_FALSE)) {
+				pstmtUpdateFalse.executeBatch();
+				pstmtUpdateFalse.clearBatch();
+			}
+
 			try (PreparedStatement pstmtSelect = conn.prepareStatement(SQL_SELECT)) {
 				try (PreparedStatement pstmtUpdate = conn.prepareStatement(SQL_UPDATE); PreparedStatement pstmtInsert = conn.prepareStatement(SQL_INSERT)) {
 					List<String> imdbIdsUptade = new ArrayList<>();
@@ -455,6 +463,7 @@ public class Main {
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("runtimeHM"));
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainCountries"));
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainGenres"));
+		pstmtUpdate.setBoolean(++i, (Boolean) mapFromBean.get("isOnDrive"));
 
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainImdbid"));
 		pstmtUpdate.addBatch();
@@ -472,6 +481,7 @@ public class Main {
 		pstmtInsert.setString(++i, (String) mapFromBean.get("runtimeHM"));
 		pstmtInsert.setString(++i, (String) mapFromBean.get("mainCountries"));
 		pstmtInsert.setString(++i, (String) mapFromBean.get("mainGenres"));
+		pstmtInsert.setBoolean(++i, (Boolean) mapFromBean.get("isOnDrive"));
 		pstmtInsert.addBatch();
 	}
 

@@ -232,9 +232,9 @@ public class GenerateHtmlReport {
 		insertBase64(movie, map);
 
 		if (movie.getFileCount() > 1) {
-			map.put("fileCount", ", " + movie.getFileCount() + " files");
+			map.put("fileCount", movie.getFileCount() + " files");
 		} else {
-			map.put("fileCount", "");
+			map.put("fileCount", null);
 		}
 
 		if (movie.getPlotPlot() != null) {
@@ -249,7 +249,7 @@ public class GenerateHtmlReport {
 		}
 
 		map.put("mainStars", movie.getMainStars() == null ? "" : movie.getMainStars());
-
+		map.put("isOnDrive", true);
 		return map;
 	}
 
@@ -315,6 +315,7 @@ public class GenerateHtmlReport {
 				map.put("runtimeHM", rs.getString("runtimeHM"));
 				map.put("mainCountries", rs.getString("countries"));
 				map.put("mainGenres", rs.getString("genres"));
+//				map.put("isOnDrive", rs.getString("is_on_drive"));
 			}
 			LOG.info("Read all history, " + list.size() + " records.");
 		} catch (SQLException e) {

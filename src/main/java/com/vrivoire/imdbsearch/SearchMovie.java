@@ -1,8 +1,18 @@
 package com.vrivoire.imdbsearch;
 
+import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil;
+import uk.co.caprica.vlcj.media.Media;
+import uk.co.caprica.vlcj.media.MediaEventAdapter;
+import uk.co.caprica.vlcj.media.MediaParsedStatus;
+import uk.co.caprica.vlcj.media.TrackInfo;
+import uk.co.caprica.vlcj.media.VideoTrackInfo;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
+import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.sun.jna.NativeLibrary;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +39,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -158,34 +169,15 @@ public class SearchMovie {
 		return nameYearBean;
 	}
 
-	//	*************************************************************************
-	//	********************************** NEW **********************************
-	//	*************************************************************************
 	private void newWay(Set<NameYearBean> movieSet, List<NameYearBean> list) throws Exception {
 		searchByNames(movieSet);
 		Map<String, Map<String, Object>> jsonMap = readOutputJson();
-
-//		movieSet.forEach(nameYearBean -> {
-//			String searchKey = getSearchKey(nameYearBean);
-//			Map<String, Object> map = jsonMap.get(searchKey);
-//			if (map != null) {
-//				map.keySet().stream().filter(subKey -> (subKey.endsWith("ERROR"))).map(subKey -> {
-//					nameYearBean.setName(searchKey);
-//					nameYearBean.setError(map.get(subKey).toString());
-//					return subKey;
-//				}).forEachOrdered(_item -> {
-//					NOT_FOUND.add(nameYearBean);
-//				});
-//			} else {
-//				LOG.error(searchKey + " -> map=null");
-//			}
-//		});
 		NOT_FOUND.forEach(nameYearBean -> {
 			movieSet.remove(nameYearBean);
 		});
 
 		Map<String, String> mapKeys = new TreeMap<>();
-
+		List<Thread> threads = new ArrayList<>();
 		movieSet.forEach(nameYearBean -> {
 			String searchKey = getSearchKey(nameYearBean);
 			Map<String, Object> map = jsonMap.get(searchKey);
@@ -197,10 +189,23 @@ public class SearchMovie {
 				});
 				nameYearBean.setName(searchKey);
 				autoMapping(nameYearBean, mapKeys, map);
-				LOG.info(nameYearBean);
+				threads.add(getMetaData(nameYearBean));
 				list.add(nameYearBean);
 			}
 		});
+		while (!threads.isEmpty()) {
+			for (int i = 0; i < threads.size(); i++) {
+				Thread thread = threads.get(i);
+				if (!thread.isAlive()) {
+					threads.remove(i);
+					LOG.info("Thread finished " + thread.getName());
+				}
+			}
+		}
+
+		for (NameYearBean nameYearBean : list) {
+			LOG.info(nameYearBean);
+		}
 	}
 
 	private void autoMapping(NameYearBean searchNameYearBean, Map<String, String> mapKeys, Map<String, Object> map) {
@@ -298,4 +303,128 @@ public class SearchMovie {
 		}
 	}
 
+	public static void main(String[] args) throws Exception {
+		new Main();
+		String path = "C:\\Users\\rivoi\\Videos\\Eureka\\Eureka.S05E13.1080p.BluRay.x265-RARBG.mp4";
+		NameYearBean nameYearBean = new NameYearBean();
+		nameYearBean.setFile(new File(path));
+		Config.configure();
+		Thread thread = new SearchMovie().getMetaData(nameYearBean);
+		while (thread.isAlive()) {
+			LOG.info("isAlive");
+			Thread.sleep(250);
+		}
+		System.exit(0);
+	}
+
+	private Thread getMetaData(NameYearBean nameYearBean) {
+		Thread thread = new Meta(nameYearBean);
+		thread.start();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException ex) {
+			LOG.error(ex.getMessage(), ex);
+		}
+		return thread;
+	}
+
+	private class Meta extends Thread {
+
+		private NameYearBean nameYearBean;
+
+		public Meta(NameYearBean nameYearBean) {
+			super(nameYearBean.getFile().getName());
+			this.nameYearBean = nameYearBean;
+		}
+
+		@Override
+		public void run() {
+			try {
+				NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
+				String path = "";
+				if (nameYearBean.getFile().isDirectory()) {
+					Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), (String[]) Config.SUPPORTED_EXTENSIONS_SHORT.get(), true);
+					path = listFiles.isEmpty() ? "" : (listFiles.toArray(File[]::new)[0]).getAbsolutePath();
+					LOG.info("\tFolder: " + nameYearBean.getFile().getAbsolutePath() + " -> " + path);
+				} else {
+					path = nameYearBean.getFile().getAbsolutePath();
+				}
+				LOG.info("\tLooking for " + new File(path).exists() + " " + path);
+				EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+				mediaPlayerComponent.mediaPlayer().media().prepare(path);
+				mediaPlayerComponent.mediaPlayer().media().parsing().parse();
+				mediaPlayerComponent.mediaPlayer().events().addMediaEventListener(new MediaEventAdapter() {
+					@Override
+					public void mediaParsedChanged(Media media, MediaParsedStatus newStatus) {
+						if (newStatus == MediaParsedStatus.DONE) {
+							MediaPlayer mediaPlayer = mediaPlayerComponent.mediaPlayer();
+							List<? extends TrackInfo> trackInfoList = mediaPlayer.media().info().tracks();
+							if (!trackInfoList.isEmpty()) {
+								for (TrackInfo trackInfo : trackInfoList) {
+//									LOG.info(trackInfo);
+									if (trackInfo instanceof VideoTrackInfo videoTrackInfo) {
+										nameYearBean.setHeight(videoTrackInfo.height());
+										nameYearBean.setWidth(videoTrackInfo.width());
+
+										//SD(Standard Definition)	480p	4:3	640 x 480
+										//HD(High Definition)	720p	16:9	1280 x 720
+										//Full HD (FHD)	1080p	16:9	1920 x 1080
+										//QHD(Quad HD)	1440p	16:9	2560 x 1440
+										//2K video	1080p	1:1.77	2048 x 1080
+										//4K video or Ultra HD(UHD)	4K or 2160p	1:1.9	3840 x 2160
+										//8K video or Full Ultra HD	8K or 4320p	16∶9	7680 x 4320
+										String resolutionDescription;
+
+										switch (videoTrackInfo.height()) {
+											case 240:
+											case 360:
+											case 480:
+												resolutionDescription = "SD 480p";
+												break;
+											case 720:
+												resolutionDescription = "HD 720p";
+												break;
+											case 1080:
+												if (videoTrackInfo.width() == 1920) {
+													resolutionDescription = "Full HD 1080p";
+													break;
+												} else if (videoTrackInfo.width() == 2048) {
+													resolutionDescription = "2K video 1080p";
+													break;
+												}
+											case 1440:
+												resolutionDescription = "2K 1440p";
+												break;
+											case 2160:
+												resolutionDescription = "4K 2160p";
+												break;
+											case 4320:
+												resolutionDescription = "8K 4320p";
+												break;
+											default:
+												resolutionDescription = null;
+										}
+										nameYearBean.setResolutionDescription(resolutionDescription);
+										nameYearBean.setCodecDescription(videoTrackInfo.codecDescription());
+
+										String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
+										nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
+
+										LOG.info("\t" + nameYearBean.getFile().getName() + " " + nameYearBean.getCodecDescription() + " " + nameYearBean.getWidth() + " x " + nameYearBean.getHeigth() + " " + nameYearBean.getResolutionDescription() + " " + nameYearBean.getTimeInHHMMSS());
+									}
+								}
+							} else {
+								LOG.info("\tEmpty");
+							}
+						} else {
+							LOG.info("\tStatus: " + newStatus);
+						}
+						mediaPlayerComponent.release();
+					}
+				});
+			} catch (Exception ex) {
+				LOG.error(ex.getMessage(), ex);
+			}
+		}
+	}
 }
