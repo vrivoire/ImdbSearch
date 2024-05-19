@@ -6,9 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.awt.event.AdjustmentEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,19 +39,6 @@ import javax.swing.UIManager;
 import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.StatisticalBarRenderer;
-import org.jfree.chart.ui.TextAnchor;
-import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
-import org.jfree.svg.SVGGraphics2D;
 
 /**
  *
@@ -70,7 +55,7 @@ public class Main {
 	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=?, is_on_drive=? where imdb_id=?;";
 	private static final String SQL_UPDATE_FALSE = "update films set is_on_drive=false;";
 	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres, is_on_drive) values(?,?,?,?,?,?,?,?,?,?,?);";
-	private static final String SQL_HISTOGRAM = """
+	static final String SQL_HISTOGRAM = """
                                           SELECT
 											(case when rating < 0 then 0 else round(rating * 2,0) / 2 end) as rate,
 											count(case when rating < 0 then 0 else round(rating,0) end) as rateCount
@@ -186,11 +171,9 @@ public class Main {
 			setNewFileName(listNotFound);
 
 			saveDB(listFound);
-			String histogram = getHistogram();
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
-			generateHtmlReport.setStatsImage(histogram);
 			generateHtmlReport.generate(listFound, listNotFound);
 
 			LOG.info("Found " + listFound.size() + " movie" + (listFound.size() > 1 ? "s" : ""));
@@ -320,68 +303,6 @@ public class Main {
 			}
 		}
 		);
-	}
-
-	private String getHistogram() {
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtSelect = conn.prepareStatement(SQL_HISTOGRAM)) {
-			List<Double> listRate = new ArrayList<>();
-			List<Integer> listRateCount = new ArrayList<>();
-			List<Double> listToto = new ArrayList<>();
-			ResultSet rs = stmtSelect.executeQuery();
-			while (rs.next()) {
-				listRate.add(rs.getDouble("rate"));
-				listRateCount.add(rs.getInt("rateCount"));
-			}
-			for (int i = 0; i < 21; i++) {
-				listToto.add(i / 2.0);
-			}
-			for (int i = 0; i < listToto.size(); i++) {
-				if (!listRate.contains(listToto.get(i))) {
-					listRateCount.add(i, 0);
-				}
-			}
-
-			DefaultStatisticalCategoryDataset dataset = new DefaultStatisticalCategoryDataset();
-			for (int i = 0; i < listToto.size(); i++) {
-				dataset.add(listRateCount.get(i), null, "", listToto.get(i));
-			}
-
-			JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
-
-			CategoryPlot plot = (CategoryPlot) chart.getPlot();
-
-			// customise the range axis...
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			rangeAxis.setAutoRangeIncludesZero(false);
-
-			// customise the renderer...
-			StatisticalBarRenderer renderer = new StatisticalBarRenderer();
-			renderer.setDrawBarOutline(true);
-			renderer.setErrorIndicatorPaint(Color.black);
-			renderer.setIncludeBaseInRange(true);
-			plot.setRenderer(renderer);
-
-			// ensure the current theme is applied to the renderer just added
-			ChartUtils.applyCurrentTheme(chart);
-
-			renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
-			renderer.setDefaultItemLabelsVisible(true);
-			renderer.setDefaultItemLabelPaint(Color.yellow);
-			renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
-
-			// set up gradient paints for series...
-			GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
-			renderer.setSeriesPaint(0, gp0);
-			SVGGraphics2D g2 = new SVGGraphics2D(900, 400);
-			Rectangle r = new Rectangle(0, 0, 900, 400);
-			chart.draw(g2, r);
-
-			return g2.getSVGElement();
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return null;
 	}
 
 	private void saveDB(List<NameYearBean> listFound) {

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.StatisticalBarRenderer;
+import org.jfree.chart.ui.TextAnchor;
+import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
+import org.jfree.svg.SVGGraphics2D;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -49,7 +65,6 @@ public class GenerateHtmlReport {
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
 	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private final String fullReportPath;
-	private String histogram;
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
@@ -148,7 +163,7 @@ public class GenerateHtmlReport {
 
 			map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		}
-		map.put("statsImage", histogram);
+		map.put("statsImage", getHistogram());
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream("/index.ts")));
 		StringBuilder sb2 = new StringBuilder();
@@ -171,6 +186,68 @@ public class GenerateHtmlReport {
 
 		var index = Config.fill(read("/index.html"), map);
 		Files.writeString(Paths.get(fullReportPath), index);
+	}
+
+	private String getHistogram() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtSelect = conn.prepareStatement(Main.SQL_HISTOGRAM)) {
+			List<Double> listRate = new ArrayList<>();
+			List<Integer> listRateCount = new ArrayList<>();
+			List<Double> listToto = new ArrayList<>();
+			ResultSet rs = stmtSelect.executeQuery();
+			while (rs.next()) {
+				listRate.add(rs.getDouble("rate"));
+				listRateCount.add(rs.getInt("rateCount"));
+			}
+			for (int i = 0; i < 21; i++) {
+				listToto.add(i / 2.0);
+			}
+			for (int i = 0; i < listToto.size(); i++) {
+				if (!listRate.contains(listToto.get(i))) {
+					listRateCount.add(i, 0);
+				}
+			}
+
+			DefaultStatisticalCategoryDataset dataset = new DefaultStatisticalCategoryDataset();
+			for (int i = 0; i < listToto.size(); i++) {
+				dataset.add(listRateCount.get(i), null, "", listToto.get(i));
+			}
+
+			JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
+
+			CategoryPlot plot = (CategoryPlot) chart.getPlot();
+
+			// customise the range axis...
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+			rangeAxis.setAutoRangeIncludesZero(false);
+
+			// customise the renderer...
+			StatisticalBarRenderer renderer = new StatisticalBarRenderer();
+			renderer.setDrawBarOutline(true);
+			renderer.setErrorIndicatorPaint(Color.black);
+			renderer.setIncludeBaseInRange(true);
+			plot.setRenderer(renderer);
+
+			// ensure the current theme is applied to the renderer just added
+			ChartUtils.applyCurrentTheme(chart);
+
+			renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+			renderer.setDefaultItemLabelsVisible(true);
+			renderer.setDefaultItemLabelPaint(Color.yellow);
+			renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
+
+			// set up gradient paints for series...
+			GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+			renderer.setSeriesPaint(0, gp0);
+			SVGGraphics2D g2 = new SVGGraphics2D(900, 400);
+			Rectangle r = new Rectangle(0, 0, 900, 400);
+			chart.draw(g2, r);
+
+			return g2.getSVGElement();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return null;
 	}
 
 	private List<Map<String, Object>> getMapList(List<NameYearBean> movieList) {
@@ -322,10 +399,6 @@ public class GenerateHtmlReport {
 			LOG.error(e.getMessage(), e);
 		}
 		return list;
-	}
-
-	void setStatsImage(String histogram) {
-		this.histogram = histogram;
 	}
 
 	private Integer historyrCount() {

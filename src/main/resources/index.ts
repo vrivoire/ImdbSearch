@@ -91,10 +91,6 @@ $(document).ready(function () {
 		text += insertAll(film)
 	}
 	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
-		<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
-			${statsImage}
-		</div>
-		</br>
 		${text}
 		</br>
 		<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;

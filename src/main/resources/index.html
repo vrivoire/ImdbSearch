@@ -84,13 +84,24 @@
             <main role="main">
                 <p>
                 <div style="padding: 1em" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
-                    <span><b>Report in:</b> ${report_location}</span><br/>
-                    <span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
-                    <span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
-                    <span><b>Total scanned:</b> ${total}</span><br/>
-					<span><b>Space used:</b> ${spaceUsed}</span><br/>
-					<span><b>Total films scanned:</b> ${historyrCount}</span><br/>
+					<table style="width: 100%;">
+						<tr>
+							<td style="width:30%">
+								<span><b>Report in:</b> ${report_location}</span><br/>
+								<span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
+								<span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
+								<span><b>Total scanned:</b> ${total}</span><br/>
+								<span><b>Space used:</b> ${spaceUsed}</span><br/>
+								<span><b>Total films scanned:</b> ${historyrCount}</span><br/>
+							</td>
+							<td>
+								<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
+									${statsImage}
+								</div>
+							</td>
+						</tr>
 
+					</table>
                 </div>
                 <div class="accordion">
                     <h3>Not Found</h3>
