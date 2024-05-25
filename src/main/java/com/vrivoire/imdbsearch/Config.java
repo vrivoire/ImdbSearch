@@ -16,7 +16,6 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,6 @@ public enum Config {
 	REPORT_NAME,
 	PATTERN,
 	SUPPORTED_EXTENSIONS,
-	SUPPORTED_EXTENSIONS_SHORT,
 	TORRENTS,
 	IGNORED_FOLDERS,
 	OUTPUT_JSON_FILE,
@@ -91,13 +89,9 @@ public enum Config {
 				MAP.putAll(objectMapper.readValue(file, new TypeReference<Map<String, Object>>() {
 				}));
 
-				List<String> supportedExtensionsShort = new ArrayList<>();
 				@SuppressWarnings("unchecked")
-				List<String> extensionsOld = (List<String>) SUPPORTED_EXTENSIONS.get();
-				extensionsOld.forEach((String extention) -> {
-					supportedExtensionsShort.add(extention.substring(1));
-				});
-				MAP.put(SUPPORTED_EXTENSIONS_SHORT.name(), (String[]) supportedExtensionsShort.toArray(String[]::new));
+				List<String> extensions = (List<String>) SUPPORTED_EXTENSIONS.get();
+				MAP.put(SUPPORTED_EXTENSIONS.name(), extensions);
 
 				StartFileWatchDog(file);
 			} else {

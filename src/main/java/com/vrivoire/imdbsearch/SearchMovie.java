@@ -1,10 +1,13 @@
 package com.vrivoire.imdbsearch;
 
 import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil;
+import uk.co.caprica.vlcj.media.AudioTrackInfo;
 import uk.co.caprica.vlcj.media.Media;
 import uk.co.caprica.vlcj.media.MediaEventAdapter;
 import uk.co.caprica.vlcj.media.MediaParsedStatus;
+import uk.co.caprica.vlcj.media.TextTrackInfo;
 import uk.co.caprica.vlcj.media.TrackInfo;
+import uk.co.caprica.vlcj.media.UnknownTrackInfo;
 import uk.co.caprica.vlcj.media.VideoTrackInfo;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
@@ -161,7 +164,8 @@ public class SearchMovie {
 
 		if (file.isDirectory()) {
 			nameYearBean.setSize(FileUtils.sizeOfDirectory(file));
-			Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), (String[]) Config.SUPPORTED_EXTENSIONS_SHORT.get(), true);
+			@SuppressWarnings("unchecked")
+			Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), ((String[]) ((List) Config.SUPPORTED_EXTENSIONS.get()).toArray(String[]::new)), true);
 			nameYearBean.setFileCount(listFiles.size());
 		} else {
 			nameYearBean.setSize(file.length());
@@ -303,20 +307,6 @@ public class SearchMovie {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
-		new Main();
-		String path = "C:\\Users\\rivoi\\Videos\\Eureka\\Eureka.S05E13.1080p.BluRay.x265-RARBG.mp4";
-		NameYearBean nameYearBean = new NameYearBean();
-		nameYearBean.setFile(new File(path));
-		Config.configure();
-		Thread thread = new SearchMovie().getMetaData(nameYearBean);
-		while (thread.isAlive()) {
-			LOG.info("isAlive");
-			Thread.sleep(250);
-		}
-		System.exit(0);
-	}
-
 	private Thread getMetaData(NameYearBean nameYearBean) {
 		Thread thread = new Meta(nameYearBean);
 		thread.start();
@@ -330,7 +320,7 @@ public class SearchMovie {
 
 	private class Meta extends Thread {
 
-		private NameYearBean nameYearBean;
+		private final NameYearBean nameYearBean;
 
 		public Meta(NameYearBean nameYearBean) {
 			super(nameYearBean.getFile().getName());
@@ -341,9 +331,10 @@ public class SearchMovie {
 		public void run() {
 			try {
 				NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
-				String path = "";
+				String path;
 				if (nameYearBean.getFile().isDirectory()) {
-					Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), (String[]) Config.SUPPORTED_EXTENSIONS_SHORT.get(), true);
+					@SuppressWarnings("unchecked")
+					Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), ((String[]) ((List) Config.SUPPORTED_EXTENSIONS.get()).toArray(String[]::new)), true);
 					path = listFiles.isEmpty() ? "" : (listFiles.toArray(File[]::new)[0]).getAbsolutePath();
 					LOG.info("\tFolder: " + nameYearBean.getFile().getAbsolutePath() + " -> " + path);
 				} else {
@@ -360,64 +351,85 @@ public class SearchMovie {
 							MediaPlayer mediaPlayer = mediaPlayerComponent.mediaPlayer();
 							List<? extends TrackInfo> trackInfoList = mediaPlayer.media().info().tracks();
 							if (!trackInfoList.isEmpty()) {
+								StringBuilder sbSubTitles = new StringBuilder("");
+								StringBuilder sbAudio = new StringBuilder("");
 								for (TrackInfo trackInfo : trackInfoList) {
-//									LOG.info(trackInfo);
-									if (trackInfo instanceof VideoTrackInfo videoTrackInfo) {
-										nameYearBean.setHeight(videoTrackInfo.height());
-										nameYearBean.setWidth(videoTrackInfo.width());
+									if (trackInfo != null) {
+										switch (trackInfo) {
+											case TextTrackInfo textTrackInfo ->
+												sbSubTitles.append(", ").append(textTrackInfo.language());
+											case AudioTrackInfo audioTrackInfo ->
+												sbAudio.append(", ").append(audioTrackInfo.language());
+											case UnknownTrackInfo unknownTrackInfo ->
+												LOG.info(nameYearBean.getFile().getName() + " - UnknownTrackInfo: " + unknownTrackInfo);
+											case VideoTrackInfo videoTrackInfo -> {
+												nameYearBean.setHeight(videoTrackInfo.height());
+												nameYearBean.setWidth(videoTrackInfo.width());
 
-										//SD(Standard Definition)	480p	4:3	640 x 480
-										//HD(High Definition)	720p	16:9	1280 x 720
-										//Full HD (FHD)	1080p	16:9	1920 x 1080
-										//QHD(Quad HD)	1440p	16:9	2560 x 1440
-										//2K video	1080p	1:1.77	2048 x 1080
-										//4K video or Ultra HD(UHD)	4K or 2160p	1:1.9	3840 x 2160
-										//8K video or Full Ultra HD	8K or 4320p	16∶9	7680 x 4320
-										String resolutionDescription;
+												//SD(Standard Definition)	480p	4:3	640 x 480
+												//HD(High Definition)	720p	16:9	1280 x 720
+												//Full HD (FHD)	1080p	16:9	1920 x 1080
+												//QHD(Quad HD)	1440p	16:9	2560 x 1440
+												//2K video	1080p	1:1.77	2048 x 1080
+												//4K video or Ultra HD(UHD)	4K or 2160p	1:1.9	3840 x 2160
+												//8K video or Full Ultra HD	8K or 4320p	16∶9	7680 x 4320
+												String resolutionDescription;
 
-										switch (videoTrackInfo.height()) {
-											case 240:
-											case 360:
-											case 480:
-												resolutionDescription = "SD 480p";
-												break;
-											case 720:
-												resolutionDescription = "HD 720p";
-												break;
-											case 1080:
-												if (videoTrackInfo.width() == 1920) {
-													resolutionDescription = "Full HD 1080p";
-													break;
-												} else if (videoTrackInfo.width() == 2048) {
-													resolutionDescription = "2K video 1080p";
-													break;
+												switch (videoTrackInfo.height()) {
+													case 240:
+													case 360:
+													case 480:
+														resolutionDescription = "SD 480p";
+														break;
+													case 720:
+														resolutionDescription = "HD 720p";
+														break;
+													case 1080:
+														if (videoTrackInfo.width() == 1920) {
+															resolutionDescription = "Full HD 1080p";
+															break;
+														} else if (videoTrackInfo.width() == 2048) {
+															resolutionDescription = "2K video 1080p";
+															break;
+														}
+													case 1440:
+														resolutionDescription = "2K 1440p";
+														break;
+													case 2160:
+														resolutionDescription = "4K 2160p";
+														break;
+													case 4320:
+														resolutionDescription = "8K 4320p";
+														break;
+													default:
+														resolutionDescription = null;
 												}
-											case 1440:
-												resolutionDescription = "2K 1440p";
-												break;
-											case 2160:
-												resolutionDescription = "4K 2160p";
-												break;
-											case 4320:
-												resolutionDescription = "8K 4320p";
-												break;
-											default:
-												resolutionDescription = null;
+												nameYearBean.setResolutionDescription(resolutionDescription);
+												nameYearBean.setCodecDescription(videoTrackInfo.codecDescription());
+
+												String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
+												nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
+											}
+											default ->
+												LOG.warn(nameYearBean.getFile().getName() + " - " + trackInfo.getClass().getName() + " NOT IMPLEMENTED: " + trackInfo);
 										}
-										nameYearBean.setResolutionDescription(resolutionDescription);
-										nameYearBean.setCodecDescription(videoTrackInfo.codecDescription());
-
-										String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
-										nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
-
-										LOG.info("\t" + nameYearBean.getFile().getName() + " " + nameYearBean.getCodecDescription() + " " + nameYearBean.getWidth() + " x " + nameYearBean.getHeigth() + " " + nameYearBean.getResolutionDescription() + " " + nameYearBean.getTimeInHHMMSS());
 									}
 								}
+								String subTitles = sbSubTitles.toString().trim();
+								subTitles = subTitles.isEmpty() ? "" : subTitles.substring(2);
+								nameYearBean.setSubTitles(subTitles == null || subTitles.equals("null") ? "" : subTitles);
+
+								String audio = sbAudio.toString().trim();
+								audio = audio.isEmpty() ? "" : audio.substring(2);
+								nameYearBean.setAudio(audio == null || audio.equals("null") ? "" : audio);
+
+								LOG.info(nameYearBean.getFile().getName() + " - " + nameYearBean.getCodecDescription() + " " + nameYearBean.getWidth() + " x " + nameYearBean.getHeigth() + " "
+										+ nameYearBean.getResolutionDescription() + " " + nameYearBean.getTimeInHHMMSS() + " st[" + nameYearBean.getSubTitles() + "] a[" + nameYearBean.getAudio() + "]");
 							} else {
-								LOG.info("\tEmpty");
+								LOG.info(nameYearBean.getFile().getName() + " - Empty");
 							}
 						} else {
-							LOG.info("\tStatus: " + newStatus);
+							LOG.info(nameYearBean.getFile().getName() + " - Status: " + newStatus);
 						}
 						mediaPlayerComponent.release();
 					}

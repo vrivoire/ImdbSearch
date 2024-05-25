@@ -9,7 +9,7 @@
            https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
 	<Appenders>
 		<Console name="CONSOLE" target="SYSTEM_OUT">
-			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M - %m%n"/>
+			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M.%L - %m%n"/>
 		</Console>
 		<RollingFile name="FILE"
 					 append="true"
@@ -26,12 +26,6 @@
 		<LogGrabber name="GRABBER">
 			<PatternLayout pattern="%-23d{yyyy/MM/dd HH:mm:ss.SSS} %-5p %c{1}.%M.%L - %m%n"/>
 		</LogGrabber>
-
-		<!--		<Async name="ASYNC">
-			<AppenderRef ref="FILE"/>
-			<AppenderRef ref="CONSOLE"/>
-			<AppenderRef ref="GRABBER"/>
-		</Async>-->
 	</Appenders>
 
 	<Loggers>

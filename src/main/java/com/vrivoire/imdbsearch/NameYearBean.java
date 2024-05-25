@@ -68,6 +68,8 @@ public class NameYearBean {
 	private Integer heigth = null;
 	private String codecDescription = null;
 	private String timeInHHMMSS = null;
+	private String subTitles = "";
+	private String audio = "";
 
 	public NameYearBean() {
 	}
@@ -552,11 +554,28 @@ public class NameYearBean {
 		this.timeInHHMMSS = timeInHHMMSS;
 	}
 
+	void setSubTitles(String subTitles) {
+		this.subTitles = subTitles;
+	}
+
+	public String getSubTitles() {
+		return subTitles;
+	}
+
+	void setAudio(String audio) {
+		this.audio = audio;
+	}
+
+	public String getAudio() {
+		return audio;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NameYearBean [");
-		builder.append("codecDescription=").append(codecDescription);
+		builder.append("audio=").append(audio);
+		builder.append(", codecDescription=").append(codecDescription);
 		builder.append(", error=").append(error);
 		builder.append(", file=").append(file);
 		builder.append(", fileCount=").append(fileCount);
@@ -610,6 +629,7 @@ public class NameYearBean {
 		builder.append(", resolutionDescription=").append(resolutionDescription);
 		builder.append(", serialVersionUID=").append(serialVersionUID);
 		builder.append(", size=").append(size);
+		builder.append(", subTitles=").append(subTitles);
 		builder.append(", timeInHHMMSS=").append(timeInHHMMSS);
 		builder.append(", width=").append(width);
 		builder.append("]");

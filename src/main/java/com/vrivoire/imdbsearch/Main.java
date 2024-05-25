@@ -267,7 +267,7 @@ public class Main {
 			if (name != null) {
 				for (String extension : extensions) {
 					if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
-						String newName = WordUtils.capitalize((name + " " + nameYearBean.getMainYear() + extension).toLowerCase()
+						String newName = WordUtils.capitalize((name + " " + nameYearBean.getMainYear() + "." + extension).toLowerCase()
 								.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
 								.replace('|', ' '), new char[]{});
 						if (!newName.equalsIgnoreCase(originalName)) {

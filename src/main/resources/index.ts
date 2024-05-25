@@ -8,7 +8,7 @@ function insertAll(film: any) {
 						<img style="padding-top: 1em;" src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300"/>
 					</a>
 					<div class="hist-text-cell">
-						<span>${film.rank}<span style="font-size: x-small;">/${historyrCount}</span>&nbsp;
+						<span>${film.rank}<span style="font-size: x-small;">/${historyCount}</span>&nbsp;
 							<span style="font-weight: bold; border:0px; text-wrap: balance;">
 								<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 									${film.mainOriginalTitle}
@@ -35,7 +35,16 @@ function insertBody(film: any) {
 						<br/>
 						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
 						<span><i>${film.mainGenres}</i></span>
-						<span><b>Ratio: </b>${film.mainAspectRatio}, <b>Year:</b> ${film.mainYear}${film.mainCountries} <span style="font-size: x-small;">(${film.mainLanguages})</span></span>
+						<table>
+							<tr>
+								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}${film.mainCountries},&nbsp;</td>
+								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;">${film.mainLanguages}&nbsp;</td>
+								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${film.audio}</td>
+							</tr>
+							<tr>
+								<td style="font-size: x-small; width: 40em;padding: 0px;margin: 0px;"><b>Sub&nbsp;Title:</b>&nbsp;${film.subTitles}</td>
+							</tr>
+						</table>
 						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
 			<span><b>Director: </b> ${film.mainDirectors}</span >
 				<span><b>Writer: </b> ${film.mainWriters}</span >

@@ -24,13 +24,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -62,9 +64,19 @@ public class GenerateHtmlReport {
 	private static final String MOVIES = "&#x1F4FD;";
 	private static final String SERIES = "&#x1F4FA;";
 	private static final String UNKNOWN = "&#x2753;";
+	private static final NavigableMap<Long, String> suffixes = new TreeMap<>();
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
 	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private final String fullReportPath;
+
+	static {
+		suffixes.put(1_000L, "K");
+		suffixes.put(1_000_000L, "M");
+		suffixes.put(1_000_000_000L, "G");
+		suffixes.put(1_000_000_000_000L, "T");
+		suffixes.put(1_000_000_000_000_000L, "P");
+		suffixes.put(1_000_000_000_000_000_000L, "E");
+	}
 
 	public GenerateHtmlReport() {
 		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
@@ -127,7 +139,7 @@ public class GenerateHtmlReport {
 		String spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
 
 		Map<String, Object> map = new HashMap<>();
-		map.put("historyrCount", historyrCount());
+		map.put("historyCount", historyCount());
 		map.put("report_location", fullReportPath);
 		map.put("spaceUsed", spaceUsed);
 		map.put("foundCount", movieList.size());
@@ -296,16 +308,13 @@ public class GenerateHtmlReport {
 		}
 
 		if (movie.getMainVotes() != null && movie.getMainVotes() >= 1) {
-			String s = new DecimalFormat("###,###,###").format(movie.getMainVotes());
+			String s = bigNumbersformat(movie.getMainVotes());
 			s = '(' + s + " vote" + (s.equals("1") ? "" : 's') + ')';
 			map.put("mainVotes", s);
 		} else {
 			map.put("mainVotes", "");
 		}
 
-//		if (movie.getMainRating() == 0.0) {
-//			map.put("mainRating", movie.getMainRating() == 0.0 ? "" : movie.getMainRating());
-//		}
 		insertBase64(movie, map);
 
 		if (movie.getFileCount() > 1) {
@@ -328,6 +337,26 @@ public class GenerateHtmlReport {
 		map.put("mainStars", movie.getMainStars() == null ? "" : movie.getMainStars());
 		map.put("isOnDrive", true);
 		return map;
+	}
+
+	private String bigNumbersformat(long value) {
+		//Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
+		if (value == Long.MIN_VALUE) {
+			return bigNumbersformat(Long.MIN_VALUE + 1);
+		}
+		if (value < 0) {
+			return "-" + bigNumbersformat(-value);
+		}
+		if (value < 1000) {
+			return Long.toString(value); //deal with easy case
+		}
+		Entry<Long, String> e = suffixes.floorEntry(value);
+		Long divideBy = e.getKey();
+		String suffix = e.getValue();
+
+		long truncated = value / (divideBy / 10); //the number part of the output times 10
+		boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
+		return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
 	}
 
 	private void insertBase64(NameYearBean movie, Map<String, Object> map) {
@@ -401,7 +430,7 @@ public class GenerateHtmlReport {
 		return list;
 	}
 
-	private Integer historyrCount() {
+	private Integer historyCount() {
 		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtCount = conn.prepareStatement(SQL_COUNT)) {
 			ResultSet rs = stmtCount.executeQuery();
 			if (rs.next()) {
