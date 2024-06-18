@@ -56,11 +56,11 @@ function insertBody(film: any) {
 								<li><a href="#tabs-2">Synopsis</a></li>
 									</ul>
 							<div id="tabs-1">
-										${film.plotPlot}
-	</div>
+								${film.plotPlot}
+							</div>
 							<div id="tabs-2">
-			${film.plotSynopsis}
-	</div>
+								${film.plotSynopsis}
+							</div>
 						</div>
 					</div>
 				</td>
