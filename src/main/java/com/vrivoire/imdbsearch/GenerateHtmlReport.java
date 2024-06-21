@@ -306,6 +306,9 @@ public class GenerateHtmlReport {
 		if (movie.getMainCountries() != null && !movie.getMainCountries().isEmpty()) {
 			map.put("mainCountries", (movie.getMainCountries().size() > 1 ? ", <b>Countries:</b> " : ", <b>Country:</b> ") + map.get("mainCountries"));
 		}
+		if (map.get("mainCountries") == null) {
+			map.put("mainCountries", "");
+		}
 
 		if (movie.getMainVotes() != null && movie.getMainVotes() >= 1) {
 			String s = bigNumbersformat(movie.getMainVotes());
