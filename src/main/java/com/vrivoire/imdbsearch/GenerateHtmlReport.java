@@ -147,7 +147,19 @@ public class GenerateHtmlReport {
 		map.put("notFoundCount", notFound.size());
 		map.put("notFoundCount_s", notFound.size() > 1 ? "s" : "");
 		map.put("total", notFound.size() + movieList.size());
-		map.put("logsData", sb1.toString());
+		if (Config.IS_LOG_ON.getBoolean()) {
+			map.put("logsData", """
+                    <h3>Logs</h3>
+                    <div>
+                        """ + sb1.toString() + """
+						</br>
+						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
+                    </div>
+                      """);
+		} else {
+			map.put("logsData", "");
+		}
+
 		map.put("NOT_FOUND", sb.toString());
 		if (!Config.IS_IMAGES_EMBEDED.getBoolean()) {
 			map.put("jqueryui_css", "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css\"/>\n");

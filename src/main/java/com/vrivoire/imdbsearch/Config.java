@@ -45,7 +45,8 @@ public enum Config {
 	VERSION_DATATABLES_COLREORDER,
 	DB_PROTOCOL,
 	DB_URL,
-	IS_IMAGES_EMBEDED;
+	IS_IMAGES_EMBEDED,
+	IS_LOG_ON;
 
 	private static final Logger LOG = LogManager.getLogger(Config.class);
 	private static final Map<String, Object> MAP = new TreeMap<>();
