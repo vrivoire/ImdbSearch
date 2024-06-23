@@ -50,7 +50,7 @@ function insertBody(film: any) {
 				<span><b>Writer: </b> ${film.mainWriters}</span >
 					<span><b>Actors: </b> ${film.mainStars}</span >
 						<br>
-						<div class="tabs">
+						<div class="inner-tabs">
 							<ul>
 								<li><a href="#tabs-1">Plot</a></li>
 								<li><a href="#tabs-2">Synopsis</a></li>
@@ -104,17 +104,6 @@ $(document).ready(function () {
 		</br>
 		<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
 
-	$(function () {
-		$(".accordion").accordion({
-			heightStyle: "content"
-		});
-		$("#tabs-1").tabs();
-	});
-
-	$(function () {
-		$(".tabs").tabs();
-	});
-
 	$('span').each(function (index: any) {
 		th = $(this);
 		dc = parseInt($(this).attr('data-color'), 10);
@@ -125,5 +114,10 @@ $(document).ready(function () {
 				th.addClass(value);
 			}
 		});
+	});
+
+	$(function () {
+		$("#tabs").tabs();
+		$(".inner-tabs").tabs();
 	});
 });

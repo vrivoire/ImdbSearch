@@ -103,31 +103,37 @@
 
 					</table>
                 </div>
-                <div class="accordion">
-                    <h3>Not Found</h3>
-                    <div>
-                        <p>${NOT_FOUND}</p>
-                    </div>
 
-                    ${logsData}
+				<div id="tabs">
+					<ul>
+						<li><a href="#tabs-1">List</a></li>
+						<li><a href="#tabs-2">Not Found</a></li>
+						<li><a href="#tabs-3">Logs</a></li>
+						<li><a href="#tabs-4">Table</a></li>
+						<li><a href="#tabs-5">History</a></li>
+					</ul>
 
-					<h3>Table</h3>
-					<div style="overflow: visible;">
+					<div id="tabs-1">
+						<div id="status2"></div>
+					</div>
+
+					<div id="tabs-2">
+						<p>${NOT_FOUND}</p>
+					</div>
+
+					<div id="tabs-3">
+						${logsData}
+					</div>
+
+					<div id ="tabs-4" style="overflow: visible;">
 						<table id="table_search" class="display" style="width:100%"></table>
 						</br>
 						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
 					</div>
 
-					<h3>History</h3>
-					<div id="historyData" style="overflow: visible;"></div>
-                </div>
-                <br/>
-                <div id ="tabs-1">
-                    <ul>
-						<a href="#tabs-3"></a>
-                    </ul>
-					<div id="status2"></div>
-
+					<div id ="tabs-5">
+						<div id="historyData" style="overflow: visible;"></div>
+					</div>
 				</div>
 			</main>
 
