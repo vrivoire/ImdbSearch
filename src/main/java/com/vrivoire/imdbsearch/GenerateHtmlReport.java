@@ -149,7 +149,6 @@ public class GenerateHtmlReport {
 		map.put("total", notFound.size() + movieList.size());
 		if (Config.IS_LOG_ON.getBoolean()) {
 			map.put("logsData", """
-                    <h3>Logs</h3>
                     <div>
                         """ + sb1.toString() + """
 						</br>

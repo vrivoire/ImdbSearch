@@ -82,12 +82,158 @@ function between(x: number, min: number, max: number) {
 	return x >= min && x <= max;
 }
 
+function screenshotPreview() {
+	var xOffset = 10;
+	var yOffset = 30;
+
+	$("a.screenshot").hover(function (e) {
+		this.t = this.title;
+		this.title = "";
+		var c = (this.t !== "") ? "<br/>" + this.t : "";
+		$("body").append("<p id='screenshot'><img src='" + this.rel + "' alt='url preview' />" + c + "</p>");
+		$("#screenshot")
+			.css("top", (e.pageY - xOffset) + "px")
+			.css("left", (e.pageX + yOffset) + "px")
+			.fadeIn("fast");
+	},
+		function () {
+			this.title = this.t;
+			$("#screenshot").remove();
+		});
+	$("a.screenshot").mousemove(function (e) {
+		$("#screenshot")
+			.css("top", (e.pageY - xOffset) + "px")
+			.css("left", (e.pageX + yOffset) + "px");
+	});
+};
+
 var dc: number;
 var first;
 var second;
 var th: {addClass: (arg0: any) => void;};
 
 $(document).ready(function () {
+
+	const titles = Object.keys(jsonListAll[0])
+		.map((key) => `<th>${key}</th>`)
+		.join("");
+	const rows = jsonListAll.map((obj) =>
+		`<tr>${Object.values(obj)
+			.map((val) => `<td>${val}</td>`)
+			.join("")}</tr>`
+	).join("");
+
+	$("#table_and_search")[0].innerHTML = `
+										<thead>
+											<tr>
+												${titles}
+											</tr>
+										</thead>
+										<tbody>
+											${rows}
+										</tbody>`;
+
+	$('#table_and_search').DataTable({
+		info: false,
+		ordering: true,
+		paging: false,
+		colReorder: {
+			order: [6, 0, 7, 4, 5, 3, 2, 1, 9, 10, 11, 8]
+		},
+		order: {
+			name: 'rank',
+			dir: 'asc'
+		},
+		columnDefs: [
+			{
+				target: 2,
+				visible: false,
+				searchable: false
+			}, {
+				target: 5,
+				visible: false,
+				searchable: false
+			}, {
+				target: 9,
+				visible: false,
+				searchable: false
+			}
+		],
+		columns: [
+			{
+				data: "mainRating",
+				title: "Rating",
+				render: function (data, type, row, meta) {
+					if (type === 'display') {
+						return "<span data-color='" + data + "'>" + data + "</span>";
+					}
+					return data;
+				}
+			},
+			{
+				data: "runtimeHM",
+				title: "Duration"
+			},
+			{
+				data: "mainCoverUrl"
+			},
+			{
+				data: "mainKind",
+				title: "Kind"
+			},
+			{
+				data: "mainYear",
+				title: "Year"
+			},
+			{
+				data: "mainVotes",
+				title: "Votes"
+			},
+			{
+				data: "rank",
+				title: "Rank"
+			},
+			{
+				data: "mainOriginalTitle",
+				title: "Title",
+				render: function (data, type, row, meta) {
+					if (type === 'display') {
+						return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
+					}
+					return data;
+				}
+			},
+			{
+				data: "mainImdbid",
+				title: "IMDB (id)",
+				render: function (data, type, row, meta) {
+					if (type === 'display') {
+						return data + "&nbsp;<small>(" + row.id + ")</small>";
+					}
+					return data;
+				}
+			},
+			{
+				data: "id"
+			},
+			{
+				data: "mainCountries",
+				title: "Countries",
+				render: function (data, type, row, meta) {
+					if (type === 'display') {
+						return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
+					}
+					return data;
+				}
+			},
+			{
+				data: "mainGenres",
+				title: "Genres"
+			}
+		]
+	});
+
+	screenshotPreview();
 
 	var text = "";
 	for (let film of jsonByDate) {
@@ -117,7 +263,19 @@ $(document).ready(function () {
 	});
 
 	$(function () {
-		$("#tabs").tabs();
+		$("#tabs").tabs({
+			beforeActivate: function (event, ui) {
+				if (ui.newTab.index() === 1) {
+					$('#table_and_search_wrapper').css('visibility', 'visible');
+				} else {
+					$('#table_and_search_wrapper').css('visibility', 'collapse');
+				}
+			}
+		});
 		$(".inner-tabs").tabs();
+		$('#table_and_search_wrapper').css('visibility', 'collapse');
+		$("#tabs").addClass('visible');
+		$("#tabs").removeClass('hidden');
+		$("#loader").css('display', 'none');
 	});
 });

@@ -58,6 +58,40 @@
 				display:none;
 				color:#fff;
 			}
+
+			.hidden {
+				opacity: 0;
+				cursor: wait;
+			}
+			.visible {
+				opacity: 1;
+				transition: opacity 1s ease-out;
+				cursor: default;
+			}
+			.loader {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+
+				width: 100px;
+				height: 100px;
+				border: 5px solid #FFF;
+				border-bottom-color: #FF3D00;
+				border-radius: 50%;
+				display: inline-block;
+				box-sizing: border-box;
+				animation: rotation 1s linear infinite;
+			}
+
+			@keyframes rotation {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
         </style>
 		<!--JQuery stuff-->
         ${jqueryui_css}
@@ -77,222 +111,68 @@
 		<!--json stuff-->
 		${jsonListAll}
 		${jsonByDate}
+
     </head>
 
 	<body>
-		<section id="pageContent">
-            <main role="main">
-                <p>
-                <div style="padding: 1em" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
-					<table style="width: 100%;">
-						<tr>
-							<td style="width:30%">
-								<span><b>Report in:</b> ${report_location}</span><br/>
-								<span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
-								<span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
-								<span><b>Total scanned:</b> ${total}</span><br/>
-								<span><b>Space used:</b> ${spaceUsed}</span><br/>
-								<span><b>Total films scanned:</b> ${historyCount}</span><br/>
-							</td>
-							<td>
-								<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
-									${statsImage}
-								</div>
-							</td>
-						</tr>
+		<div id="loader" class="loader"></div>
 
-					</table>
-                </div>
+		<div id="tabs">
+			<script>
+				$("#tabs").addClass('hidden');
+			</script>
+			<ul>
+				<li><a href="#tabs-1">List</a></li>
+				<li><a href="#tabs-2">Table</a></li>
+				<li><a href="#tabs-3">History</a></li>
+				<li><a href="#tabs-4">Stats</a></li>
+				<!--				<li><a href="#tabs-5">Not Found</a></li>-->
+				<li><a href="#tabs-6">Logs</a></li>
+			</ul>
 
-				<div id="tabs">
-					<ul>
-						<li><a href="#tabs-1">List</a></li>
-						<li><a href="#tabs-2">Not Found</a></li>
-						<li><a href="#tabs-3">Logs</a></li>
-						<li><a href="#tabs-4">Table</a></li>
-						<li><a href="#tabs-5">History</a></li>
-					</ul>
+			<div id="tabs-1">
+				<div id="status2"></div>
+			</div>
 
-					<div id="tabs-1">
-						<div id="status2"></div>
-					</div>
+			<div id="tabs-2">
+				<table id="table_and_search" class="display tablesorter" style="width:100%"></table>
+			</div>
 
-					<div id="tabs-2">
-						<p>${NOT_FOUND}</p>
-					</div>
+			<div id="tabs-3">
+				<div id="historyData"></div>
+			</div>
 
-					<div id="tabs-3">
-						${logsData}
-					</div>
+			<div id="tabs-4" style="padding: 1em" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+				<table style="width: 100%;">
+					<tr>
+						<td style="width:30%">
+							<span><b>Report in:</b> ${report_location}</span><br/>
+							<span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
+							<span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
+							<span><b>Total scanned:</b> ${total}</span><br/>
+							<span><b>Space used:</b> ${spaceUsed}</span><br/>
+							<span><b>Total films scanned:</b> ${historyCount}</span><br/>
+						</td>
+						<td>
+							<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
+								${statsImage}
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
 
-					<div id ="tabs-4" style="overflow: visible;">
-						<table id="table_search" class="display" style="width:100%"></table>
-						</br>
-						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
-					</div>
+			<!--			<div id="tabs-5">
+							<p>${NOT_FOUND}</p>
+						</div>-->
 
-					<div id ="tabs-5">
-						<div id="historyData" style="overflow: visible;"></div>
-					</div>
-				</div>
-			</main>
-
-		</section>
+			<div id="tabs-6">
+				${logsData}
+			</div>
+		</div>
 
 		<script type="text/babel">
 			/// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
-		</script>
-
-		<script>
-			this.screenshotPreview = function () {
-				var xOffset = 10;
-				var yOffset = 30;
-
-				$("a.screenshot").hover(function (e) {
-					this.t = this.title;
-					this.title = "";
-					var c = (this.t !== "") ? "<br/>" + this.t : "";
-					$("body").append("<p id='screenshot'><img src='" + this.rel + "' alt='url preview' />" + c + "</p>");
-					$("#screenshot")
-							.css("top", (e.pageY - xOffset) + "px")
-							.css("left", (e.pageX + yOffset) + "px")
-							.fadeIn("fast");
-				},
-						function () {
-							this.title = this.t;
-							$("#screenshot").remove();
-						});
-				$("a.screenshot").mousemove(function (e) {
-					$("#screenshot")
-							.css("top", (e.pageY - xOffset) + "px")
-							.css("left", (e.pageX + yOffset) + "px");
-				});
-			};
-
-			$(function () {
-				const tabEl = document.getElementById("table_search");
-				const titles = Object.keys(jsonListAll[0])
-						.map((key) => `<th>${key}</th>`)
-						.join("");
-				const rows = jsonListAll.map((obj) =>
-						`<tr>${Object.values(obj)
-							.map((val) => `<td>${val}</td>`)
-							.join("")}</tr>`
-				).join("");
-				tabEl.innerHTML = `
-											<table class="tablesorter">
-												<thead>
-													<tr>
-														${titles}
-													</tr>
-												</thead>
-												<tbody>
-													${rows}
-												</tbody>
-											</table>`;
-
-				new DataTable('#table_search', {
-					info: false,
-					ordering: true,
-					paging: false,
-					colReorder: {
-						order: [6, 0, 7, 4, 5, 3, 2, 1, 9, 10, 11, 8]
-					},
-					order: {
-						name: 'rank',
-						dir: 'asc'
-					},
-					columnDefs: [
-						{
-							target: 2,
-							visible: false,
-							searchable: false
-						}, {
-							target: 5,
-							visible: false,
-							searchable: false
-						}, {
-							target: 9,
-							visible: false,
-							searchable: false
-						}
-					],
-					columns: [
-						{
-							data: "mainRating",
-							title: "Rating",
-							render: function (data, type, row, meta) {
-								if (type === 'display') {
-									return "<span data-color='" + data + "'>" + data + "</span>";
-								}
-								return data;
-							}
-						},
-						{
-							data: "runtimeHM",
-							title: "Duration"
-						},
-						{
-							data: "mainCoverUrl"
-						},
-						{
-							data: "mainKind",
-							title: "Kind"
-						},
-						{
-							data: "mainYear",
-							title: "Year"
-						},
-						{
-							data: "mainVotes",
-							title: "Votes"
-						},
-						{
-							data: "rank",
-							title: "Rank"
-						},
-						{
-							data: "mainOriginalTitle",
-							title: "Title",
-							render: function (data, type, row, meta) {
-								if (type === 'display') {
-									return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
-								}
-								return data;
-							}
-						},
-						{
-							data: "mainImdbid",
-							title: "IMDB (id)",
-							render: function (data, type, row, meta) {
-								if (type === 'display') {
-									return data + "&nbsp;<small>(" + row.id + ")</small>";
-								}
-								return data;
-							}
-						},
-						{
-							data: "id"
-						},
-						{
-							data: "mainCountries",
-							title: "Countries",
-							render: function (data, type, row, meta) {
-								if (type === 'display') {
-									return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
-								}
-								return data;
-							}
-						},
-						{
-							data: "mainGenres",
-							title: "Genres"
-						}
-					]
-				});
-
-				screenshotPreview();
-			});
 		</script>
 
 		${index_ts}
