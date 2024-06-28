@@ -92,6 +92,8 @@
 					transform: rotate(360deg);
 				}
 			}
+
+
         </style>
 		<!--JQuery stuff-->
         ${jqueryui_css}
@@ -131,19 +133,19 @@
 			</ul>
 
 			<div id="tabs-1">
-				<div id="status2"></div>
+				<div id="status2" style="overflow: auto; max-height: 100vh; width:100%;"></div>
 			</div>
 
-			<div id="tabs-2">
-				<table id="table_and_search" class="display tablesorter" style="width:100%"></table>
+			<div id="tabs-2" style="overflow: auto; max-height: 100vh;">
+				<table id="table_and_search" class="display tablesorter" style="width:100%;"></table>
 			</div>
 
 			<div id="tabs-3">
-				<div id="historyData"></div>
+				<div id="historyData" style="overflow: auto; max-height: 100vh; width:100%;"></div>
 			</div>
 
-			<div id="tabs-4" style="padding: 1em" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
-				<table style="width: 100%;">
+			<div id="tabs-4" style="padding: 1em; " class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+				<table style="width: 100%; overflow: auto; max-height: 100vh;">
 					<tr>
 						<td style="width:30%">
 							<span><b>Report in:</b> ${report_location}</span><br/>
@@ -166,7 +168,7 @@
 							<p>${NOT_FOUND}</p>
 						</div>-->
 
-			<div id="tabs-6">
+			<div id="tabs-6" style="overflow: auto; max-height: 100vh;">
 				${logsData}
 			</div>
 		</div>

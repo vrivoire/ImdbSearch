@@ -414,7 +414,8 @@ public class NameYearBean {
 			s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
 		}
 		s = s.replace(':', 'h') + 'm';
-		s = s.equals("00h00m") ? getTimeInHHMMSS() : s;
+		s = s == null || s.equals("00h00m") ? getTimeInHHMMSS() : s;
+
 		return s;
 	}
 
