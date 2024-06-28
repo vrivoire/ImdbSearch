@@ -25,7 +25,7 @@ function insertAll(film: any) {
 
 function insertBody(film: any) {
 	return `<tr >
-				<td width="66%" align="center" style="text-align: left;">
+				<td align="center" style="text-align: left;">
 					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
 						<span style="font-weight: bold; ">
 							<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
@@ -64,7 +64,7 @@ function insertBody(film: any) {
 						</div>
 					</div>
 				</td>
-				<td width="33%" align="center">
+				<td width="400px" align="center">
 					<a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank"><img src="${film.mainCoverUrl}" alt="${film.name}" width="300"/></a>
 				</td>
 			</tr>`;

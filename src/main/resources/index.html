@@ -9,14 +9,26 @@
         <style>
             body{
                 margin: auto;
-                line-height:1;
-                font-family: arial;
-                padding:2em;
-                outline:0;
-                font-size:100%;
-                vertical-align:top;
-                background:transparent;
+				background: lightgrey;
             }
+
+			#tablist {
+				position: fixed;
+				width: 99%;
+				height: 43px;
+				top: 0;
+				z-index: 8;
+			}
+
+			#content {
+				top: 35px;
+				position: absolute;
+				left: 0;
+				right: 0;
+				z-index: 7;
+				margin: 0 auto;
+				background: lightgrey;
+			}
 
 			.red {
 				color:red
@@ -50,8 +62,10 @@
 				flex-direction: column;
 			}
 
-			#screenshot{
-				position:absolute;
+			#screenshot {
+				position: relative;
+				width: 300px;
+				z-index: 9;
 				border:1px solid #ccc;
 				background:#333;
 				padding:5px;
@@ -94,6 +108,7 @@
 			}
 
 
+
         </style>
 		<!--JQuery stuff-->
         ${jqueryui_css}
@@ -123,7 +138,7 @@
 			<script>
 				$("#tabs").addClass('hidden');
 			</script>
-			<ul>
+			<ul id="tablist">
 				<li><a href="#tabs-1">List</a></li>
 				<li><a href="#tabs-2">Table</a></li>
 				<li><a href="#tabs-3">History</a></li>
@@ -132,47 +147,48 @@
 				<li><a href="#tabs-6">Logs</a></li>
 			</ul>
 
-			<div id="tabs-1">
-				<div id="status2" style="overflow: auto; max-height: 100vh; width:100%;"></div>
-			</div>
+			<div id="content">
+				<div id="tabs-1">
+					<div id="status2"></div>
+				</div>
 
-			<div id="tabs-2" style="overflow: auto; max-height: 100vh;">
-				<table id="table_and_search" class="display tablesorter" style="width:100%;"></table>
-			</div>
+				<div id="tabs-2">
+					<table id="table_and_search" class="display tablesorter" style="width:100%;"></table>
+				</div>
 
-			<div id="tabs-3">
-				<div id="historyData" style="overflow: auto; max-height: 100vh; width:100%;"></div>
-			</div>
+				<div id="tabs-3">
+					<div id="historyData"></div>
+				</div>
 
-			<div id="tabs-4" style="padding: 1em; " class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
-				<table style="width: 100%; overflow: auto; max-height: 100vh;">
-					<tr>
-						<td style="width:30%">
-							<span><b>Report in:</b> ${report_location}</span><br/>
-							<span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
-							<span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
-							<span><b>Total scanned:</b> ${total}</span><br/>
-							<span><b>Space used:</b> ${spaceUsed}</span><br/>
-							<span><b>Total films scanned:</b> ${historyCount}</span><br/>
-						</td>
-						<td>
-							<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
-								${statsImage}
-							</div>
-						</td>
-					</tr>
-				</table>
-			</div>
+				<div id="tabs-4" style="padding: 1em; " class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
+					<table style="width: 100%; overflow: auto; max-height: 100vh;">
+						<tr>
+							<td style="width:30%">
+								<span><b>Report in:</b> ${report_location}</span><br/>
+								<span><b>Found:</b> ${foundCount} movie${found_s}</span><br/>
+								<span><b>Not found:</b> ${notFoundCount} movie${notFoundCount_s}</span><br/>
+								<span><b>Total scanned:</b> ${total}</span><br/>
+								<span><b>Space used:</b> ${spaceUsed}</span><br/>
+								<span><b>Total films scanned:</b> ${historyCount}</span><br/>
+							</td>
+							<td>
+								<div style="height: 100%; display: flex; justify-content: center; align-items: center;">
+									${statsImage}
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
 
-			<!--			<div id="tabs-5">
-							<p>${NOT_FOUND}</p>
-						</div>-->
+				<!--			<div id="tabs-5">
+								<p>${NOT_FOUND}</p>
+							</div>-->
 
-			<div id="tabs-6" style="overflow: auto; max-height: 100vh;">
-				${logsData}
+				<div id="tabs-6">
+					${logsData}
+				</div>
 			</div>
 		</div>
-
 		<script type="text/babel">
 			/// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
 		</script>
