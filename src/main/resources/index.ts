@@ -265,11 +265,17 @@ $(document).ready(function () {
 	$(function () {
 		$("#tabs").tabs({
 			beforeActivate: function (event, ui) {
-				if (ui.newTab.index() === 1) {
+				if (ui.newPanel[0].id === 'tabs-Table') {
 					$('#table_and_search_wrapper').css('visibility', 'visible');
 				} else {
 					$('#table_and_search_wrapper').css('visibility', 'collapse');
 				}
+
+				window.scrollTo({
+					top: 0,
+					left: 0,
+					behavior: 'instant'
+				});
 			}
 		});
 		$(".inner-tabs").tabs();

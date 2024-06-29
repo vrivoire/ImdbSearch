@@ -188,14 +188,8 @@ public class GenerateHtmlReport {
 		}
 		map.put("statsImage", getHistogram());
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream("/index.ts")));
-		StringBuilder sb2 = new StringBuilder();
-		reader.lines().forEachOrdered((String line) -> {
-			sb2.append(line);
-		}
-		);
-		String indexTs = sb2.toString();
-		map.put("index_ts", "\n<script type=\"text/babel\">\n" + indexTs + "\n</script>\n");
+		map.put("index_css", "\n<style>\n" + read("/index.css") + "\n</style>\n");
+		map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
 
 		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
@@ -406,13 +400,12 @@ public class GenerateHtmlReport {
 	}
 
 	private static String read(String resourceName) {
-		StringBuilder builder = new StringBuilder();
-		InputStream in = GenerateHtmlReport.class.getResourceAsStream(resourceName);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-		reader.lines().forEach(line -> {
-			builder.append(line);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream(resourceName)));
+		StringBuilder sb2 = new StringBuilder();
+		reader.lines().forEach((String line) -> {
+			sb2.append(line);
 		});
-		return builder.toString();
+		return sb2.toString();
 	}
 
 	private List<Map<String, Object>> sqlFindAll() {
