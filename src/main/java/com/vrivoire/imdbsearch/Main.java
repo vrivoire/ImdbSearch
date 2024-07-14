@@ -269,7 +269,7 @@ public class Main {
 					if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
 						String newName = WordUtils.capitalize((name + " " + nameYearBean.getMainYear() + "." + extension).toLowerCase()
 								.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
-								.replace('|', ' '), new char[]{});
+								.replace('|', ' ').replace("\"", ""), new char[]{});
 						if (!newName.equalsIgnoreCase(originalName)) {
 							LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
 							File oldF = new File(Main.default_path + originalName);
@@ -322,7 +322,7 @@ public class Main {
 				try (PreparedStatement pstmtUpdate = conn.prepareStatement(SQL_UPDATE); PreparedStatement pstmtInsert = conn.prepareStatement(SQL_INSERT)) {
 					List<String> imdbIdsUptade = new ArrayList<>();
 					List<String> imdbIdsInsert = new ArrayList<>();
-					int[] resultUpdate, resultInsert;
+					int[] resultUpdate = new int[0], resultInsert = new int[0];
 					for (NameYearBean nameYearBean : listFound) {
 						Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
 						if (mapFromBean.get("mainImdbid") != null || mapFromBean.get("mainOriginalTitle") != null) {
@@ -337,10 +337,18 @@ public class Main {
 							}
 						}
 					}
-					resultUpdate = pstmtUpdate.executeBatch();
-					pstmtUpdate.clearBatch();
-					resultInsert = pstmtInsert.executeBatch();
-					pstmtInsert.clearBatch();
+					try {
+						resultUpdate = pstmtUpdate.executeBatch();
+						pstmtUpdate.clearBatch();
+					} catch (SQLException e) {
+						LOG.error("pstmtUpdate: " + e.getMessage(), e);
+					}
+					try {
+						resultInsert = pstmtInsert.executeBatch();
+						pstmtInsert.clearBatch();
+					} catch (SQLException e) {
+						LOG.error("pstmtInsert: " + e.getMessage(), e);
+					}
 
 					StringBuilder sbUpdate = new StringBuilder("\n");
 					for (int i = 0; i < resultUpdate.length; i++) {

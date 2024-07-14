@@ -23,7 +23,7 @@ function insertAll(film: any) {
 				</div>`;
 }
 
-function insertBody(film: any) {
+function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string) {
 	return `<tr >
 				<td align="center" style="text-align: left;">
 					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
@@ -38,23 +38,23 @@ function insertBody(film: any) {
 						<table>
 							<tr>
 								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}${film.mainCountries},&nbsp;</td>
-								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;">${film.mainLanguages}&nbsp;</td>
-								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${film.audio}</td>
+								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;"><b>Language:</b>&nbsp;${languageFlags}&nbsp;</td>
+								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${audioFlags}</td>
 							</tr>
 							<tr>
-								<td style="font-size: x-small; width: 40em;padding: 0px;margin: 0px;"><b>Sub&nbsp;Title:</b>&nbsp;${film.subTitles}</td>
+								<td style="font-size: x-small; width: 40em;padding: 0px;margin: 0px;"><b>Sub&nbsp;Title:</b>&nbsp;${subTitlesFlags}</td>
 							</tr>
 						</table>
 						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
-			<span><b>Director: </b> ${film.mainDirectors}</span >
-				<span><b>Writer: </b> ${film.mainWriters}</span >
-					<span><b>Actors: </b> ${film.mainStars}</span >
+						<span><b>Director: </b> ${film.mainDirectors}</span >
+						<span><b>Writer: </b> ${film.mainWriters}</span >
+						<span><b>Actors: </b> ${film.mainStars}</span >
 						<br>
 						<div class="inner-tabs">
 							<ul>
 								<li><a href="#tabs-1">Plot</a></li>
 								<li><a href="#tabs-2">Synopsis</a></li>
-									</ul>
+							</ul>
 							<div id="tabs-1">
 								${film.plotPlot}
 							</div>
@@ -83,29 +83,60 @@ function between(x: number, min: number, max: number) {
 }
 
 function screenshotPreview() {
-	var xOffset = 10;
-	var yOffset = 30;
-
-	$("a.screenshot").hover(function (e) {
-		this.t = this.title;
-		this.title = "";
-		var c = (this.t !== "") ? "<br/>" + this.t : "";
-		$("body").append("<p id='screenshot'><img src='" + this.rel + "' alt='url preview' />" + c + "</p>");
-		$("#screenshot")
-			.css("top", (e.pageY - xOffset) + "px")
-			.css("left", (e.pageX + yOffset) + "px")
-			.fadeIn("fast");
-	},
+	var innerW = innerWidth;
+	var innerH = innerHeight;
+	$("a.screenshot").hover(
+		function (e) {
+			var x = e.pageX;
+			var y = e.pageY;
+			var left = (x + 305) >= innerW ? innerW - 305 : x;
+			var top = (y + 422) >= innerH ? innerH - 452 : y;
+			$("body").append("<p id='screenshot'><img src='" + this.rel + "' alt='url preview'></p>");
+			$("#screenshot")
+				.css("top", top + "px")
+				.css("left", left + "px")
+				.fadeIn("fast");
+		},
 		function () {
-			this.title = this.t;
 			$("#screenshot").remove();
-		});
-	$("a.screenshot").mousemove(function (e) {
-		$("#screenshot")
-			.css("top", (e.pageY - xOffset) + "px")
-			.css("left", (e.pageX + yOffset) + "px");
-	});
+		}
+	);
 };
+
+function getFlagsByCode(list: string[]) {
+	var flags: string = '';
+	for (let element of list) {
+		if (element && element !== "und") {
+			var map = json_iso_639_2[element];
+			if (map != undefined) {
+				var lang1 = map['639-1'];
+				var lang2 = ISO_3166_1_alpha_2[lang1];
+				var country = map['en'][0];
+				flags += `<img src='https://flagcdn.com/20x15/${(lang2 != undefined ? lang2 : lang1)}.png' width='20px' height='15px' alt='${country}' title='${country}'> `;
+			} else {
+				flags += `${element} `;
+			}
+		}
+	}
+	return flags;
+}
+
+function getFlagsByCode2(list: string[]) {
+	var flags: string = '';
+	for (let lang of list) {
+		if (lang && lang !== "und") {
+			var map = json_iso_639_1[lang];
+			if (map != undefined) {
+				var lang1 = ISO_3166_1_alpha_2[lang];
+				var country = map['name'];
+				flags += `<img src='https://flagcdn.com/20x15/${lang1}.png' width='20px' height='15px' alt='${country}' title='${country}'> `;
+			} else {
+				flags += `${lang} `;
+			}
+		}
+	}
+	return flags;
+}
 
 var dc: number;
 var first;
@@ -117,6 +148,7 @@ $(document).ready(function () {
 	const titles = Object.keys(jsonListAll[0])
 		.map((key) => `<th>${key}</th>`)
 		.join("");
+
 	const rows = jsonListAll.map((obj) =>
 		`<tr>${Object.values(obj)
 			.map((val) => `<td>${val}</td>`)
@@ -235,18 +267,56 @@ $(document).ready(function () {
 
 	screenshotPreview();
 
-	var text = "";
-	for (let film of jsonByDate) {
-		text += insertBody(film)
-	}
-	$("#status2")[0].innerHTML = `${$("#status2")[0].innerHTML} \n <div"><table><tbody>${text}</tbody></table></div>`;
+	json_iso_639_2['English'] = json_iso_639_2['eng'];
 
-	var text = "";
+	var textByDate = "";
+	for (let film of jsonByDate) {
+		var audioFlags: string = getFlagsByCode(film.audio);
+		var subTitlesFlags: string = getFlagsByCode(film.subTitles);
+
+		console.log(film.mainLanguageCodes);
+		var languageFlags: string = getFlagsByCode2(film.mainLanguageCodes);
+
+		textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags);
+	}
+	var textByRank = "";
+	for (let film of jsonByRank) {
+		textByRank += insertBody(film, '', '', '');
+	}
+	var textByName = "";
+	for (let film of jsonByName) {
+		textByName += insertBody(film, '', '', '');
+	}
+	$("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
+								<div id='tabs-sorted'>
+									<ul>
+										<li><a href="#tabs-Date">By Date</a></li>
+										<li><a href="#tabs-Rank">By Rank</a></li>
+										<li><a href="#tabs-Name">By Name</a></li>
+									</ul>
+									<div id='tabs-Date'>
+										<table>
+											<tbody>${textByDate}</tbody>
+										</table>
+									</div>
+									<div id='tabs-Rank'>
+										<table>
+											<tbody>${textByRank}</tbody>
+										</table>
+									</div>
+									<div id='tabs-Name'>
+										<table>
+											<tbody>${textByName}</tbody>
+										</table>
+									</div>
+								</div>`;
+
+	var textListAll = "";
 	for (let film of jsonListAll) {
-		text += insertAll(film)
+		textListAll += insertAll(film)
 	}
 	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
-		${text}
+		${textListAll}
 		</br>
 		<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
 
@@ -278,6 +348,7 @@ $(document).ready(function () {
 				});
 			}
 		});
+		$("#tabs-sorted").tabs();
 		$(".inner-tabs").tabs();
 		$('#table_and_search_wrapper').css('visibility', 'collapse');
 		$("#tabs").addClass('visible');

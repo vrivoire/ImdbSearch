@@ -160,6 +160,7 @@ public class GenerateHtmlReport {
 		}
 
 		map.put("NOT_FOUND", sb.toString());
+
 		if (!Config.IS_IMAGES_EMBEDED.getBoolean()) {
 			map.put("jqueryui_css", "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css\"/>\n");
 			map.put("jquery_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js\"></script>\n");
@@ -196,9 +197,20 @@ public class GenerateHtmlReport {
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
 
+		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getMainRating() > ovf2.getMainRating() ? 1 : -1));
+		String jsonByRank = ow.writeValueAsString(getMapList(movieList));
+		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + "\n</script>\n");
+
+		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf2.getMainOriginalTitle().compareToIgnoreCase(ovf1.getMainOriginalTitle())));
+		String jsonByName = ow.writeValueAsString(getMapList(movieList));
+		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
+
 		String jsonListAll = ow.writeValueAsString(sqlFindAll());
 		map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 
+		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + "\n</script>\n");
+		map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + "\n</script>\n");
+		map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1-alpha-2.json") + "\n</script>\n");
 		LOG.info("Report file: " + Paths.get(fullReportPath));
 
 		var index = Config.fill(read("/index.html"), map);
@@ -344,6 +356,10 @@ public class GenerateHtmlReport {
 
 		map.put("mainStars", movie.getMainStars() == null ? "" : movie.getMainStars());
 		map.put("isOnDrive", true);
+
+		map.put("subTitles", movie.getSubTitles());
+		map.put("audio", movie.getAudio());
+		map.put("mainLanguageCodes", movie.getMainLanguageCodes());
 		return map;
 	}
 

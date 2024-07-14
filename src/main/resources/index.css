@@ -3,7 +3,7 @@ body{
 	background: lightgrey;
 }
 
-#tablist {
+.tablist {
 	position: fixed;
 	width: 99%;
 	height: 43px;

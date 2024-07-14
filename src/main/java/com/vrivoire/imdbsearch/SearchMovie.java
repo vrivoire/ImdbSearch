@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -351,15 +352,15 @@ public class SearchMovie {
 							MediaPlayer mediaPlayer = mediaPlayerComponent.mediaPlayer();
 							List<? extends TrackInfo> trackInfoList = mediaPlayer.media().info().tracks();
 							if (!trackInfoList.isEmpty()) {
-								StringBuilder sbSubTitles = new StringBuilder("");
-								StringBuilder sbAudio = new StringBuilder("");
+								Set<String> subTitleList = new TreeSet<>();
+								Set<String> audioList = new TreeSet<>();
 								for (TrackInfo trackInfo : trackInfoList) {
 									if (trackInfo != null) {
 										switch (trackInfo) {
 											case TextTrackInfo textTrackInfo ->
-												sbSubTitles.append(", ").append(textTrackInfo.language());
+												subTitleList.add(textTrackInfo.language());
 											case AudioTrackInfo audioTrackInfo ->
-												sbAudio.append(", ").append(audioTrackInfo.language());
+												audioList.add(audioTrackInfo.language());
 											case UnknownTrackInfo unknownTrackInfo ->
 												LOG.info(nameYearBean.getFile().getName() + " - UnknownTrackInfo: " + unknownTrackInfo);
 											case VideoTrackInfo videoTrackInfo -> {
@@ -415,13 +416,9 @@ public class SearchMovie {
 										}
 									}
 								}
-								String subTitles = sbSubTitles.toString().trim();
-								subTitles = subTitles.isEmpty() ? "" : subTitles.substring(2);
-								nameYearBean.setSubTitles(subTitles == null || subTitles.equals("null") ? "" : subTitles);
 
-								String audio = sbAudio.toString().trim();
-								audio = audio.isEmpty() ? "" : audio.substring(2);
-								nameYearBean.setAudio(audio == null || audio.equals("null") ? "" : audio);
+								nameYearBean.setSubTitles(subTitleList);
+								nameYearBean.setAudio(audioList);
 
 								LOG.info(nameYearBean.getFile().getName() + " - " + nameYearBean.getCodecDescription() + " " + nameYearBean.getWidth() + " x " + nameYearBean.getHeigth() + " "
 										+ nameYearBean.getResolutionDescription() + " " + nameYearBean.getTimeInHHMMSS() + " st[" + nameYearBean.getSubTitles() + "] a[" + nameYearBean.getAudio() + "]");

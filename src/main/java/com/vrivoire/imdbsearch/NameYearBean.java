@@ -8,6 +8,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class NameYearBean {
 
@@ -33,7 +35,7 @@ public class NameYearBean {
 	private String mainImdbid = null;
 	private String mainKind = null;
 	private String mainAlternativeKind = null;
-	private List<String> mainLanguageCodes = null;
+	private Set<String> mainLanguageCodes = new TreeSet<>();
 	private List<String> mainLanguages = null;
 	private String mainLocalizedTitle = null;
 	private String mainOriginalAirDate = null;
@@ -68,8 +70,8 @@ public class NameYearBean {
 	private Integer heigth = null;
 	private String codecDescription = null;
 	private String timeInHHMMSS = null;
-	private String subTitles = "";
-	private String audio = "";
+	private Set<String> subTitles = new TreeSet<>();
+	private Set<String> audio = new TreeSet<>();
 
 	public NameYearBean() {
 	}
@@ -338,12 +340,12 @@ public class NameYearBean {
 		this.mainAlternativeKind = mainAlternativeKind;
 	}
 
-	public List<String> getMainLanguageCodes() {
+	public Set<String> getMainLanguageCodes() {
 		return mainLanguageCodes;
 	}
 
 	public void setMainLanguageCodes(List<String> mainLanguageCodes) {
-		this.mainLanguageCodes = mainLanguageCodes;
+		this.mainLanguageCodes = new TreeSet<>(mainLanguageCodes);
 	}
 
 	public void setMainLanguages(List<String> mainLanguages) {
@@ -555,19 +557,19 @@ public class NameYearBean {
 		this.timeInHHMMSS = timeInHHMMSS;
 	}
 
-	void setSubTitles(String subTitles) {
+	void setSubTitles(Set<String> subTitles) {
 		this.subTitles = subTitles;
 	}
 
-	public String getSubTitles() {
+	public Set<String> getSubTitles() {
 		return subTitles;
 	}
 
-	void setAudio(String audio) {
+	void setAudio(Set<String> audio) {
 		this.audio = audio;
 	}
 
-	public String getAudio() {
+	public Set<String> getAudio() {
 		return audio;
 	}
 
