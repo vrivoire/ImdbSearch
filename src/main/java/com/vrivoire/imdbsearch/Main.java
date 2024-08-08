@@ -16,17 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -50,41 +42,6 @@ public class Main {
 	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
-
-	static final String SQL_SELECT = "select * from films where imdb_id=?;";
-	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=?, is_on_drive=? where imdb_id=?;";
-	private static final String SQL_UPDATE_FALSE = "update films set is_on_drive=false;";
-	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres, is_on_drive) values(?,?,?,?,?,?,?,?,?,?,?);";
-	static final String SQL_HISTOGRAM = """
-                                          SELECT
-											(case when rating < 0 then 0 else round(rating * 2,0) / 2 end) as rate,
-											count(case when rating < 0 then 0 else round(rating,0) end) as rateCount
-                                          FROM films
-                                          group by (case when rating < 0 then 0 else round(rating * 2,0) / 2 end)
-                                          order by rating;
-                                          """;
-
-	private static final String DDL1 = "drop index if exists idx_imdb_id;";
-	private static final String DDL2 = """
-										create table if not exists films (
-											id integer primary key not null,
-											title varchar(255) not null,
-											imdb_id varchar(255) not null,
-											year varchar(25) not null,
-											kind varchar(8) not null,
-											rating double not null,
-											cover_url text,
-											votes text,
-											runtimeHM varchar(6),
-											countries text,
-											genres text
-										);
-            """;
-	private static final String DDL3 = "create unique index idx_imdb_id on films(imdb_id);";
-	private static final String DDL4 = """
-                                   ALTER TABLE films drop COLUMN is_on_drive;
-                                   ALTER TABLE films ADD column is_on_drive boolean DEFAULT false;
-                                   """;
 
 	static {
 		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
@@ -170,7 +127,7 @@ public class Main {
 			setNewFileName(listFound);
 			setNewFileName(listNotFound);
 
-			saveDB(listFound);
+			DbUtils.saveDB(listFound);
 
 			var generateHtmlReport = new GenerateHtmlReport();
 			generateHtmlReport.deleteReport();
@@ -303,135 +260,6 @@ public class Main {
 			}
 		}
 		);
-	}
-
-	private void saveDB(List<NameYearBean> listFound) {
-		if (!new File(Config.DB_URL.getString()).exists()) {
-			DDLs();
-		}
-		long start = System.currentTimeMillis();
-		GenerateHtmlReport generateHtmlReport = new GenerateHtmlReport();
-
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
-			try (PreparedStatement pstmtUpdateFalse = conn.prepareStatement(SQL_UPDATE_FALSE)) {
-				pstmtUpdateFalse.executeBatch();
-				pstmtUpdateFalse.clearBatch();
-			}
-
-			try (PreparedStatement pstmtSelect = conn.prepareStatement(SQL_SELECT)) {
-				try (PreparedStatement pstmtUpdate = conn.prepareStatement(SQL_UPDATE); PreparedStatement pstmtInsert = conn.prepareStatement(SQL_INSERT)) {
-					List<String> imdbIdsUptade = new ArrayList<>();
-					List<String> imdbIdsInsert = new ArrayList<>();
-					int[] resultUpdate = new int[0], resultInsert = new int[0];
-					for (NameYearBean nameYearBean : listFound) {
-						Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
-						if (mapFromBean.get("mainImdbid") != null || mapFromBean.get("mainOriginalTitle") != null) {
-							pstmtSelect.setString(1, (String) mapFromBean.get("mainImdbid"));
-							ResultSet rs = pstmtSelect.executeQuery();
-							if (rs.next()) {
-								sqlUpdate(pstmtUpdate, mapFromBean);
-								imdbIdsUptade.add((String) mapFromBean.get("mainImdbid"));
-							} else {
-								sqlInsert(pstmtInsert, mapFromBean);
-								imdbIdsInsert.add((String) mapFromBean.get("mainImdbid"));
-							}
-						}
-					}
-					try {
-						resultUpdate = pstmtUpdate.executeBatch();
-						pstmtUpdate.clearBatch();
-					} catch (SQLException e) {
-						LOG.error("pstmtUpdate: " + e.getMessage(), e);
-					}
-					try {
-						resultInsert = pstmtInsert.executeBatch();
-						pstmtInsert.clearBatch();
-					} catch (SQLException e) {
-						LOG.error("pstmtInsert: " + e.getMessage(), e);
-					}
-
-					StringBuilder sbUpdate = new StringBuilder("\n");
-					for (int i = 0; i < resultUpdate.length; i++) {
-						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" -> ").append(status(resultUpdate[i])).append('\n');
-					}
-					LOG.info(sbUpdate.toString());
-					StringBuilder sbInsert = new StringBuilder("\n");
-					for (int i = 0; i < resultInsert.length; i++) {
-						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" -> ").append(status(resultInsert[i])).append('\n');
-					}
-					LOG.info(sbInsert.toString());
-				}
-			}
-		} catch (SQLException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		float duration = System.currentTimeMillis() - start;
-		int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size());
-		LOG.info("DB - Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
-	}
-
-	private String status(int i) {
-		if (i >= 0) {
-			return i + " commands processed successfully";
-		} else if (i == Statement.SUCCESS_NO_INFO) {
-			return "SUCCESS_NO_INFO";
-		} else if (i == Statement.EXECUTE_FAILED) {
-			return "EXECUTE_FAILED";
-		}
-		return "";
-	}
-
-	private void sqlUpdate(PreparedStatement pstmtUpdate, Map<String, Object> mapFromBean) throws SQLException {
-		int i = 0;
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainYear"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainKind"));
-		pstmtUpdate.setDouble(++i, (Double) mapFromBean.get("mainRating"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainVotes"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("runtimeHM"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainCountries"));
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainGenres"));
-		pstmtUpdate.setBoolean(++i, (Boolean) mapFromBean.get("isOnDrive"));
-
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainImdbid"));
-		pstmtUpdate.addBatch();
-	}
-
-	private void sqlInsert(PreparedStatement pstmtInsert, Map<String, Object> mapFromBean) throws SQLException {
-		int i = 0;
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainYear"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainKind"));
-		pstmtInsert.setDouble(++i, (Double) mapFromBean.get("mainRating"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainImdbid"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainVotes"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("runtimeHM"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainCountries"));
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainGenres"));
-		pstmtInsert.setBoolean(++i, (Boolean) mapFromBean.get("isOnDrive"));
-		pstmtInsert.addBatch();
-	}
-
-	private void DDLs() {
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
-			try (Statement stmt = conn.createStatement()) {
-				boolean b = stmt.execute(DDL1);
-			}
-			try (Statement stmt = conn.createStatement()) {
-				boolean b = stmt.execute(DDL2);
-			}
-			try (Statement stmt = conn.createStatement()) {
-				boolean b = stmt.execute(DDL3);
-			}
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-			File file = new File(Config.DB_URL.getString());
-			if (file.exists()) {
-				file.delete();
-			}
-		}
 	}
 
 }

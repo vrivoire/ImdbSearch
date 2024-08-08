@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -38,19 +35,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.StatisticalBarRenderer;
-import org.jfree.chart.ui.TextAnchor;
-import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
-import org.jfree.svg.SVGGraphics2D;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -187,7 +171,7 @@ public class GenerateHtmlReport {
 
 			map.put("babel_js", base64ToHtml("https://unpkg.com/@babel/standalone/babel.min.js", "<script src=\"data:text/js;base64,", "\"></script>\n"));
 		}
-		map.put("statsImage", getHistogram());
+		map.put("statsImage", DbUtils.getHistogram());
 
 		map.put("index_css", "\n<style>\n" + read("/index.css") + "\n</style>\n");
 		map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
@@ -201,82 +185,23 @@ public class GenerateHtmlReport {
 		String jsonByRank = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + "\n</script>\n");
 
-		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf2.getMainOriginalTitle().compareToIgnoreCase(ovf1.getMainOriginalTitle())));
-		String jsonByName = ow.writeValueAsString(getMapList(movieList));
-		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
-
+		try {
+			Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf2.getMainOriginalTitle().compareToIgnoreCase(ovf1.getMainOriginalTitle())));
+			String jsonByName = ow.writeValueAsString(getMapList(movieList));
+			map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
+		} catch (NullPointerException npe) {
+			LOG.error(npe.getMessage(), npe);
+		}
 		String jsonListAll = ow.writeValueAsString(sqlFindAll());
 		map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 
 		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + "\n</script>\n");
 		map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + "\n</script>\n");
-		map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1-alpha-2.json") + "\n</script>\n");
+		map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1.alpha2.json") + "\n</script>\n");
 		LOG.info("Report file: " + Paths.get(fullReportPath));
 
 		var index = Config.fill(read("/index.html"), map);
 		Files.writeString(Paths.get(fullReportPath), index);
-	}
-
-	private String getHistogram() {
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtSelect = conn.prepareStatement(Main.SQL_HISTOGRAM)) {
-			List<Double> listRate = new ArrayList<>();
-			List<Integer> listRateCount = new ArrayList<>();
-			List<Double> listToto = new ArrayList<>();
-			ResultSet rs = stmtSelect.executeQuery();
-			while (rs.next()) {
-				listRate.add(rs.getDouble("rate"));
-				listRateCount.add(rs.getInt("rateCount"));
-			}
-			for (int i = 0; i < 21; i++) {
-				listToto.add(i / 2.0);
-			}
-			for (int i = 0; i < listToto.size(); i++) {
-				if (!listRate.contains(listToto.get(i))) {
-					listRateCount.add(i, 0);
-				}
-			}
-
-			DefaultStatisticalCategoryDataset dataset = new DefaultStatisticalCategoryDataset();
-			for (int i = 0; i < listToto.size(); i++) {
-				dataset.add(listRateCount.get(i), null, "", listToto.get(i));
-			}
-
-			JFreeChart chart = ChartFactory.createLineChart("Rating", null, null, dataset, PlotOrientation.VERTICAL, false, true, true);
-
-			CategoryPlot plot = (CategoryPlot) chart.getPlot();
-
-			// customise the range axis...
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			rangeAxis.setAutoRangeIncludesZero(false);
-
-			// customise the renderer...
-			StatisticalBarRenderer renderer = new StatisticalBarRenderer();
-			renderer.setDrawBarOutline(true);
-			renderer.setErrorIndicatorPaint(Color.black);
-			renderer.setIncludeBaseInRange(true);
-			plot.setRenderer(renderer);
-
-			// ensure the current theme is applied to the renderer just added
-			ChartUtils.applyCurrentTheme(chart);
-
-			renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
-			renderer.setDefaultItemLabelsVisible(true);
-			renderer.setDefaultItemLabelPaint(Color.yellow);
-			renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.INSIDE6, TextAnchor.BOTTOM_CENTER));
-
-			// set up gradient paints for series...
-			GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
-			renderer.setSeriesPaint(0, gp0);
-			SVGGraphics2D g2 = new SVGGraphics2D(900, 400);
-			Rectangle r = new Rectangle(0, 0, 900, 400);
-			chart.draw(g2, r);
-
-			return g2.getSVGElement();
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return null;
 	}
 
 	private List<Map<String, Object>> getMapList(List<NameYearBean> movieList) {
@@ -360,6 +285,7 @@ public class GenerateHtmlReport {
 		map.put("subTitles", movie.getSubTitles());
 		map.put("audio", movie.getAudio());
 		map.put("mainLanguageCodes", movie.getMainLanguageCodes());
+		map.put("mainCountryCodes", movie.getMainCountryCodes());
 		return map;
 	}
 

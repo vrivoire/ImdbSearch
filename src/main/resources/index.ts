@@ -23,7 +23,7 @@ function insertAll(film: any) {
 				</div>`;
 }
 
-function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string) {
+function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string, countryFlags: string) {
 	return `<tr >
 				<td align="center" style="text-align: left;">
 					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
@@ -37,7 +37,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 						<span><i>${film.mainGenres}</i></span>
 						<table>
 							<tr>
-								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}${film.mainCountries},&nbsp;</td>
+								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}, ${countryFlags},&nbsp;</td>
 								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;"><b>Language:</b>&nbsp;${languageFlags}&nbsp;</td>
 								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${audioFlags}</td>
 							</tr>
@@ -103,19 +103,14 @@ function screenshotPreview() {
 	);
 };
 
-function getFlagsByCode(list: string[]) {
+function getFlagsByCode(mainCountryCodes: string[]) {
 	var flags: string = '';
-	for (let element of list) {
-		if (element && element !== "und") {
-			var map = json_iso_639_2[element];
-			if (map != undefined) {
-				var lang1 = map['639-1'];
-				var lang2 = ISO_3166_1_alpha_2[lang1];
-				var country = map['en'][0];
-				flags += `<img src='https://flagcdn.com/20x15/${(lang2 != undefined ? lang2 : lang1)}.png' width='20px' height='15px' alt='${country}' title='${country}'> `;
-			} else {
-				flags += `${element} `;
-			}
+	for (let lang of mainCountryCodes) {
+		if (lang && lang !== "und") {
+			var country = ISO_3166_1_alpha_2[lang.toUpperCase()];
+			flags += `<img src='https://flagpedia.net/data/flags/h80/${lang}.webp' height='15px' alt='${country}' title='${country}'> `;
+		} else {
+			flags += `${lang} `;
 		}
 	}
 	return flags;
@@ -127,11 +122,27 @@ function getFlagsByCode2(list: string[]) {
 		if (lang && lang !== "und") {
 			var map = json_iso_639_1[lang];
 			if (map != undefined) {
-				var lang1 = ISO_3166_1_alpha_2[lang];
 				var country = map['name'];
-				flags += `<img src='https://flagcdn.com/20x15/${lang1}.png' width='20px' height='15px' alt='${country}' title='${country}'> `;
+				flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
 			} else {
 				flags += `${lang} `;
+			}
+		}
+	}
+	return flags;
+}
+
+function getFlagsByCode3(list: string[]) {
+	var flags: string = '';
+	for (let element of list) {
+		if (element && element !== "und") {
+			var map = json_iso_639_2[element];
+			if (map != undefined) {
+				var lang = map['639-1'];
+				var country = map['en'][0];
+				flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
+			} else {
+				flags += `${element} `;
 			}
 		}
 	}
@@ -271,13 +282,13 @@ $(document).ready(function () {
 
 	var textByDate = "";
 	for (let film of jsonByDate) {
-		var audioFlags: string = getFlagsByCode(film.audio);
-		var subTitlesFlags: string = getFlagsByCode(film.subTitles);
 
-		console.log(film.mainLanguageCodes);
+		var audioFlags: string = getFlagsByCode3(film.audio);
+		var subTitlesFlags: string = getFlagsByCode3(film.subTitles);
 		var languageFlags: string = getFlagsByCode2(film.mainLanguageCodes);
+		var countryFlags = getFlagsByCode(film.mainCountryCodes);
 
-		textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags);
+		textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags);
 	}
 	var textByRank = "";
 	for (let film of jsonByRank) {
