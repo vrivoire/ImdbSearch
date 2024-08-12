@@ -37,7 +37,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 						<span><i>${film.mainGenres}</i></span>
 						<table>
 							<tr>
-								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}, ${countryFlags},&nbsp;</td>
+								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}, ${countryFlags}</td>
 								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;"><b>Language:</b>&nbsp;${languageFlags}&nbsp;</td>
 								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${audioFlags}</td>
 							</tr>

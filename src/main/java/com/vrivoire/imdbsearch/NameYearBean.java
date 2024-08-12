@@ -345,7 +345,9 @@ public class NameYearBean {
 	}
 
 	public void setMainLanguageCodes(List<String> mainLanguageCodes) {
-		this.mainLanguageCodes = new TreeSet<>(mainLanguageCodes);
+		if (mainLanguageCodes != null) {
+			this.mainLanguageCodes = new TreeSet<>(mainLanguageCodes);
+		}
 	}
 
 	public void setMainLanguages(List<String> mainLanguages) {

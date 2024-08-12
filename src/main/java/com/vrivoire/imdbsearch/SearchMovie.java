@@ -331,7 +331,7 @@ public class SearchMovie {
 		@Override
 		public void run() {
 			try {
-				NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
+				NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC");
 				String path;
 				if (nameYearBean.getFile().isDirectory()) {
 					@SuppressWarnings("unchecked")
@@ -375,7 +375,6 @@ public class SearchMovie {
 												//4K video or Ultra HD(UHD)	4K or 2160p	1:1.9	3840 x 2160
 												//8K video or Full Ultra HD	8K or 4320p	16∶9	7680 x 4320
 												String resolutionDescription;
-
 												switch (videoTrackInfo.height()) {
 													case 240:
 													case 360:
@@ -420,13 +419,13 @@ public class SearchMovie {
 								nameYearBean.setSubTitles(subTitleList);
 								nameYearBean.setAudio(audioList);
 
-								LOG.info(nameYearBean.getFile().getName() + " - " + nameYearBean.getCodecDescription() + " " + nameYearBean.getWidth() + " x " + nameYearBean.getHeigth() + " "
-										+ nameYearBean.getResolutionDescription() + " " + nameYearBean.getTimeInHHMMSS() + " st[" + nameYearBean.getSubTitles() + "] a[" + nameYearBean.getAudio() + "]");
+								LOG.info(nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
+										+ nameYearBean.getResolutionDescription() + ", " + nameYearBean.getTimeInHHMMSS() + ", SubTitles[" + nameYearBean.getSubTitles() + "], Audio[" + nameYearBean.getAudio() + "]");
 							} else {
-								LOG.info(nameYearBean.getFile().getName() + " - Empty");
+								LOG.info(nameYearBean.getFile().getName() + ", Empty");
 							}
 						} else {
-							LOG.info(nameYearBean.getFile().getName() + " - Status: " + newStatus);
+							LOG.info(nameYearBean.getFile().getName() + ", Status: " + newStatus);
 						}
 						mediaPlayerComponent.release();
 					}
