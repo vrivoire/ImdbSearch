@@ -72,6 +72,7 @@ public class NameYearBean {
 	private String timeInHHMMSS = null;
 	private Set<String> subTitles = new TreeSet<>();
 	private Set<String> audio = new TreeSet<>();
+	private Map<String, Map> mainEpisodeOf = null;
 
 	public NameYearBean() {
 	}
@@ -575,6 +576,14 @@ public class NameYearBean {
 		return audio;
 	}
 
+	public Map<String, Map> getMainEpisodeOf() {
+		return mainEpisodeOf;
+	}
+
+	public void setMainEpisodeOf(Map<String, Map> mainEpisodeOf) {
+		this.mainEpisodeOf = mainEpisodeOf;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -599,6 +608,7 @@ public class NameYearBean {
 		builder.append(", mainCoverUrl=").append(mainCoverUrl);
 		builder.append(", mainDirectors=").append(mainDirectors);
 		builder.append(", mainEpisode=").append(mainEpisode);
+		builder.append(", mainEpisodeOf=").append(mainEpisodeOf);
 		builder.append(", mainGenres=").append(mainGenres);
 		builder.append(", mainImdbid=").append(mainImdbid);
 		builder.append(", mainKind=").append(mainKind);

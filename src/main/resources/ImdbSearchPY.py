@@ -12,6 +12,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 import sys
 import traceback
 import urllib.request
+import jsonpickle
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
@@ -77,8 +78,8 @@ def load_data(title):
 def save_json(prop):
     print(f'Writing file {OUTPUT_JSON_FILE}')
     with open(OUTPUT_JSON_FILE, "w", encoding="utf-8") as outfile:
-        outfile.write(json.dumps(prop, indent=4, sort_keys=True))
-
+        # outfile.write(json.dumps(prop, indent=4, sort_keys=True))
+        outfile.write(jsonpickle.encode(prop, indent=4))
 
 def spawn(thread_index, titles):
     try:
@@ -226,3 +227,5 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
         path_search("C:/Users/rivoi/Videos/W")
+
+    sys.exit()

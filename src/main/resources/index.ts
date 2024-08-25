@@ -107,6 +107,9 @@ function getFlagsByCode(mainCountryCodes: string[]) {
 	var flags: string = '';
 	for (let lang of mainCountryCodes) {
 		if (lang && lang !== "und") {
+			if (lang === 'cshh') {
+				lang = 'cz'
+			}
 			var country = ISO_3166_1_alpha_2[lang.toUpperCase()];
 			flags += `<img src='https://flagpedia.net/data/flags/h80/${lang}.webp' height='15px' alt='${country}' title='${country}'> `;
 		} else {

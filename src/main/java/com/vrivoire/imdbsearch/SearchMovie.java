@@ -48,6 +48,9 @@ import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.vrivoire.imdbsearch.Main.default_path;
+import static com.vrivoire.imdbsearch.Main.pythonProcess;
+
 /**
  *
  * @author Vincent
@@ -76,7 +79,7 @@ public class SearchMovie {
 	}
 
 	private Set<NameYearBean> listFiles() throws Exception {
-		var path = Path.of(Main.default_path);
+		var path = Path.of(default_path);
 		Set<NameYearBean> nameYearBeanSet = new HashSet<>();
 		if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
 			filter(path, nameYearBeanSet);
@@ -269,16 +272,23 @@ public class SearchMovie {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(args);
 			pb.redirectErrorStream(true);
-			Process process = pb.start();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			pythonProcess = pb.start();
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
 			String line;
 			while ((line = stdInput.readLine()) != null) {
 				LOG.info("ImdbSearchPY\t" + line);
 			}
-			LOG.info("Exit value: " + process.waitFor() + ", info: " + process.info());
+			LOG.info("Exit value: " + pythonProcess.waitFor() + ", info: " + pythonProcess.info());
 		} catch (IOException ex) {
 			LOG.fatal(ex.getMessage(), ex);
 			throw ex;
+		} finally {
+			if (pythonProcess != null && pythonProcess.isAlive()) {
+				LOG.info("Destroying Python process...");
+				pythonProcess.destroyForcibly();
+			} else {
+				LOG.info("Python process already dead.");
+			}
 		}
 	}
 
@@ -357,10 +367,16 @@ public class SearchMovie {
 								for (TrackInfo trackInfo : trackInfoList) {
 									if (trackInfo != null) {
 										switch (trackInfo) {
-											case TextTrackInfo textTrackInfo ->
-												subTitleList.add(textTrackInfo.language());
-											case AudioTrackInfo audioTrackInfo ->
-												audioList.add(audioTrackInfo.language());
+											case TextTrackInfo textTrackInfo -> {
+												if (textTrackInfo.language() != null) {
+													subTitleList.add(textTrackInfo.language());
+												}
+											}
+											case AudioTrackInfo audioTrackInfo -> {
+												if (audioTrackInfo.language() != null) {
+													audioList.add(audioTrackInfo.language());
+												}
+											}
 											case UnknownTrackInfo unknownTrackInfo ->
 												LOG.info(nameYearBean.getFile().getName() + " - UnknownTrackInfo: " + unknownTrackInfo);
 											case VideoTrackInfo videoTrackInfo -> {

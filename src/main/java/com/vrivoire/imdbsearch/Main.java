@@ -40,10 +40,22 @@ public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
 	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
+	public static Process pythonProcess;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
 
 	static {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				if (pythonProcess != null && pythonProcess.isAlive()) {
+					LOG.info("Destroying Python process...");
+					pythonProcess.destroyForcibly();
+				} else {
+					LOG.info("Python process already dead.");
+				}
+			}
+		});
 		System.setProperty("-J-Djava.util.Arrays.useLegacyMergeSort", "true");
 		LogGrabberAppender.setPanel(TEXT_AREA_LOGS);
 		Config.configure();

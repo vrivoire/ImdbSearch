@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.vrivoire.imdbsearch.Main.default_path;
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 /**
@@ -63,7 +64,7 @@ public class GenerateHtmlReport {
 	}
 
 	public GenerateHtmlReport() {
-		fullReportPath = Main.default_path + Config.REPORT_NAME.getString();
+		fullReportPath = default_path + Config.REPORT_NAME.getString();
 	}
 
 	public void deleteReport() {
