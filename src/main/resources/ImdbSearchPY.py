@@ -1,18 +1,19 @@
 # cd C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPY
 # pyinstaller --onefile main.py --icon=C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPY\IMDb.ico --nowindowed --noconsole --paths C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPYvenv\Lib\site-packages
 
-from imdb import Cinemagoer, IMDbError
-import imdb.Person as Person
-import imdb.Company as Company
-import imdb
 import json
 import os
-from datetime import datetime
-from concurrent.futures.thread import ThreadPoolExecutor
 import sys
 import traceback
 import urllib.request
+from concurrent.futures.thread import ThreadPoolExecutor
+from datetime import datetime
+
+import imdb
+import imdb.Company as Company
+import imdb.Person as Person
 import jsonpickle
+from imdb import Cinemagoer, IMDbError
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
@@ -47,8 +48,7 @@ def load_data(title):
 		raise ex
 	finally:
 		if movie is None:
-			prop = {f'1 ERROR': f'1 - ************** IMDbError ************** Not found: {title}'}
-			print(prop)
+			print('\t1 ERROR - ************** IMDbError ************** Not found: {title}')
 		else:
 			for key in movie.infoset2keys:
 				values = movie.infoset2keys[key]
@@ -78,8 +78,12 @@ def load_data(title):
 def save_json(prop):
 	print(f'Writing file {OUTPUT_JSON_FILE}')
 	with open(OUTPUT_JSON_FILE, "w", encoding="utf-8") as outfile:
-		# outfile.write(json.dumps(prop, indent=4, sort_keys=True))
-		outfile.write(jsonpickle.encode(prop, indent=4))
+		json_str: str = json.dumps(prop, indent=4, sort_keys=True)
+		if len(json_str) == 0:
+			print('json_str is empty, trying with jsonpickle.')
+			json_str = jsonpickle.encode(prop, indent=4)
+		outfile.write(json_str)
+
 
 def spawn(thread_index, titles):
 	try:
@@ -103,16 +107,14 @@ def spawn(thread_index, titles):
 					try:
 						prop = load_data(title)
 					except Exception as ex:
-						prop = {f'2 ERROR': f'2 - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {title}'}
-						print(f'\t{prop}')
+						print(f'\t2 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {title}')
 						print(traceback.format_exc())
 				finally:
 					print(f'\t\tthread_id: {thread_index}, {i}/{size}, found: {title}')
 					props.update({title: prop})
 		print(f'\tEnding {thread_index}\r')
 	except Exception as ex:
-		prop = {f'3 ERROR': f'3 - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}'}
-		print(f'\t{prop}')
+		print(f'\t3 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}')
 		print(traceback.format_exc())
 
 
@@ -206,15 +208,15 @@ if __name__ == "__main__":
 
 	pre_test()
 
-	file_path = get_config_path()
+	file_path: str = get_config_path()
 	CONFIG = json.load(open(file_path.format(**os.environ)))
 
 	for line in CONFIG:
 		CONFIG[line] = str(CONFIG[line]).replace('${', '{').format(**os.environ)
 	SUPPORTED_EXTENSIONS = tuple(CONFIG["SUPPORTED_EXTENSIONS"])
 	IGNORED_FOLDERS = tuple(CONFIG["IGNORED_FOLDERS"])
-	THREAD_NB = int(CONFIG["THREAD_NB"])
-	OUTPUT_JSON_FILE = CONFIG["OUTPUT_JSON_FILE"].replace('${', '{').format(**os.environ)
+	THREAD_NB: int = int(CONFIG["THREAD_NB"])
+	OUTPUT_JSON_FILE: str = CONFIG["OUTPUT_JSON_FILE"].replace('${', '{').format(**os.environ)
 
 	print(f'sys.argv={sys.argv}')
 	if len(sys.argv[1:]) > 0:
@@ -226,6 +228,6 @@ if __name__ == "__main__":
 		# path_search(str(Path.home()) + os.sep + "Videos" + os.sep + "W" + os.sep)
 		# path_search("D:/Films/W2/")
 		# path_search("C:/Users/rivoi/Videos/W/Underworld")
-		path_search("C:/Users/rivoi/Videos/W")
+		path_search("C:/Users/rivoi/Videos")
 
 	sys.exit()
