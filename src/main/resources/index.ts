@@ -105,28 +105,14 @@ function screenshotPreview() {
 
 function getFlagsByCode(mainCountryCodes: string[]) {
 	var flags: string = '';
-	for (let lang of mainCountryCodes) {
-		if (lang && lang !== "und") {
-			if (lang === 'cshh') {
-				lang = 'cz'
-			}
-			var country = ISO_3166_1_alpha_2[lang.toUpperCase()];
-			flags += `<img src='https://flagpedia.net/data/flags/h80/${lang}.webp' height='15px' alt='${country}' title='${country}'> `;
-		} else {
-			flags += `${lang} `;
-		}
-	}
-	return flags;
-}
-
-function getFlagsByCode2(list: string[]) {
-	var flags: string = '';
-	for (let lang of list) {
-		if (lang && lang !== "und") {
-			var map = json_iso_639_1[lang];
-			if (map != undefined) {
-				var country = map['name'];
-				flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
+	if (mainCountryCodes != null || mainCountryCodes !== undefined) {
+		for (let lang of mainCountryCodes) {
+			if (lang && lang !== "und") {
+				if (lang === 'cshh') {
+					lang = 'cz'
+				}
+				var country = ISO_3166_1_alpha_2[lang.toUpperCase()];
+				flags += `<img src='https://flagpedia.net/data/flags/h80/${lang}.webp' height='15px' alt='${country}' title='${country}'> `;
 			} else {
 				flags += `${lang} `;
 			}
@@ -135,17 +121,37 @@ function getFlagsByCode2(list: string[]) {
 	return flags;
 }
 
+function getFlagsByCode2(list: string[]) {
+	var flags: string = '';
+	if (list != null || list !== undefined) {
+		for (let lang of list) {
+			if (lang && lang !== "und") {
+				var map = json_iso_639_1[lang];
+				if (map != undefined) {
+					var country = map['name'];
+					flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
+				} else {
+					flags += `${lang} `;
+				}
+			}
+		}
+	}
+	return flags;
+}
+
 function getFlagsByCode3(list: string[]) {
 	var flags: string = '';
-	for (let element of list) {
-		if (element && element !== "und") {
-			var map = json_iso_639_2[element];
-			if (map != undefined) {
-				var lang = map['639-1'];
-				var country = map['en'][0];
-				flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
-			} else {
-				flags += `${element} `;
+	if (list != null || list !== undefined) {
+		for (let element of list) {
+			if (element && element !== "und") {
+				var map = json_iso_639_2[element];
+				if (map != undefined) {
+					var lang = map['639-1'];
+					var country = map['en'][0];
+					flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
+				} else {
+					flags += `${element} `;
+				}
 			}
 		}
 	}
