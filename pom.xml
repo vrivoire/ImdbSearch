@@ -164,7 +164,7 @@
 									<include>config.json</include>
 									<include>ImdbSearch.bat</include>
 									<include>IMDb.ico</include>
-									<include>videos.bat</include>
+									<include>Videos.bat</include>
 									<include>ImdbSearchPY.py</include>
 									<include>RemoveImdbEntry.bat</include>
 								</resource>
