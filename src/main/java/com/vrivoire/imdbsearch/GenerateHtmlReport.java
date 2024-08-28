@@ -191,6 +191,7 @@ public class GenerateHtmlReport {
 			String jsonByName = ow.writeValueAsString(getMapList(movieList));
 			map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
 		} catch (NullPointerException npe) {
+			map.put("jsonByName", "\n<script>\nvar jsonByName = [{}]</script>\n");
 			LOG.error(npe.getMessage(), npe);
 		}
 		String jsonListAll = ow.writeValueAsString(sqlFindAll());

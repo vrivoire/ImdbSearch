@@ -18,21 +18,21 @@ from imdb import Cinemagoer, IMDbError
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 search_path = None
-props = {}
+props: dict[str, any] = {}
 
 
-def load_data(title):
-	prop = {}
+def load_data(title: str) -> dict[str, None | list | tuple | dict | list]:
+	prop: dict[str, None | list | tuple | dict | list] = {}
 	movie = None
 
 	try:
-		isError = True
+		isError: bool = True
 		count = 0
 		while isError:
 			try:
 				print(f"\t\t\tLooking for '{title}'")
-				ia = Cinemagoer()
-				movies = ia.search_movie(title)
+				ia: Cinemagoer = Cinemagoer()
+				movies: list[Movie] = ia.search_movie(title)
 				movie = movies[0]
 				movie = ia.get_movie(movie.movieID, info=['main', 'plot', 'awards'])
 				isError = False
@@ -75,8 +75,9 @@ def load_data(title):
 		return prop
 
 
-def save_json(prop):
+def save_json(prop: dict[str, any]) -> None:
 	print(f'Writing file {OUTPUT_JSON_FILE}')
+	print(prop.keys())
 	with open(OUTPUT_JSON_FILE, "w", encoding="utf-8") as outfile:
 		json_str: str = json.dumps(prop, indent=4, sort_keys=True)
 		if len(json_str) == 0:
@@ -85,13 +86,14 @@ def save_json(prop):
 		outfile.write(json_str)
 
 
-def spawn(thread_index, titles):
+def spawn(thread_index: int, titles: list[str]):
 	try:
 		print(f'\tStarting thread_id: {thread_index}, Titles: {titles}')
-		size = len(titles)
-		i = 0
+		size: int = len(titles)
+		i: int = 0
 		global props
-
+		print(titles)
+		title: str
 		for title in titles:
 			# time.sleep(1)
 			i += 1
@@ -118,18 +120,19 @@ def spawn(thread_index, titles):
 		print(traceback.format_exc())
 
 
-def args_search(files):
+def args_search(files: list[str]):
 	print(f'Searching args {files}')
-	file_count = len(files)
-	thread_nb = THREAD_NB
-	files_per_thread = int(len(files) / thread_nb)
-	remain_files = file_count - files_per_thread * thread_nb
+	file_count: int = len(files)
+	thread_nb: int = THREAD_NB
+	files_per_thread: int = int(len(files) / thread_nb)
+	remain_files: int = file_count - files_per_thread * thread_nb
 	print(f'file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, toto: {file_count / thread_nb}')
 
 	with ThreadPoolExecutor(max_workers=thread_nb + 1) as executor:
-		i = 0
+		i: int = 0
+		thread_id: int
 		for thread_id in range(1, thread_nb + 1):
-			k = thread_id * files_per_thread
+			k: int = thread_id * files_per_thread
 			print(f'thread_id: {thread_id}, {range(i, k)}, size: {len(files[i:k])}')
 			executor.submit(spawn, thread_id, files[i:k])
 			i = k
@@ -137,7 +140,6 @@ def args_search(files):
 		executor.submit(spawn, thread_nb + 1, files[file_count - remain_files:file_count])
 	print('All tasks has been finished')
 	save_json(props)
-
 	print(f"Threads: {thread_nb}, Time elapsed: {datetime.fromtimestamp(datetime.timestamp(datetime.now()) - start).strftime('%M:%S.%f')} for {len(files)} titles, {datetime.fromtimestamp((datetime.timestamp(datetime.now()) - start) / len(files)).strftime('%M:%S.%f')} per title.")
 
 
@@ -146,7 +148,8 @@ def path_search(path):
 	if os.path.isfile(OUTPUT_JSON_FILE):
 		os.remove(OUTPUT_JSON_FILE)
 
-	files = os.listdir(path)
+	files: list[str] = os.listdir(path)
+	print(files)
 	for i, file in enumerate(files):
 		if IGNORED_FOLDERS.__contains__(file) or not file.endswith(SUPPORTED_EXTENSIONS) and not os.path.isdir(path + file) and file.endswith('.html'):
 			files.remove(file)
@@ -156,10 +159,9 @@ def path_search(path):
 
 def pre_test():
 	try:
-		global line
-		master_version = ''
-		for line in urllib.request.urlopen('https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py'):
-			master_version = line.decode('utf-8')
+		master_version: str = ''
+		for line_str in urllib.request.urlopen('https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py'):
+			master_version: str = line_str.decode('utf-8')
 		master_version = master_version.removeprefix("__version__ = '").replace("'", "").strip()
 		print(f'imdb={imdb}')
 		print(f'imdb.VERSION={imdb.VERSION}, master_version={master_version}')
@@ -172,8 +174,8 @@ def pre_test():
 			print("********************************************************************************************************************************")
 			print("********************************************************************************************************************************")
 
-		cinemagoer = Cinemagoer()
-		test = cinemagoer.get_movie(34583, info=['main', 'awards'])
+		cinemagoer: Cinemagoer = Cinemagoer()
+		test: Movie = cinemagoer.get_movie(34583, info=['main', 'awards'])
 		print('********************* Test to see if "awards" are still broken *********************')
 		print(f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}")
 		if "movie['title']: Casablanca, movie.get('awards'): None, ia.get_movie_awards(movie.movieID): {'data': {}, 'titlesRefs': {}, 'namesRefs': {}}" != f"movie['title']: {test['title']}, movie.get('awards'): {test.get('awards')}, ia.get_movie_awards(movie.movieID): {cinemagoer.get_movie_awards(test.movieID)}":
@@ -204,7 +206,7 @@ def get_config_path():
 
 
 if __name__ == "__main__":
-	start = datetime.timestamp(datetime.now())
+	start: float = datetime.timestamp(datetime. now())
 
 	pre_test()
 
