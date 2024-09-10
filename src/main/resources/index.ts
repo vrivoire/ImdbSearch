@@ -103,7 +103,7 @@ function screenshotPreview() {
 	);
 };
 
-function getFlagsByCode(mainCountryCodes: string[]) {
+function getCountryFlagsByCode(mainCountryCodes: string[]) {
 	var flags: string = '';
 	if (mainCountryCodes != null || mainCountryCodes !== undefined) {
 		for (let lang of mainCountryCodes) {
@@ -121,7 +121,7 @@ function getFlagsByCode(mainCountryCodes: string[]) {
 	return flags;
 }
 
-function getFlagsByCode2(list: string[]) {
+function getLanguageFlagsByCode2(list: string[]) {
 	var flags: string = '';
 	if (list != null || list !== undefined) {
 		for (let lang of list) {
@@ -139,7 +139,7 @@ function getFlagsByCode2(list: string[]) {
 	return flags;
 }
 
-function getFlagsByCode3(list: string[]) {
+function getaAdioSubTitlesFlagsByCode(list: string[]) {
 	var flags: string = '';
 	if (list != null || list !== undefined) {
 		for (let element of list) {
@@ -291,12 +291,16 @@ $(document).ready(function () {
 
 	var textByDate = "";
 	for (let film of jsonByDate) {
-
-		var audioFlags: string = getFlagsByCode3(film.audio);
-		var subTitlesFlags: string = getFlagsByCode3(film.subTitles);
-		var languageFlags: string = getFlagsByCode2(film.mainLanguageCodes);
-		var countryFlags = getFlagsByCode(film.mainCountryCodes);
-
+		console.log(film);
+		console.log(film.mainOriginalTitle + ", audioFlags: " + film.audio);
+		var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
+		console.log(film.mainOriginalTitle + ", subTitles: " + film.subTitles);
+		var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
+		console.log(film.mainOriginalTitle + ", mainLanguageCodes: " + film.mainLanguageCodes);
+		var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
+		console.log(film.mainOriginalTitle + ", mainCountryCodes: " + film.mainCountryCodes);
+		var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
+		console.log("-----------------------");
 		textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags);
 	}
 	var textByRank = "";

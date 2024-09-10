@@ -61,6 +61,10 @@ public class SearchMovie {
 	private final List<NameYearBean> NOT_FOUND;
 	private final Pattern PATTERN = Pattern.compile(Config.PATTERN.getString());
 
+	static {
+		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC");
+	}
+
 	public SearchMovie() {
 		NOT_FOUND = new ArrayList<>();
 	}
@@ -185,7 +189,7 @@ public class SearchMovie {
 		});
 
 		Map<String, String> mapKeys = new TreeMap<>();
-		List<Thread> threads = new ArrayList<>();
+		List<VlcMeta> metaList = new ArrayList<>();
 		movieSet.forEach(nameYearBean -> {
 			String searchKey = getSearchKey(nameYearBean);
 			Map<String, Object> map = jsonMap.get(searchKey);
@@ -197,19 +201,23 @@ public class SearchMovie {
 				});
 				nameYearBean.setName(searchKey);
 				autoMapping(nameYearBean, mapKeys, map);
-				threads.add(getMetaData(nameYearBean));
+				metaList.add(getMetaData(nameYearBean));
 				list.add(nameYearBean);
 			}
 		});
-		while (!threads.isEmpty()) {
-			for (int i = 0; i < threads.size(); i++) {
-				Thread thread = threads.get(i);
-				if (!thread.isAlive()) {
-					threads.remove(i);
-					LOG.info("Thread finished " + thread.getName());
+		LOG.info("1 metaList.size: " + metaList.size() + ", movieSet.size(): " + movieSet.size());
+		while (!metaList.isEmpty()) {
+			for (int i = 0; i < metaList.size(); i++) {
+				VlcMeta meta = metaList.get(i);
+				if (meta != null && (!meta.isAlive() || meta.isInterrupted())) {
+					meta.getMediaPlayerComponent().release();
+					metaList.remove(metaList.indexOf(meta));
+					LOG.info("Thread finished " + meta.getName());
+					meta = null;
 				}
 			}
 		}
+		LOG.info("2 metaList.size: " + metaList.size() + ", movieSet.size(): " + movieSet.size());
 
 		for (NameYearBean nameYearBean : list) {
 			LOG.info(nameYearBean);
@@ -318,52 +326,60 @@ public class SearchMovie {
 		}
 	}
 
-	private Thread getMetaData(NameYearBean nameYearBean) {
-		Thread thread = new Meta(nameYearBean);
-		thread.start();
+	private VlcMeta getMetaData(NameYearBean nameYearBean) {
+		VlcMeta meta = new VlcMeta(nameYearBean);
+		meta.start();
 		try {
-			Thread.sleep(500);
+			Thread.sleep(750);
 		} catch (InterruptedException ex) {
 			LOG.error(ex.getMessage(), ex);
 		}
-		return thread;
+		return meta;
 	}
 
-	private class Meta extends Thread {
+	private class VlcMeta extends Thread {
 
 		private final NameYearBean nameYearBean;
+		private final EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
 
-		public Meta(NameYearBean nameYearBean) {
+		public VlcMeta(NameYearBean nameYearBean) {
 			super(nameYearBean.getFile().getName());
 			this.nameYearBean = nameYearBean;
+			LOG.info("\t" + nameYearBean.getFile().getName() + " startred.");
+		}
+
+		public EmbeddedMediaPlayerComponent getMediaPlayerComponent() {
+			return mediaPlayerComponent;
 		}
 
 		@Override
 		public void run() {
 			try {
-				NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC");
 				String path;
 				if (nameYearBean.getFile().isDirectory()) {
 					@SuppressWarnings("unchecked")
 					Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), ((String[]) ((List) Config.SUPPORTED_EXTENSIONS.get()).toArray(String[]::new)), true);
 					path = listFiles.isEmpty() ? "" : (listFiles.toArray(File[]::new)[0]).getAbsolutePath();
-					LOG.info("\tFolder: " + nameYearBean.getFile().getAbsolutePath() + " -> " + path);
+					LOG.info("\t" + nameYearBean.getFile().getName() + " Folder: " + nameYearBean.getFile().getName() + " -> " + path);
 				} else {
 					path = nameYearBean.getFile().getAbsolutePath();
 				}
-				LOG.info("\tLooking for " + new File(path).exists() + " " + path);
-				EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+				LOG.info("\t" + nameYearBean.getFile().getName() + " Looking for " + new File(path).exists() + " " + path);
+
 				mediaPlayerComponent.mediaPlayer().media().prepare(path);
-				mediaPlayerComponent.mediaPlayer().media().parsing().parse();
+				LOG.info("\t" + nameYearBean.getFile().getName() + " isParsed: " + mediaPlayerComponent.mediaPlayer().media().parsing().parse());
 				mediaPlayerComponent.mediaPlayer().events().addMediaEventListener(new MediaEventAdapter() {
+
 					@Override
 					public void mediaParsedChanged(Media media, MediaParsedStatus newStatus) {
+						LOG.info("\t" + nameYearBean.getFile().getName() + " VLC looking meta for " + nameYearBean.getFile().getName() + ", Status: " + newStatus);
 						if (newStatus == MediaParsedStatus.DONE) {
 							MediaPlayer mediaPlayer = mediaPlayerComponent.mediaPlayer();
 							List<? extends TrackInfo> trackInfoList = mediaPlayer.media().info().tracks();
 							if (!trackInfoList.isEmpty()) {
 								Set<String> subTitleList = new TreeSet<>();
 								Set<String> audioList = new TreeSet<>();
+								String resolutionDescription;
 								for (TrackInfo trackInfo : trackInfoList) {
 									if (trackInfo != null) {
 										switch (trackInfo) {
@@ -378,7 +394,7 @@ public class SearchMovie {
 												}
 											}
 											case UnknownTrackInfo unknownTrackInfo ->
-												LOG.info(nameYearBean.getFile().getName() + " - UnknownTrackInfo: " + unknownTrackInfo);
+												LOG.info("\t" + nameYearBean.getFile().getName() + " UnknownTrackInfo: " + unknownTrackInfo);
 											case VideoTrackInfo videoTrackInfo -> {
 												nameYearBean.setHeight(videoTrackInfo.height());
 												nameYearBean.setWidth(videoTrackInfo.width());
@@ -390,7 +406,6 @@ public class SearchMovie {
 												//2K video	1080p	1:1.77	2048 x 1080
 												//4K video or Ultra HD(UHD)	4K or 2160p	1:1.9	3840 x 2160
 												//8K video or Full Ultra HD	8K or 4320p	16∶9	7680 x 4320
-												String resolutionDescription;
 												switch (videoTrackInfo.height()) {
 													case 240:
 													case 360:
@@ -422,32 +437,29 @@ public class SearchMovie {
 												}
 												nameYearBean.setResolutionDescription(resolutionDescription);
 												nameYearBean.setCodecDescription(videoTrackInfo.codecDescription());
-
-												String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
-												nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
 											}
 											default ->
-												LOG.warn(nameYearBean.getFile().getName() + " - " + trackInfo.getClass().getName() + " NOT IMPLEMENTED: " + trackInfo);
+												LOG.warn("\t" + nameYearBean.getFile().getName() + " - " + trackInfo.getClass().getName() + " NOT IMPLEMENTED: " + trackInfo);
 										}
 									}
 								}
-
+								String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
+								nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
 								nameYearBean.setSubTitles(subTitleList);
 								nameYearBean.setAudio(audioList);
 
-								LOG.info(nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
+								LOG.info("\t" + nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
 										+ nameYearBean.getResolutionDescription() + ", " + nameYearBean.getTimeInHHMMSS() + ", SubTitles[" + nameYearBean.getSubTitles() + "], Audio[" + nameYearBean.getAudio() + "]");
 							} else {
-								LOG.info(nameYearBean.getFile().getName() + ", Empty");
+								LOG.info("\t" + nameYearBean.getFile().getName() + ", Empty");
 							}
 						} else {
-							LOG.info(nameYearBean.getFile().getName() + ", Status: " + newStatus);
+							LOG.info("\t" + nameYearBean.getFile().getName() + " , Status: " + newStatus);
 						}
-						mediaPlayerComponent.release();
 					}
 				});
-			} catch (Exception ex) {
-				LOG.error(ex.getMessage(), ex);
+			} catch (Throwable ex) {
+				LOG.error("\t" + nameYearBean.getFile().getName() + " " + ex.getMessage(), ex);
 			}
 		}
 	}
