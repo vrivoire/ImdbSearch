@@ -291,16 +291,10 @@ $(document).ready(function () {
 
 	var textByDate = "";
 	for (let film of jsonByDate) {
-		console.log(film);
-		console.log(film.mainOriginalTitle + ", audioFlags: " + film.audio);
 		var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
-		console.log(film.mainOriginalTitle + ", subTitles: " + film.subTitles);
 		var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
-		console.log(film.mainOriginalTitle + ", mainLanguageCodes: " + film.mainLanguageCodes);
 		var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
-		console.log(film.mainOriginalTitle + ", mainCountryCodes: " + film.mainCountryCodes);
 		var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
-		console.log("-----------------------");
 		textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags);
 	}
 	var textByRank = "";
