@@ -41,9 +41,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.release>[3.9.9]</maven.release>
-		<maven.compiler.release>22</maven.compiler.release>
-		<maven.compiler.source>22</maven.compiler.source>
-		<maven.compiler.target>22</maven.compiler.target>
+		<maven.compiler.release>23</maven.compiler.release>
 		<mainClass>com.vrivoire.imdbsearch.Main</mainClass>
 	</properties>
 
@@ -56,7 +54,7 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.46.1.0</version>
+			<version>3.46.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
@@ -88,7 +86,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.16.1</version>
+			<version>2.17.0</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
@@ -114,7 +112,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.11.0</version>
+			<version>5.11.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
