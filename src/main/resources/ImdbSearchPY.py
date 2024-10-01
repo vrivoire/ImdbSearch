@@ -13,7 +13,7 @@ import imdb
 import imdb.Company as Company
 import imdb.Person as Person
 import jsonpickle
-from imdb import Cinemagoer, IMDbError
+from imdb import Cinemagoer, IMDbError, Movie
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
@@ -48,7 +48,7 @@ def load_data(title: str) -> dict[str, None | list | tuple | dict | list]:
 		raise ex
 	finally:
 		if movie is None:
-			print('\t1 ERROR - ************** IMDbError ************** Not found: {title}')
+			print(f'\t1 ERROR - ************** IMDbError ************** Not found: {title}')
 		else:
 			for key in movie.infoset2keys:
 				values = movie.infoset2keys[key]
@@ -153,7 +153,8 @@ def path_search(path):
 	for i, file in enumerate(files):
 		if IGNORED_FOLDERS.__contains__(file) or not file.endswith(SUPPORTED_EXTENSIONS) and not os.path.isdir(path + file) and file.endswith('.html'):
 			files.remove(file)
-		files[i] = file[0:len(file) - 4]
+		if file.rfind('.') != -1:
+			files[i] = file[0:len(file) - 4]
 	args_search(files)
 
 

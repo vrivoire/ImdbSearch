@@ -105,7 +105,7 @@ function screenshotPreview() {
 
 function getCountryFlagsByCode(mainCountryCodes: string[]) {
 	var flags: string = '';
-	if (mainCountryCodes != null || mainCountryCodes !== undefined) {
+	if (mainCountryCodes !== null) {
 		for (let lang of mainCountryCodes) {
 			if (lang && lang !== "und") {
 				if (lang === 'cshh') {
@@ -123,7 +123,7 @@ function getCountryFlagsByCode(mainCountryCodes: string[]) {
 
 function getLanguageFlagsByCode2(list: string[]) {
 	var flags: string = '';
-	if (list != null || list !== undefined) {
+	if (list != null) {
 		for (let lang of list) {
 			if (lang && lang !== "und") {
 				var map = json_iso_639_1[lang];
@@ -141,7 +141,7 @@ function getLanguageFlagsByCode2(list: string[]) {
 
 function getaAdioSubTitlesFlagsByCode(list: string[]) {
 	var flags: string = '';
-	if (list != null || list !== undefined) {
+	if (list != null) {
 		for (let element of list) {
 			if (element && element !== "und") {
 				var map = json_iso_639_2[element];

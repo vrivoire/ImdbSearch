@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +37,11 @@ import org.jfree.svg.SVGGraphics2D;
 public final class DbUtils {
 
 	private static final Logger LOG = LogManager.getLogger(DbUtils.class);
+
+	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private static final String SQL_DELETE = "delete from films where imdb_id=?;";
-	private static final String SQL_SELECT = "select * from films where imdb_id=?;";
+	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
+	private static final String SQL_SELECT_4_DELETE = "select * from films where imdb_id=?;";
 	private static final String SQL_UPDATE = "update films set title=?, year=?, kind=?, rating=?, cover_url=?, votes=?, runtimeHM=?, countries=?, genres=?, is_on_drive=? where imdb_id=?;";
 	private static final String SQL_UPDATE_FALSE = "update films set is_on_drive=false;";
 	private static final String SQL_INSERT = "insert into films(title, year, kind, rating, imdb_id, cover_url, votes, runtimeHM, countries, genres, is_on_drive) values(?,?,?,?,?,?,?,?,?,?,?);";
@@ -135,7 +139,7 @@ public final class DbUtils {
 	}
 
 	public static void dbDelete(String imdbId, JFrame frame) {
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt1 = conn.prepareStatement(SQL_SELECT)) {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt1 = conn.prepareStatement(SQL_SELECT_4_DELETE)) {
 			pstmt1.setString(1, imdbId);
 			ResultSet rs = pstmt1.executeQuery();
 			if (rs.next()) {
@@ -185,7 +189,7 @@ public final class DbUtils {
 				pstmtUpdateFalse.clearBatch();
 			}
 
-			try (PreparedStatement pstmtSelect = conn.prepareStatement(SQL_SELECT)) {
+			try (PreparedStatement pstmtSelect = conn.prepareStatement(SQL_SELECT_4_DELETE)) {
 				try (PreparedStatement pstmtUpdate = conn.prepareStatement(SQL_UPDATE); PreparedStatement pstmtInsert = conn.prepareStatement(SQL_INSERT)) {
 					List<String> imdbIdsUptade = new ArrayList<>();
 					List<String> imdbIdsInsert = new ArrayList<>();
@@ -235,6 +239,48 @@ public final class DbUtils {
 		float duration = System.currentTimeMillis() - start;
 		int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size());
 		LOG.info("DB - Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
+	}
+
+	public static List<Map<String, Object>> sqlFindAll() {
+		List<Map<String, Object>> list = new ArrayList<>();
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT)) {
+			ResultSet rs = pstmt.executeQuery();
+			int rank = 0;
+			while (rs.next()) {
+				Map<String, Object> map = new HashMap<>();
+				list.add(map);
+				map.put("rank", ++rank);
+				map.put("id", rs.getInt("id"));
+				map.put("mainOriginalTitle", rs.getString("title"));
+				map.put("mainImdbid", rs.getString("imdb_id"));
+				map.put("mainYear", rs.getString("year"));
+				map.put("mainKind", rs.getString("kind"));
+				map.put("mainRating", rs.getDouble("rating"));
+				map.put("mainCoverUrl", rs.getString("cover_url"));
+				map.put("mainVotes", rs.getString("votes"));
+				map.put("runtimeHM", rs.getString("runtimeHM"));
+				map.put("mainCountries", rs.getString("countries"));
+				map.put("mainGenres", rs.getString("genres"));
+//				map.put("isOnDrive", rs.getString("is_on_drive"));
+			}
+			LOG.info("Read all history, " + list.size() + " records.");
+		} catch (SQLException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return list;
+	}
+
+	public static Integer historyCount() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtCount = conn.prepareStatement(SQL_COUNT)) {
+			ResultSet rs = stmtCount.executeQuery();
+			if (rs.next()) {
+				int count = rs.getInt("count");
+				return count;
+			}
+		} catch (SQLException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return null;
 	}
 
 	private static String status(int i) {

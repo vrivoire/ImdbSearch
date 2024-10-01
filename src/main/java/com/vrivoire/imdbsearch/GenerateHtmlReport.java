@@ -16,11 +16,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -50,8 +45,6 @@ public class GenerateHtmlReport {
 	private static final String SERIES = "&#x1F4FA;";
 	private static final String UNKNOWN = "&#x2753;";
 	private static final NavigableMap<Long, String> suffixes = new TreeMap<>();
-	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
-	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private final String fullReportPath;
 
 	static {
@@ -124,7 +117,7 @@ public class GenerateHtmlReport {
 		String spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
 
 		Map<String, Object> map = new HashMap<>();
-		map.put("historyCount", historyCount());
+		map.put("historyCount", DbUtils.historyCount());
 		map.put("report_location", fullReportPath);
 		map.put("spaceUsed", spaceUsed);
 		map.put("foundCount", movieList.size());
@@ -177,6 +170,12 @@ public class GenerateHtmlReport {
 		map.put("index_css", "\n<style>\n" + read("/index.css") + "\n</style>\n");
 		map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
 
+		for (NameYearBean nameYearBean : movieList) {
+			if (nameYearBean.getMainOriginalTitle() == null) {
+				nameYearBean.setMainOriginalTitle("_Error " + nameYearBean.getOriginalName());
+			}
+		}
+
 		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
@@ -186,15 +185,13 @@ public class GenerateHtmlReport {
 		String jsonByRank = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + "\n</script>\n");
 
-		try {
-			Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf2.getMainOriginalTitle().compareToIgnoreCase(ovf1.getMainOriginalTitle())));
-			String jsonByName = ow.writeValueAsString(getMapList(movieList));
-			map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
-		} catch (NullPointerException npe) {
-			map.put("jsonByName", "\n<script>\nvar jsonByName = [{}]</script>\n");
-			LOG.error(npe.getMessage(), npe);
-		}
-		String jsonListAll = ow.writeValueAsString(sqlFindAll());
+		Collections.sort(movieList, (NameYearBean o1, NameYearBean o2) -> {
+			return (o1.getMainOriginalTitle() != null && o2.getMainOriginalTitle() != null) ? o1.getMainOriginalTitle().compareToIgnoreCase(o2.getMainOriginalTitle()) : 0;
+		});
+		String jsonByName = ow.writeValueAsString(getMapList(movieList));
+		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
+
+		String jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
 		map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 
 		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + "\n</script>\n");
@@ -352,45 +349,4 @@ public class GenerateHtmlReport {
 		return sb2.toString();
 	}
 
-	private List<Map<String, Object>> sqlFindAll() {
-		List<Map<String, Object>> list = new ArrayList<>();
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT)) {
-			ResultSet rs = pstmt.executeQuery();
-			int rank = 0;
-			while (rs.next()) {
-				Map<String, Object> map = new HashMap<>();
-				list.add(map);
-				map.put("rank", ++rank);
-				map.put("id", rs.getInt("id"));
-				map.put("mainOriginalTitle", rs.getString("title"));
-				map.put("mainImdbid", rs.getString("imdb_id"));
-				map.put("mainYear", rs.getString("year"));
-				map.put("mainKind", rs.getString("kind"));
-				map.put("mainRating", rs.getDouble("rating"));
-				map.put("mainCoverUrl", rs.getString("cover_url"));
-				map.put("mainVotes", rs.getString("votes"));
-				map.put("runtimeHM", rs.getString("runtimeHM"));
-				map.put("mainCountries", rs.getString("countries"));
-				map.put("mainGenres", rs.getString("genres"));
-//				map.put("isOnDrive", rs.getString("is_on_drive"));
-			}
-			LOG.info("Read all history, " + list.size() + " records.");
-		} catch (SQLException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return list;
-	}
-
-	private Integer historyCount() {
-		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtCount = conn.prepareStatement(SQL_COUNT)) {
-			ResultSet rs = stmtCount.executeQuery();
-			if (rs.next()) {
-				int count = rs.getInt("count");
-				return count;
-			}
-		} catch (SQLException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return null;
-	}
 }
