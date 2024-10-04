@@ -51,6 +51,7 @@ public class Main {
 				if (pythonProcess != null && pythonProcess.isAlive()) {
 					LOG.info("Destroying Python process...");
 					pythonProcess.destroyForcibly();
+					LOG.info("Python process killed.");
 				} else {
 					LOG.info("Python process already dead.");
 				}
@@ -252,13 +253,14 @@ public class Main {
 										LOG.warn("--> Renaming file '" + originalName + "' failed.");
 									} else {
 										LOG.info("File renamed: " + oldF + " --> " + newF);
+										nameYearBean.setOriginalName(newF.getName().toString());
 										try {
 											BasicFileAttributeView attributes = Files.getFileAttributeView(newF.toPath(), BasicFileAttributeView.class);
 											FileTime time = FileTime.fromMillis(Date.from(new Date().toInstant()).getTime());
 											attributes.setTimes(time, time, time);
 											LOG.info("File " + newF + " updated creation date");
 										} catch (IOException ex) {
-											// Ignore
+											LOG.warn(originalName + " " + ex.getMessage());
 										}
 									}
 								}

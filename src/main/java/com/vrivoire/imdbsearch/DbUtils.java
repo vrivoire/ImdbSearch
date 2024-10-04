@@ -194,8 +194,10 @@ public final class DbUtils {
 					List<String> imdbIdsUptade = new ArrayList<>();
 					List<String> imdbIdsInsert = new ArrayList<>();
 					int[] resultUpdate = new int[0], resultInsert = new int[0];
+					Map<String, Map<String, Object>> mapFromBeans = new HashMap<>();
 					for (NameYearBean nameYearBean : listFound) {
 						Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
+						mapFromBeans.put((String) mapFromBean.get("mainImdbid"), mapFromBean);
 						if (mapFromBean.get("mainImdbid") != null || mapFromBean.get("mainOriginalTitle") != null) {
 							pstmtSelect.setString(1, (String) mapFromBean.get("mainImdbid"));
 							ResultSet rs = pstmtSelect.executeQuery();
@@ -208,6 +210,7 @@ public final class DbUtils {
 							}
 						}
 					}
+
 					try {
 						resultUpdate = pstmtUpdate.executeBatch();
 						pstmtUpdate.clearBatch();
@@ -223,12 +226,12 @@ public final class DbUtils {
 
 					StringBuilder sbUpdate = new StringBuilder("\n");
 					for (int i = 0; i < resultUpdate.length; i++) {
-						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" -> ").append(status(resultUpdate[i])).append('\n');
+						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainOriginalTitle")).append(") -> ").append(status(resultUpdate[i])).append('\n');
 					}
 					LOG.info(sbUpdate.toString());
 					StringBuilder sbInsert = new StringBuilder("\n");
 					for (int i = 0; i < resultInsert.length; i++) {
-						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" -> ").append(status(resultInsert[i])).append('\n');
+						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainOriginalTitle")).append(") -> ").append(status(resultInsert[i])).append('\n');
 					}
 					LOG.info(sbInsert.toString());
 				}
