@@ -12,7 +12,7 @@
 	"SUPPORTED_EXTENSIONS": ["xyz", "xa", "wav", "dts", "tta", "tac", "ts", "mpg", "ra", "ram", "rm", "rv", "rmbv", "ogm", "ogg", "nut", "nsv", "nsc", "mpg", "mp3", "mp2", "mp4", "mov", "mkv", "mka", "flv", "avi", "au", "asf", "wmv", "asf", "wmv", "a52", "dts", "aac", "flac", "dv", "vid", "3gp", "m4v"],
 	"THREAD_NB": 10,
 	"TORRENTS": [".gy", ".si", "MULTi.1080p.WEB.H264-FW", "COMPLETE.MULTi.1080p.NF.WEB.DDP.AV1-BTT", ".ps", ".rs", ".eu", ".xyz", ".gs", ".tw", ".vg", "afi-", ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw", ".cc", ".ws", ".ph", ".io", ".pl", ".vc", ".be", "x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch", "Torrent911", "Torrenting", "Torrent9", "CpasBien", "vostfr", "1080p", "1080", "720p", "720", "null", ".pe", ".me"],
-	"VERSION_DATATABLES": "2.1.7",
+	"VERSION_DATATABLES": "2.1.8",
 	"VERSION_DATATABLES_COLREORDER": "2.0.4",
 	"VERSION_JQUERY": "4.0.0-beta.2",
 	"VERSION_JQUERY_UI": "1.14.0",

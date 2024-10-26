@@ -280,6 +280,7 @@ public class SearchMovie {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(args);
 			pb.redirectErrorStream(true);
+//			pb = pb.inheritIO();
 			pythonProcess = pb.start();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
 			String line;

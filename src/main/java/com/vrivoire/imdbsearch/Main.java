@@ -112,7 +112,6 @@ public class Main {
 	private void start() throws Exception {
 		if (_args != null && _args.length > 0) {
 			for (String _arg : _args) {
-				LOG.info("_arg: " + _arg);
 				if (validatePath(_arg)) {
 					process();
 					LogGrabberAppender.resetLogs();
