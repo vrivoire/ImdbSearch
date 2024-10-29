@@ -186,6 +186,7 @@ $(document).ready(function () {
 										</tbody>`;
 
 	$('#table_and_search').DataTable({
+		retrieve: true,
 		info: false,
 		ordering: true,
 		paging: false,
