@@ -113,9 +113,12 @@ public class GenerateHtmlReport {
 			});
 			sb1.append("</code>");
 		}
-
-		String spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
-
+		String spaceUsed = "";
+		try {
+			spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
+		} catch (Exception ade) {
+			LOG.error(ade.getMessage());
+		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("historyCount", DbUtils.historyCount());
 		map.put("report_location", fullReportPath);
