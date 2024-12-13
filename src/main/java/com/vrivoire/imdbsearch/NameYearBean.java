@@ -73,6 +73,7 @@ public class NameYearBean {
 	private Set<String> subTitles = new TreeSet<>();
 	private Set<String> audio = new TreeSet<>();
 	private Map<String, Map> mainEpisodeOf = null;
+	private Integer mainBottom100Rank = null;
 
 	public NameYearBean() {
 	}
@@ -584,6 +585,14 @@ public class NameYearBean {
 		this.mainEpisodeOf = mainEpisodeOf;
 	}
 
+	public Integer getMainBottom100Rank() {
+		return mainBottom100Rank;
+	}
+
+	public void setMainBottom100Rank(Integer mainBottom100Rank) {
+		this.mainBottom100Rank = mainBottom100Rank;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -600,6 +609,7 @@ public class NameYearBean {
 		builder.append(", mainAkas=").append(mainAkas);
 		builder.append(", mainAlternativeKind=").append(mainAlternativeKind);
 		builder.append(", mainAspectRatio=").append(mainAspectRatio);
+		builder.append(", mainBottom100Rank=").append(mainBottom100Rank);
 		builder.append(", mainBoxOffice=").append(mainBoxOffice);
 		builder.append(", mainCertificates=").append(mainCertificates);
 		builder.append(", mainColorInfo=").append(mainColorInfo);

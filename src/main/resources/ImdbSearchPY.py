@@ -56,6 +56,7 @@ def load_data(title: str) -> dict[str, None | list | tuple | dict | list]:
 					if type(movie.get(value)) is list and len(movie.get(value)) > 0 and (isinstance(movie.get(value)[0], Person.Person) or isinstance(movie.get(value)[0], Company.Company)):
 						pass
 					else:
+						# print(f'movie.get({value}): {key}.{value}:{movie.get(value)}')
 						prop[f'{key}.{value}'] = movie.get(value)
 			try:
 				prop['main.directors'] = []
