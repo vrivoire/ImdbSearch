@@ -59,11 +59,11 @@ public class NameYearBean {
 	private String mainProductionStatusUpdated = null;
 	private String mainProductionStatus = null;
 	private String error = null;
-	private String mainEpisode = null;
+	private Integer mainEpisode = null;
 	private Integer mainNumberOfEpisodes = null;
 	private String mainPreviousEpisode = null;
 	private String mainNextEpisode = null;
-	private String mainSeason = null;
+	private Integer mainSeason = null;
 	private boolean isOnDrive = false;
 	private String resolutionDescription = null;
 	private Integer width = null;
@@ -94,11 +94,11 @@ public class NameYearBean {
 		this.isOnDrive = isOnDrive;
 	}
 
-	public String getMainEpisode() {
+	public Integer getMainEpisode() {
 		return mainEpisode;
 	}
 
-	public void setMainEpisode(String mainEpisode) {
+	public void setMainEpisode(Integer mainEpisode) {
 		this.mainEpisode = mainEpisode;
 	}
 
@@ -126,11 +126,11 @@ public class NameYearBean {
 		this.mainNextEpisode = mainNextEpisode;
 	}
 
-	public String getMainSeason() {
+	public Integer getMainSeason() {
 		return mainSeason;
 	}
 
-	public void setMainSeason(String mainSeason) {
+	public void setMainSeason(Integer mainSeason) {
 		this.mainSeason = mainSeason;
 	}
 

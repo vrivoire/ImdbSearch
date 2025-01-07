@@ -275,6 +275,9 @@ public class GenerateHtmlReport {
 		} else if (movie.getMainPlotOutline() != null) {
 			map.put("plotPlot", movie.getMainPlotOutline().substring(0));
 		}
+		if (map.get("plotPlot") == null) {
+			map.put("plotPlot", "");
+		}
 		if (movie.getMainPlotOutline() != null && !movie.getMainPlotOutline().isEmpty()) {
 			map.put("plotSynopsis", movie.getMainPlotOutline());
 		} else {
