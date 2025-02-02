@@ -63,7 +63,7 @@ public class NameYearBean {
 	private Integer mainNumberOfEpisodes = null;
 	private String mainPreviousEpisode = null;
 	private String mainNextEpisode = null;
-	private Integer mainSeason = null;
+	private Object mainSeason = null;
 	private boolean isOnDrive = false;
 	private String resolutionDescription = null;
 	private Integer width = null;
@@ -126,11 +126,11 @@ public class NameYearBean {
 		this.mainNextEpisode = mainNextEpisode;
 	}
 
-	public Integer getMainSeason() {
+	public Object getMainSeason() {
 		return mainSeason;
 	}
 
-	public void setMainSeason(Integer mainSeason) {
+	public void setMainSeason(Object mainSeason) {
 		this.mainSeason = mainSeason;
 	}
 

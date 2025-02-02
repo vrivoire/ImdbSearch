@@ -20,7 +20,9 @@ import com.sun.jna.NativeLibrary;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -280,17 +282,18 @@ public class SearchMovie {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(args);
 			pb.redirectErrorStream(true);
-//			pb = pb.inheritIO();
 			pythonProcess = pb.start();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
-			String line;
-			while ((line = stdInput.readLine()) != null) {
-				LOG.info("ImdbSearchPY\t" + line);
+
+			try (InputStream is = pythonProcess.getInputStream(); Reader isr = new InputStreamReader(is); BufferedReader stdInput = new BufferedReader(isr)) {
+				String line;
+				while ((line = stdInput.readLine()) != null) {
+					LOG.info("ImdbSearchPY\t" + line);
+				}
+				LOG.info("Exit value: " + pythonProcess.waitFor() + ", info: " + pythonProcess.info());
+			} catch (IOException ex) {
+				LOG.fatal(ex.getMessage(), ex);
+				throw ex;
 			}
-			LOG.info("Exit value: " + pythonProcess.waitFor() + ", info: " + pythonProcess.info());
-		} catch (IOException ex) {
-			LOG.fatal(ex.getMessage(), ex);
-			throw ex;
 		} finally {
 			if (pythonProcess != null && pythonProcess.isAlive()) {
 				LOG.info("Destroying Python process...");
