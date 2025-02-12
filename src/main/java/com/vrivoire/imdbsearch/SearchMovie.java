@@ -20,9 +20,7 @@ import com.sun.jna.NativeLibrary;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -284,7 +282,7 @@ public class SearchMovie {
 			pb.redirectErrorStream(true);
 			pythonProcess = pb.start();
 
-			try (InputStream is = pythonProcess.getInputStream(); Reader isr = new InputStreamReader(is); BufferedReader stdInput = new BufferedReader(isr)) {
+			try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()), 8192 * 4)) {
 				String line;
 				while ((line = stdInput.readLine()) != null) {
 					LOG.info("ImdbSearchPY\t" + line);

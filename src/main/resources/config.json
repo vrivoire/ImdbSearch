@@ -2,7 +2,7 @@
 	"DB_PROTOCOL": "jdbc:sqlite:",
 	"DB_URL": "C:/Users/rivoi/Documents/ImdbSearch.db",
 	"ICON": "/IMDB.jpg",
-	"IGNORED_FOLDERS": ["Captures", "W", "W2", "W3"],
+	"IGNORED_FOLDERS": ["Heavy Metal", "Anime", "Captures", "W", "W2", "W3"],
 	"IMDBSEARCH_PY_PATH": "ImdbSearchPY.py",
 	"IS_IMAGES_EMBEDED": false,
 	"IS_LOG_ON": true,
