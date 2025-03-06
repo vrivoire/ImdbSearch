@@ -128,7 +128,7 @@ public class GenerateHtmlReport {
 		map.put("notFoundCount", notFound.size());
 		map.put("notFoundCount_s", notFound.size() > 1 ? "s" : "");
 		map.put("total", notFound.size() + movieList.size());
-		if (Config.IS_LOG_ON.getBoolean()) {
+		if (!Config.IS_SLIM.getBoolean()) {
 			map.put("logsData", """
                     <div>
                         """ + sb1.toString() + """
@@ -184,14 +184,20 @@ public class GenerateHtmlReport {
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
 		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
 
-		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getMainRating() > ovf2.getMainRating() ? 1 : -1));
-		String jsonByRank = ow.writeValueAsString(getMapList(movieList));
+		String jsonByRank = "[]";
+		if (!Config.IS_SLIM.getBoolean()) {
+			Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getMainRating() > ovf2.getMainRating() ? 1 : -1));
+			jsonByRank = ow.writeValueAsString(getMapList(movieList));
+		}
 		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + "\n</script>\n");
 
-		Collections.sort(movieList, (NameYearBean o1, NameYearBean o2) -> {
-			return (o1.getMainOriginalTitle() != null && o2.getMainOriginalTitle() != null) ? o1.getMainOriginalTitle().compareToIgnoreCase(o2.getMainOriginalTitle()) : 0;
-		});
-		String jsonByName = ow.writeValueAsString(getMapList(movieList));
+		String jsonByName = "[]";
+		if (!Config.IS_SLIM.getBoolean()) {
+			Collections.sort(movieList, (NameYearBean o1, NameYearBean o2) -> {
+				return (o1.getMainOriginalTitle() != null && o2.getMainOriginalTitle() != null) ? o1.getMainOriginalTitle().compareToIgnoreCase(o2.getMainOriginalTitle()) : 0;
+			});
+			jsonByName = ow.writeValueAsString(getMapList(movieList));
+		}
 		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
 
 		String jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
