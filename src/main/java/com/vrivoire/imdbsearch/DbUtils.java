@@ -38,6 +38,7 @@ public final class DbUtils {
 
 	private static final Logger LOG = LogManager.getLogger(DbUtils.class);
 
+	private static final String SQL_SELECT_0_RATE = "SELECT imdb_id FROM films where rating=0;";
 	private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
 	private static final String SQL_DELETE = "delete from films where imdb_id=?;";
 	private static final String SQL_SELECT = "select * from films order by rating desc, votes desc;";
@@ -138,6 +139,33 @@ public final class DbUtils {
 		return null;
 	}
 
+	private static void deleteNoRates() {
+		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt1 = conn.prepareStatement(SQL_SELECT_0_RATE)) {
+			ResultSet rs = pstmt1.executeQuery();
+			while (rs.next()) {
+				try (PreparedStatement pstmt2 = conn.prepareStatement(SQL_DELETE)) {
+					String imdbId = rs.getString("imdb_id");
+					LOG.info("Before deleting " + imdbId);
+					pstmt2.setString(1, imdbId);
+					int val = pstmt2.executeUpdate();
+					switch (val) {
+						case 1 -> {
+							LOG.info("DELETE imdb_id='" + imdbId + " The row count for SQL Data Manipulation Language (DML) statements");
+						}
+						case 2 -> {
+							LOG.info("NOTHING imdb_id='" + imdbId + " 0 for SQL statements that return nothing");
+						}
+						default -> {
+							LOG.info("Return '" + val + "' not understandable for param imdb_id='" + imdbId + "'.");
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+	}
+
 	public static void dbDelete(String imdbId, JFrame frame) {
 		try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement pstmt1 = conn.prepareStatement(SQL_SELECT_4_DELETE)) {
 			pstmt1.setString(1, imdbId);
@@ -236,6 +264,8 @@ public final class DbUtils {
 					LOG.info(sbInsert.toString());
 				}
 			}
+
+			deleteNoRates();
 		} catch (SQLException e) {
 			LOG.error(e.getMessage(), e);
 		}

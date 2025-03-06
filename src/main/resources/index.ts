@@ -164,127 +164,128 @@ var second;
 var th: {addClass: (arg0: any) => void;};
 
 $(document).ready(function () {
+	if(!IS_SLIM){
+		const titles = Object.keys(jsonListAll[0])
+			.map((key) => `<th>${key}</th>`)
+			.join("");
 
-	const titles = Object.keys(jsonListAll[0])
-		.map((key) => `<th>${key}</th>`)
-		.join("");
+		const rows = jsonListAll.map((obj) =>
+			`<tr>${Object.values(obj)
+				.map((val) => `<td>${val}</td>`)
+				.join("")}</tr>`
+		).join("");
 
-	const rows = jsonListAll.map((obj) =>
-		`<tr>${Object.values(obj)
-			.map((val) => `<td>${val}</td>`)
-			.join("")}</tr>`
-	).join("");
+		$("#table_and_search")[0].innerHTML = `
+											<thead>
+												<tr>
+													${titles}
+												</tr>
+											</thead>
+											<tbody>
+												${rows}
+											</tbody>`;
 
-	$("#table_and_search")[0].innerHTML = `
-										<thead>
-											<tr>
-												${titles}
-											</tr>
-										</thead>
-										<tbody>
-											${rows}
-										</tbody>`;
-
-	$('#table_and_search').DataTable({
-		retrieve: true,
-		info: false,
-		ordering: true,
-		paging: false,
-		colReorder: {
-			order: [6, 0, 7, 4, 5, 3, 2, 1, 9, 10, 11, 8]
-		},
-		order: {
-			name: 'rank',
-			dir: 'asc'
-		},
-		columnDefs: [
-			{
-				target: 2,
-				visible: false,
-				searchable: false
-			}, {
-				target: 5,
-				visible: false,
-				searchable: false
-			}, {
-				target: 9,
-				visible: false,
-				searchable: false
-			}
-		],
-		columns: [
-			{
-				data: "mainRating",
-				title: "Rating",
-				render: function (data, type, row, meta) {
-					if (type === 'display') {
-						return "<span data-color='" + data + "'>" + data + "</span>";
-					}
-					return data;
+		$('#table_and_search').DataTable({
+			retrieve: true,
+			info: false,
+			ordering: true,
+			paging: false,
+			colReorder: {
+				order: [6, 0, 7, 4, 5, 3, 2, 1, 9, 10, 11, 8]
+			},
+			order: {
+				name: 'rank',
+				dir: 'asc'
+			},
+			columnDefs: [
+				{
+					target: 2,
+					visible: false,
+					searchable: false
+				}, {
+					target: 5,
+					visible: false,
+					searchable: false
+				}, {
+					target: 9,
+					visible: false,
+					searchable: false
 				}
-			},
-			{
-				data: "runtimeHM",
-				title: "Duration"
-			},
-			{
-				data: "mainCoverUrl"
-			},
-			{
-				data: "mainKind",
-				title: "Kind"
-			},
-			{
-				data: "mainYear",
-				title: "Year"
-			},
-			{
-				data: "mainVotes",
-				title: "Votes"
-			},
-			{
-				data: "rank",
-				title: "Rank"
-			},
-			{
-				data: "mainOriginalTitle",
-				title: "Title",
-				render: function (data, type, row, meta) {
-					if (type === 'display') {
-						return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
+			],
+			columns: [
+				{
+					data: "mainRating",
+					title: "Rating",
+					render: function (data, type, row, meta) {
+						if (type === 'display') {
+							return "<span data-color='" + data + "'>" + data + "</span>";
+						}
+						return data;
 					}
-					return data;
-				}
-			},
-			{
-				data: "mainImdbid",
-				title: "IMDB (id)",
-				render: function (data, type, row, meta) {
-					if (type === 'display') {
-						return data + "&nbsp;<small>(" + row.id + ")</small>";
+				},
+				{
+					data: "runtimeHM",
+					title: "Duration"
+				},
+				{
+					data: "mainCoverUrl"
+				},
+				{
+					data: "mainKind",
+					title: "Kind"
+				},
+				{
+					data: "mainYear",
+					title: "Year"
+				},
+				{
+					data: "mainVotes",
+					title: "Votes"
+				},
+				{
+					data: "rank",
+					title: "Rank"
+				},
+				{
+					data: "mainOriginalTitle",
+					title: "Title",
+					render: function (data, type, row, meta) {
+						if (type === 'display') {
+							return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
+						}
+						return data;
 					}
-					return data;
-				}
-			},
-			{
-				data: "id"
-			},
-			{
-				data: "mainCountries",
-				title: "Countries",
-				render: function (data, type, row, meta) {
-					if (type === 'display') {
-						return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
+				},
+				{
+					data: "mainImdbid",
+					title: "IMDB (id)",
+					render: function (data, type, row, meta) {
+						if (type === 'display') {
+							return data + "&nbsp;<small>(" + row.id + ")</small>";
+						}
+						return data;
 					}
-					return data;
+				},
+				{
+					data: "id"
+				},
+				{
+					data: "mainCountries",
+					title: "Countries",
+					render: function (data, type, row, meta) {
+						if (type === 'display') {
+							return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
+						}
+						return data;
+					}
+				},
+				{
+					data: "mainGenres",
+					title: "Genres"
 				}
-			},
-			{
-				data: "mainGenres",
-				title: "Genres"
-			}
-		]
-	});
+			]
+		});
+	}
 
 	screenshotPreview();
 
@@ -330,14 +331,16 @@ $(document).ready(function () {
 									</div>
 								</div>`;
 
-	var textListAll = "";
-	for (let film of jsonListAll) {
-		textListAll += insertAll(film)
+	if(!IS_SLIM){
+		var textListAll = "";
+		for (let film of jsonListAll) {
+			textListAll += insertAll(film)
+		}
+		$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
+			${textListAll}
+			</br>
+			<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
 	}
-	$("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
-		${textListAll}
-		</br>
-		<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
 
 	$('span').each(function (index: any) {
 		th = $(this);
