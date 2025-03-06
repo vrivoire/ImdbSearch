@@ -54,7 +54,7 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.48.0.0</version>
+			<version>3.49.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
@@ -69,12 +69,12 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.18.2</version>
+			<version>2.18.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>1.10.0</version>
+			<version>1.10.1</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
@@ -112,7 +112,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.11.4</version>
+			<version>5.12.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -175,7 +175,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>3.14.0</version>
 				<configuration>
 					<release>${maven.compiler.release}</release>
 					<encoding>${project.build.sourceEncoding}</encoding>
@@ -276,7 +276,7 @@
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
-				<version>2.5.2</version>
+				<version>2.5.3</version>
 				<executions>
 					<execution>
 						<id>l4j-clui</id>
@@ -292,7 +292,7 @@
 							<classPath>
 								<mainClass>${mainClass}</mainClass>
 							</classPath>
-							<icon>${project.build.directory}/../bin/IMDB.ico</icon>
+							<icon>${project.build.directory}/../src/main/resources/IMDB.ico</icon>
 							<jre>
 								<minVersion>${maven.compiler.target}</minVersion>
 								<path>%JAVA_HOME%;%PATH%</path>
