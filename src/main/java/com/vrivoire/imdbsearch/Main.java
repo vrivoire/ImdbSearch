@@ -39,7 +39,8 @@ import org.apache.logging.log4j.Logger;
 public class Main {
 
 	private static final Logger LOG = LogManager.getLogger(Main.class);
-	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
+//	public static String default_path = System.getProperty("user.home") + File.separator + "Videos" + File.separator;
+        public static String default_path = "D:/Films/";
 	public static Process pythonProcess;
 	private static String[] _args;
 	private final static JTextArea TEXT_AREA_LOGS = new JTextArea();

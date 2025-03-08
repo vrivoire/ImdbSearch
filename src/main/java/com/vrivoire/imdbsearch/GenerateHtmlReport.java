@@ -182,14 +182,14 @@ public class GenerateHtmlReport {
 		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 		Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
 		String jsonByDate = ow.writeValueAsString(getMapList(movieList));
-		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + "\n</script>\n");
+		map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + ";\n</script>\n");
 
 		String jsonByRank = "[]";
 		if (!Config.IS_SLIM.getBoolean()) {
 			Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getMainRating() > ovf2.getMainRating() ? 1 : -1));
 			jsonByRank = ow.writeValueAsString(getMapList(movieList));
 		}
-		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + "\n</script>\n");
+		map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + ";\n</script>\n");
 
 		String jsonByName = "[]";
 		if (!Config.IS_SLIM.getBoolean()) {
@@ -198,18 +198,18 @@ public class GenerateHtmlReport {
 			});
 			jsonByName = ow.writeValueAsString(getMapList(movieList));
 		}
-		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + "\n</script>\n");
+		map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + ";\n</script>\n");
 
-		map.put("IS_SLIM", "\n<script>\nvar IS_SLIM = " + Config.IS_SLIM.getBoolean() + "\n</script>\n");
+		map.put("IS_SLIM", "\n<script>\nvar IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n</script>\n");
 
 		if (!Config.IS_SLIM.getBoolean()) {
 			String jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
 			map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 		}
 
-		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + "\n</script>\n");
-		map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + "\n</script>\n");
-		map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1.alpha2.json") + "\n</script>\n");
+		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + ";\n</script>\n");
+		map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + ";\n</script>\n");
+		map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1.alpha2.json") + ";\n</script>\n");
 		LOG.info("Report file: " + Paths.get(fullReportPath));
 
 		var index = Config.fill(read("/index.html"), map);
