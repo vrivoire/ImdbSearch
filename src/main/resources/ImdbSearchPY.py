@@ -1,5 +1,6 @@
 # cd C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPY
 # pyinstaller --onefile main.py --icon=C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPY\IMDb.ico --nowindowed --noconsole --paths C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPYvenv\Lib\site-packages
+# pip install git+https://github.com/cinemagoer/cinemagoer
 
 import json
 import os
