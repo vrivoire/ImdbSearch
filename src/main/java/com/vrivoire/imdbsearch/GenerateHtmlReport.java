@@ -202,10 +202,11 @@ public class GenerateHtmlReport {
 
 		map.put("IS_SLIM", "\n<script>\nvar IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n</script>\n");
 
+		String jsonListAll = "[]";
 		if (!Config.IS_SLIM.getBoolean()) {
-			String jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
-			map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
+			jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
 		}
+		map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
 
 		map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + ";\n</script>\n");
 		map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + ";\n</script>\n");
