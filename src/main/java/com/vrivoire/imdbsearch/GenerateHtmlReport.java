@@ -265,7 +265,7 @@ public class GenerateHtmlReport {
 			map.put("mainCountries", "");
 		}
 
-		if (movie.getMainVotes() != null && movie.getMainVotes() >= 1) {
+		if (movie.getMainVotes() != null) {
 			String s = bigNumbersformat(movie.getMainVotes());
 			s = '(' + s + " vote" + (s.equals("1") ? "" : 's') + ')';
 			map.put("mainVotes", s);
