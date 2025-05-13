@@ -44,7 +44,7 @@ public class NameYearBean {
 	private Double mainRating;
 	private List<String> mainRuntimes = null;
 	private List<String> mainSoundMix = null;
-	private List<String> mainStars = null;
+	private List<String> mainCasts = null;
 	private String mainTitle = null;
 	private Integer mainTop250Rank = null;
 	private List<String> mainVideos = null;
@@ -433,12 +433,15 @@ public class NameYearBean {
 		return mainSoundMix;
 	}
 
-	public void setMainStars(List<String> mainStars) {
-		this.mainStars = mainStars;
+	public void setMainCasts(List<String> mainCasts) {
+		this.mainCasts = mainCasts;
 	}
 
-	public List<String> getMainStars() {
-		return mainStars;
+	public List<String> getMainCasts() {
+		if (mainCasts != null && !mainCasts.isEmpty() && mainCasts.size() > 5) {
+			return mainCasts.subList(0, 5);
+		}
+		return mainCasts;
 	}
 
 	public void setMainTitle(String mainTitle) {
@@ -640,7 +643,7 @@ public class NameYearBean {
 		builder.append(", mainSeasons=").append(mainSeasons);
 		builder.append(", mainSeriesYears=").append(mainSeriesYears);
 		builder.append(", mainSoundMix=").append(mainSoundMix);
-		builder.append(", mainStars=").append(mainStars);
+		builder.append(", mainCasts=").append(mainCasts);
 		builder.append(", mainTitle=").append(mainTitle);
 		builder.append(", mainTop250Rank=").append(mainTop250Rank);
 		builder.append(", mainVideos=").append(mainVideos);

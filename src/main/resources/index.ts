@@ -48,7 +48,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
 						<span><b>Director: </b> ${film.mainDirectors}</span >
 						<span><b>Writer: </b> ${film.mainWriters}</span >
-						<span><b>Actors: </b> ${film.mainStars}</span >
+						<span><b>Actors: </b> ${film.mainCasts}</span >
 						<br>
 						<div class="inner-tabs">
 							<ul>

@@ -295,7 +295,7 @@ public class GenerateHtmlReport {
 			map.put("plotSynopsis", "");
 		}
 
-		map.put("mainStars", movie.getMainStars() == null ? "" : movie.getMainStars());
+		map.put("mainCasts", movie.getMainCasts() == null ? "" : movie.getMainCasts());
 		map.put("isOnDrive", true);
 
 		map.put("subTitles", movie.getSubTitles());
