@@ -1,6 +1,7 @@
 package com.vrivoire.imdbsearch;
 
 import java.io.File;
+import java.io.Serializable;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.time.Duration;
@@ -11,9 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class NameYearBean {
+public class NameYearBean implements Serializable {
 
-	private static final long serialVersionUID = -8717940658283105093L;
+	private static final long serialVersionUID = -1962157043707876396L;
 
 	private String name;
 	private String originalName;
@@ -655,7 +656,6 @@ public class NameYearBean {
 		builder.append(", plotPlot=").append(plotPlot);
 		builder.append(", plotSynopsis=").append(plotSynopsis);
 		builder.append(", resolutionDescription=").append(resolutionDescription);
-		builder.append(", serialVersionUID=").append(serialVersionUID);
 		builder.append(", size=").append(size);
 		builder.append(", subTitles=").append(subTitles);
 		builder.append(", timeInHHMMSS=").append(timeInHHMMSS);
