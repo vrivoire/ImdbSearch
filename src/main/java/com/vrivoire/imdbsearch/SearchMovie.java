@@ -270,6 +270,9 @@ public class SearchMovie {
 		}
 		LOG.info("FOUND IMDBSEARCHPY_PATH=" + file.getAbsolutePath());
 		args.add(file.getAbsolutePath());
+		String path = movieSet.iterator().next().getFile().toString();
+		path = path.substring(0, path.lastIndexOf('\\') + 1);
+		args.add(path);
 		List<String> args2 = new ArrayList<>();
 		movieSet.forEach(nby -> {
 			args2.add(getSearchKey(nby));

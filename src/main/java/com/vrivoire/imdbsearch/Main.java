@@ -231,7 +231,8 @@ public class Main {
 	private void setNewFileName(List<NameYearBean> list) {
 		list.forEach((NameYearBean nameYearBean) -> {
 			var originalName = nameYearBean.getOriginalName();
-			var name = nameYearBean.getMainOriginalTitle();
+//			var name = nameYearBean.getMainOriginalTitle();
+			var name = nameYearBean.getMainTitle();
 
 			List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
 			if (name != null) {
@@ -241,7 +242,7 @@ public class Main {
 								.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
 								.replace('|', ' ').replace("\"", ""), new char[]{});
 						if (!newName.equalsIgnoreCase(originalName)) {
-							LOG.info("Renaming file '" + originalName + "' to '" + newName + "'");
+							LOG.info("--> Renaming file '" + originalName + "' to '" + newName + "'");
 							File oldF = new File(Main.default_path + originalName);
 							if (oldF.exists()) {
 								File newF = new File(Main.default_path + newName);
@@ -252,7 +253,7 @@ public class Main {
 									if (!isRenamed) {
 										LOG.warn("--> Renaming file '" + originalName + "' failed.");
 									} else {
-										LOG.info("File renamed: " + oldF + " --> " + newF);
+										LOG.info("--> File renamed: " + oldF + " --> " + newF);
 										nameYearBean.setOriginalName(newF.getName().toString());
 										try {
 											BasicFileAttributeView attributes = Files.getFileAttributeView(newF.toPath(), BasicFileAttributeView.class);

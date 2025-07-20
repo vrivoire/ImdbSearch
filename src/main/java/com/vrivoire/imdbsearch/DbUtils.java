@@ -254,12 +254,12 @@ public final class DbUtils {
 
 					StringBuilder sbUpdate = new StringBuilder("\n");
 					for (int i = 0; i < resultUpdate.length; i++) {
-						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainOriginalTitle")).append(") -> ").append(status(resultUpdate[i])).append('\n');
+						sbUpdate.append("Update: ImdbId=").append(imdbIdsUptade.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainTitle")).append(") -> ").append(status(resultUpdate[i])).append('\n');
 					}
 					LOG.info(sbUpdate.toString());
 					StringBuilder sbInsert = new StringBuilder("\n");
 					for (int i = 0; i < resultInsert.length; i++) {
-						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainOriginalTitle")).append(") -> ").append(status(resultInsert[i])).append('\n');
+						sbInsert.append("Insert: ImdbId=").append(imdbIdsInsert.get(i)).append(" (").append(mapFromBeans.get(imdbIdsUptade.get(i)).get("mainTitle")).append(") -> ").append(status(resultInsert[i])).append('\n');
 					}
 					LOG.info(sbInsert.toString());
 				}
@@ -329,7 +329,7 @@ public final class DbUtils {
 
 	private static void sqlUpdate(PreparedStatement pstmtUpdate, Map<String, Object> mapFromBean) throws SQLException {
 		int i = 0;
-		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainTitle"));
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainYear"));
 		pstmtUpdate.setString(++i, (String) mapFromBean.get("mainKind"));
 		pstmtUpdate.setDouble(++i, (Double) mapFromBean.get("mainRating"));
@@ -346,7 +346,7 @@ public final class DbUtils {
 
 	private static void sqlInsert(PreparedStatement pstmtInsert, Map<String, Object> mapFromBean) throws SQLException {
 		int i = 0;
-		pstmtInsert.setString(++i, (String) mapFromBean.get("mainOriginalTitle"));
+		pstmtInsert.setString(++i, (String) mapFromBean.get("mainTitle"));
 		pstmtInsert.setString(++i, (String) mapFromBean.get("mainYear"));
 		pstmtInsert.setString(++i, (String) mapFromBean.get("mainKind"));
 		pstmtInsert.setDouble(++i, (Double) mapFromBean.get("mainRating"));

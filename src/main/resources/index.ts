@@ -29,7 +29,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
 						<span style="font-weight: bold; ">
 							<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
-								${film.mainOriginalTitle}
+								${film.mainTitle}
 							</a>
 							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<br/>

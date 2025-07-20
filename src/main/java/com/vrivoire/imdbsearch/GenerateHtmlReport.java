@@ -174,7 +174,7 @@ public class GenerateHtmlReport {
 		map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
 
 		for (NameYearBean nameYearBean : movieList) {
-			if (nameYearBean.getMainOriginalTitle() == null) {
+			if (nameYearBean.getMainImdbid() == null || nameYearBean.getMainImdbid().isEmpty() || nameYearBean.getMainImdbid().equals("0")) {
 				nameYearBean.setMainOriginalTitle("_Error " + nameYearBean.getOriginalName());
 			}
 		}
@@ -292,7 +292,7 @@ public class GenerateHtmlReport {
 		if (movie.getMainPlotOutline() != null && !movie.getMainPlotOutline().isEmpty()) {
 			map.put("plotSynopsis", movie.getMainPlotOutline());
 		} else {
-			map.put("plotSynopsis", "");
+			map.put("plotSynopsis", movie.getPlotSynopsis());
 		}
 
 		map.put("mainCasts", movie.getMainCasts() == null ? "" : movie.getMainCasts());
