@@ -2,6 +2,7 @@
 # pyinstaller --onefile main.py --icon=C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPY\IMDb.ico --nowindowed --noconsole --paths C:\Users\rivoi\Documents\NetBeansProjects\PycharmProjects\ImdbSearchPYvenv\Lib\site-packages
 # pip install git+https://github.com/cinemagoer/cinemagoer
 
+import glob
 import json
 import os
 import sys
@@ -13,6 +14,8 @@ from datetime import datetime
 import imdb
 import jsonpickle
 from imdb import Cinemagoer, Company, IMDbError, Movie, Person
+
+from imdbinfo.models import MovieDetail
 from imdbinfo.services import get_movie
 
 SUPPORTED_EXTENSIONS = None
@@ -42,8 +45,9 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                         looking_year = int(last)
                     except Exception as ex:
                         pass
-                    if movie.get("kind").lower().find("podcast") == -1:
-                        if os.path.isdir(path + title) and movie.get("kind").lower().find("tv") != -1:
+                    #  'video game'  ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short')
+                    if movie.get("kind").lower().find("podcast") == -1 or movie.get("kind").lower().find("podcast episode") == -1 or movie.get("kind").lower().find("video game") == -1:
+                        if os.path.isdir(path + '/' + title) and movie.get("kind").lower().find("tv") != -1 or (movie.get("kind").lower().find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
                             if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
                                 found = True
@@ -52,16 +56,20 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
                                 found = True
                                 break
-                        elif not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1:
-                            print(f"\t\t\tLooking for '{title}' {looking_year}")
-                            if  looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                        elif not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1:
+                            print(f"\t\t\tLooking for '{title}' {looking_year} --> {movie.get("kind")}")
+                            if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                                print(f"\t\t\t1Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                found = True
-                                break
+                                if not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1:
+                                    print(f"\t\t\t2Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
+                                    found = True
+                                    break
                     if found:
+                        print(f"\t1FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
                         break
                 if found:
-                    print(f"\tFOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
+                    print(f"\t2FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
                 else:
                     print(f"\tNOT FOUND *---> title={title}")
                     movie = None
@@ -121,8 +129,7 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
             prop["main.Imdbid"] = movie.movieID
             prop["main.imdbID"] = movie.movieID
 
-            movie2 = get_movie(movie.movieID)
-            # print(f'--- {json.dumps(movie2.model_dump(), indent=4)}')
+            movie2: MovieDetail | None = get_movie(movie.movieID)
             prop["main.title"] = movie2.title
             prop["main.votes"] = movie2.votes
             prop["main.genres"] = movie2.genres if movie2.genres else []
@@ -137,6 +144,10 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
         except Exception as ex:
             print(f"ERROR: {movie.movieID}, {title} --> {ex}")
             print(traceback.format_exc())
+
+        # print('1 ///////////////////////////////////////////////////////')
+        # print(json.dumps(MovieDetail.model_dump(), indent=4))
+        # print('2 ///////////////////////////////////////////////////////')
 
         for key in list(prop.keys()):
             if type(prop.get(key)) is imdb.Movie.Movie:
@@ -385,6 +396,10 @@ if __name__ == "__main__":
         # path_search(str(Path.home()) + os.sep + "Videos" + os.sep + "W" + os.sep)
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
-        path_search("C:/Users/ADELE/Videos/W")
+
+        print('podcast episode'.lower().find("podcast") == -1)
+        print('podcast episode'.lower().find("podcast episode") == -1)
+
+        path_search("C:/Users/ADELE/Videos/W4")
 
     sys.exit()
