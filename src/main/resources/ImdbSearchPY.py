@@ -23,13 +23,13 @@ search_path = None
 props: dict[str, any] = {}
 
 
-def get_year(looking_year, title):
+def get_year(title):
     try:
         first, *middle, last = title.split()
-        looking_year = int(last)
+        return int(last)
     except Exception as ex:
-        pass
-    return looking_year
+        print(f'get_year ERROR {ex}')
+    return None
 
 
 # https://www.imdb.com/title/tt9561862/reference/
@@ -47,10 +47,17 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                 found: bool = False
                 for movie in movies:
                     looking_year: int | None = None
-                    looking_year = get_year(looking_year, title)
+                    looking_year = get_year(title)
+                    kind: str = movie.get("kind").lower()
+
+                    # my_list = ["podcast", "podcast episode", "video game"]
+                    # part = "an"
+                    # filtered_list = [item for item in ["podcast", "podcast episode", "video game"] if kind in item]
+
                     #  'video game'  ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short')
-                    if movie.get("kind").lower().find("podcast") == -1 or movie.get("kind").lower().find("podcast episode") == -1 or movie.get("kind").lower().find("video game") == -1:
-                        if os.path.isdir(path + '/' + title) and movie.get("kind").lower().find("tv") != -1 or (movie.get("kind").lower().find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
+                    if len([item for item in ["podcast", "podcast episode", "video game"] if kind in item]) ==0:
+                    # if kind.find("podcast") == -1 or kind.find("podcast episode") == -1 or kind.find("video game") == -1:
+                        if os.path.isdir(path + '/' + title) and kind.find("tv") != -1 or (kind.find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
                             if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
                                 found = True
@@ -59,16 +66,16 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
                                 found = True
                                 break
-                        elif not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1 and movie.get("kind").lower().find("podcast") == -1:
+                        elif not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
                             print(f"\t\t\t0 Looking for '{title}' {looking_year} --> {movie.get("kind")}")
                             if looking_year:
                                 if looking_year > 1800 and looking_year == movie.get('year'):
                                     print(f"\t\t\t1Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
                                     movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                    looking_year = get_year(looking_year, title)
+                                    looking_year = get_year(title)
                                     if looking_year:
                                         if looking_year > 1800 and looking_year == movie.get('year'):
-                                            if not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1 and movie.get("kind").lower().find("podcast") == -1:
+                                            if not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
                                                 print(f"\t\t\t2Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
                                                 found = True
                                                 break
@@ -440,6 +447,6 @@ if __name__ == "__main__":
         print("podcast episode".lower().find("podcast") == -1)
         print("podcast episode".lower().find("podcast episode") == -1)
 
-        path_search("C:/Users/ADELE/Videos/")
+        path_search("C:/Users/ADELE/Videos/W")
 
     sys.exit()
