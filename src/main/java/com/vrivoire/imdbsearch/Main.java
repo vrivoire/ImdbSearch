@@ -237,12 +237,14 @@ public class Main {
 	    File file = nameYearBean.getFile();
 
 	    List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();
-	    if ((file != null && !file.isDirectory()) && (name != null && year != null)) {
+	    if ((file != null && !file.isDirectory()) && name != null) {
 		for (String extension : extensions) {
 		    if (originalName.toLowerCase().endsWith(extension.toLowerCase())) {
-			String newName = WordUtils.capitalize((name + " " + year + "." + extension).toLowerCase()
-				.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
-				.replace('|', ' ').replace("\"", ""), new char[]{});
+			String newName = WordUtils.capitalize(
+				(name + " " + (year != null ? year : "") + "." + extension).toLowerCase()
+					.replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
+					.replace('|', ' ').replace("\"", ""), new char[]{}
+			);
 			if (!newName.equalsIgnoreCase(originalName)) {
 			    LOG.info("--> Renaming file '" + originalName + "' to '" + newName + "'");
 			    File oldF = new File(Main.default_path + originalName);

@@ -14,7 +14,6 @@ from datetime import datetime
 import imdb
 import jsonpickle
 from imdb import Cinemagoer, Company, IMDbError, Movie, Person
-
 from imdbinfo.models import MovieDetail
 from imdbinfo.services import get_movie
 
@@ -22,6 +21,15 @@ SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 search_path = None
 props: dict[str, any] = {}
+
+
+def get_year(looking_year, title):
+    try:
+        first, *middle, last = title.split()
+        looking_year = int(last)
+    except Exception as ex:
+        pass
+    return looking_year
 
 
 # https://www.imdb.com/title/tt9561862/reference/
@@ -38,13 +46,8 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                 print(f"{title} ---> {[movie3['title'] for movie3 in movies]}")
                 found: bool = False
                 for movie in movies:
-                    # print(f'{title} --> {movie.get("kind")} {movie.get("kind").lower().find("podcast") == -1} id={movie.movieID} {movie.get('year')}={looking_year}')
                     looking_year: int | None = None
-                    try:
-                        first, *middle, last = title.split()
-                        looking_year = int(last)
-                    except Exception as ex:
-                        pass
+                    looking_year = get_year(looking_year, title)
                     #  'video game'  ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short')
                     if movie.get("kind").lower().find("podcast") == -1 or movie.get("kind").lower().find("podcast episode") == -1 or movie.get("kind").lower().find("video game") == -1:
                         if os.path.isdir(path + '/' + title) and movie.get("kind").lower().find("tv") != -1 or (movie.get("kind").lower().find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
@@ -56,26 +59,30 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                                 movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
                                 found = True
                                 break
-                        elif not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1:
-                            print(f"\t\t\tLooking for '{title}' {looking_year} --> {movie.get("kind")}")
-                            if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
-                                print(f"\t\t\t1Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
-                                movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                if not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1:
-                                    print(f"\t\t\t2Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
-                                    found = True
-                                    break
+                        elif not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1 and movie.get("kind").lower().find("podcast") == -1:
+                            print(f"\t\t\t0 Looking for '{title}' {looking_year} --> {movie.get("kind")}")
+                            if looking_year:
+                                if looking_year > 1800 and looking_year == movie.get('year'):
+                                    print(f"\t\t\t1Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
+                                    movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
+                                    looking_year = get_year(looking_year, title)
+                                    if looking_year:
+                                        if looking_year > 1800 and looking_year == movie.get('year'):
+                                            if not os.path.isdir(path + title) and movie.get("kind").lower().find("movie") != -1 or movie.get("kind").lower().find("short") != -1 and movie.get("kind").lower().find("podcast") == -1:
+                                                print(f"\t\t\t2Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
+                                                found = True
+                                                break
+                        if found:
+                            print(f"\t1FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
+                            break
                     if found:
-                        print(f"\t1FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
-                        break
-                if found:
-                    print(f"\t2FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
-                else:
-                    print(f"\tNOT FOUND *---> title={title}")
-                    movie = None
+                        print(f"\t2FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
+                    else:
+                        print(f"\tNOT FOUND *---> title={title}")
+                        movie = None
 
         except Exception as ex:
-            print(f"ERROR title={title}, movieID={movie.movieID}")
+            print(f"1 ERROR title={title}, movieID={movie.movieID}")
             print(traceback.format_exc())
     except IMDbError as ex:
         print(f"2 ERROR {ex}: {title}")
@@ -83,7 +90,7 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
         raise ex
 
     if movie is None:
-        print(f"\t1 ERROR - ************** IMDbError ************** Not found: {title}")
+        print(f"\t3 ERROR - ************** IMDbError ************** Not found: {title}")
 
     else:
         for key in movie.infoset2keys:
@@ -125,24 +132,57 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
         except KeyError:
             pass
 
+        prop["main.Imdbid"] = movie.movieID
+        prop["main.imdbID"] = movie.movieID
         try:
-            prop["main.Imdbid"] = movie.movieID
-            prop["main.imdbID"] = movie.movieID
-
             movie2: MovieDetail | None = get_movie(movie.movieID)
             prop["main.title"] = movie2.title
             prop["main.votes"] = movie2.votes
             prop["main.genres"] = movie2.genres if movie2.genres else []
             if movie2.categories:
-                prop['main.writers'] = [writer.name for writer in movie2.categories.get('writer')] if movie2.categories.get('writer') else []
-                prop["main.directors"] = [director.name for director in movie2.categories.get('director')] if movie2.categories.get('director') else []
-                prop["main.casts"] = [star.name for star in movie2.stars] if movie2.stars else []
+                # print(f'2************************* {movie2.categories.get('director')}')
+                prop["main.writers"] = (
+                    [writer.name for writer in movie2.categories.get("writer")]
+                    if movie2.categories.get("writer")
+                    else []
+                )
+                prop["main.directors"] = (
+                    [director.name for director in movie2.categories.get("director")]
+                    if movie2.categories.get("director")
+                    else []
+                )
+                prop["main.casts"] = (
+                    [star.name for star in movie2.stars]
+                    if movie2.categories.get("cast")
+                    else []
+                )
 
-            prop["main.aspect ratio"] = movie2.aspect_ratios[0][0] if movie2.aspect_ratios else ''
+            prop["main.aspect ratio"] = (
+                movie2.aspect_ratios[0][0] if movie2.aspect_ratios else ""
+            )
             prop["main.language codes"] = movie2.languages if movie2.languages else []
 
+            prop["main.Imdbid"] = movie.movieID
+            prop["main.imdbID"] = movie.movieID
+            try:
+                movie2: MovieDetail | None = get_movie(movie.movieID)
+                prop["main.title"] = movie2.title
+                prop["main.votes"] = movie2.votes
+                prop["main.genres"] = movie2.genres if movie2.genres else []
+                if movie2.categories:
+                    # print(f'2************************* {movie2.categories.get('director')}')
+                    prop['main.writers'] = [writer.name for writer in movie2.categories.get('writer')] if movie2.categories.get('writer') else []
+                    prop["main.directors"] = [director.name for director in movie2.categories.get('director')] if movie2.categories.get('director') else []
+                    prop["main.casts"] = [star.name for star in movie2.stars] if movie2.categories.get('cast') else []
+
+                prop["main.aspect ratio"] = movie2.aspect_ratios[0][0] if movie2.aspect_ratios else ''
+                prop["main.language codes"] = movie2.languages if movie2.languages else []
+
+            except Exception as ex:
+                print(f"4 ERROR: {movie.movieID}, {title} --> {ex}")
+                print(traceback.format_exc())
         except Exception as ex:
-            print(f"ERROR: {movie.movieID}, {title} --> {ex}")
+            print(f"5 ERROR: {movie.movieID}, {title} --> {ex}")
             print(traceback.format_exc())
 
         # print('1 ///////////////////////////////////////////////////////')
@@ -187,8 +227,8 @@ def save_json(prop: dict[str, any]) -> None:
                 json_str = jsonpickle.encode(prop, indent=4)
             outfile.write(json_str)
         except Exception as ex:
-            print(f"ERROR: {ex}")
-            print(f"ERROR: {prop}")
+            print(f"5 ERROR: {ex}")
+            print(f"5 ERROR: {prop}")
             print(traceback.format_exc())
 
 
@@ -214,7 +254,7 @@ def spawn(thread_index: int, path: str, titles: list[str]):
                         prop = load_data(path, title)
                     except Exception as ex:
                         print(
-                            f"\t2 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {title}"
+                            f"\t6 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {title}"
                         )
                         print(traceback.format_exc())
                 finally:
@@ -225,7 +265,7 @@ def spawn(thread_index: int, path: str, titles: list[str]):
         print(f"\tEnding {thread_index}\r")
     except Exception as ex:
         print(
-            f"\t3 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}"
+            f"\t7 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}"
         )
         print(traceback.format_exc())
 
@@ -397,9 +437,9 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        print('podcast episode'.lower().find("podcast") == -1)
-        print('podcast episode'.lower().find("podcast episode") == -1)
+        print("podcast episode".lower().find("podcast") == -1)
+        print("podcast episode".lower().find("podcast episode") == -1)
 
-        path_search("C:/Users/ADELE/Videos/W4")
+        path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()
