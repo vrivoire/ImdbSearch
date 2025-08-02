@@ -307,12 +307,17 @@ $(document).ready(function () {
 	for (let film of jsonByName) {
 		textByName += insertBody(film, '', '', '');
 	}
+	var textByLength = "";
+	for (let film of jsonByLength) {
+		textByLength += insertBody(film, '', '', '');
+	}
 	$("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
 								<div id='tabs-sorted'>
 									<ul>
 										<li><a href="#tabs-Date">By Date</a></li>
 										<li><a href="#tabs-Rank">By Rank</a></li>
 										<li><a href="#tabs-Name">By Name</a></li>
+										<li><a href="#tabs-Length">By Length</a></li>
 									</ul>
 									<div id='tabs-Date'>
 										<table>
@@ -327,6 +332,11 @@ $(document).ready(function () {
 									<div id='tabs-Name'>
 										<table>
 											<tbody>${textByName}</tbody>
+										</table>
+									</div>
+									<div id='tabs-Length'>
+										<table>
+											<tbody>${textByLength}</tbody>
 										</table>
 									</div>
 								</div>`;
