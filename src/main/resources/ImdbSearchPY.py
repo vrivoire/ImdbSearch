@@ -10,32 +10,39 @@ import threading
 import traceback
 import urllib.request
 from datetime import datetime
+from typing import Any
 
 import imdb
 import jsonpickle
-from imdb import Cinemagoer, Company, IMDbError, Movie, Person
+from imdb import Cinemagoer, Company, Movie, Person, IMDbError, IMDbDataAccessError
+
 from imdbinfo.models import MovieDetail
 from imdbinfo.services import get_movie
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 search_path = None
-props: dict[str, any] = {}
+props: dict[str, Any] = {}
 
 
-def get_year(title):
+def get_movie_info(ia, movie_id: str, title):
+    movie = ia.get_movie(movie_id, info=["main", "plot", "synopsis"])
+    kind: str = movie.get("kind").lower()
+    looking_year: int | None = None
     try:
         first, *middle, last = title.split()
-        return int(last)
+        looking_year = int(last)
     except Exception as ex:
-        print(f'get_year ERROR {ex}')
-    return None
+        print(f'get_year ERROR {title} {ex}')
+        looking_year = None
+
+    return kind, looking_year, movie
 
 
 # https://www.imdb.com/title/tt9561862/reference/
 def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | list]:
     prop: dict[str, None | list | tuple | dict | list | str] = {}
-    movie = None
+    movie: Movie.Movie | None = None
     ia: Cinemagoer = Cinemagoer()
     try:
         try:
@@ -44,59 +51,71 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                 print(f"{title}: movies are empty")
             else:
                 print(f"{title} ---> {[movie3['title'] for movie3 in movies]}")
-                found: bool = False
-                for movie in movies:
-                    looking_year: int | None = None
-                    looking_year = get_year(title)
-                    kind: str = movie.get("kind").lower()
 
-                    # my_list = ["podcast", "podcast episode", "video game"]
-                    # part = "an"
-                    # filtered_list = [item for item in ["podcast", "podcast episode", "video game"] if kind in item]
+                for movie in movies:
+                    found: bool = False
+                    kind, looking_year, movie = get_movie_info(ia, movie.movieID, title)
 
                     #  'video game'  ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short')
-                    if len([item for item in ["podcast", "podcast episode", "video game"] if kind in item]) ==0:
-                    # if kind.find("podcast") == -1 or kind.find("podcast episode") == -1 or kind.find("video game") == -1:
+                    if len([item for item in ["podcast", "podcast episode", "game", 'mini', 'VG'] if kind in item]) == 0:
                         if os.path.isdir(path + '/' + title) and kind.find("tv") != -1 or (kind.find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
-                            if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
-                                movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                found = True
-                                break
-                            elif not looking_year:
-                                movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                found = True
-                                break
-                        elif not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
                             print(f"\t\t\t0 Looking for '{title}' {looking_year} --> {movie.get("kind")}")
-                            if looking_year:
-                                if looking_year > 1800 and looking_year == movie.get('year'):
-                                    print(f"\t\t\t1Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
-                                    movie = ia.get_movie(movie.movieID, info=["main", "plot", "synopsis"])
-                                    looking_year = get_year(title)
-                                    if looking_year:
-                                        if looking_year > 1800 and looking_year == movie.get('year'):
-                                            if not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
-                                                print(f"\t\t\t2Found for '{title}' {looking_year} --> {movie.get("kind")} and {movie.movieID}")
-                                                found = True
-                                                break
+                            if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                                print(f"\t\t\t1 Found for '{title}' {looking_year} --> {kind} and {movie.movieID}")
+                                kind, looking_year, movie = get_movie_info(ia, movie.movieID, title)
+                                print(f"\t\t\t2 Looking for '{title}' {looking_year} --> {kind}")
+                                if len([item for item in ["podcast", "podcast episode", "game", 'mini', 'VG'] if kind in item]) == 0:
+                                    if os.path.isdir(path + '/' + title) and kind.find("tv") != -1 or (kind.find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
+                                        if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                                            found = True
+                                            print(f"\t\t\t2 Found for '{title}' {looking_year} --> {kind} and {movie.movieID} {found}")
+                                            break
+
+                        elif not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
+                            print(f"\t\t\t3 Looking for '{title}' {looking_year} --> {kind}")
+                            if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                                print(f"\t\t\t3 Found for '{title}' {looking_year} --> {kind} and {movie.movieID}")
+                                kind, looking_year, movie = get_movie_info(ia, movie.movieID, title)
+                                print(f"\t\t\t4 Looking for '{title}' {looking_year} --> {kind}")
+                                if len([item for item in ["podcast", "podcast episode", "game", 'mini', 'VG'] if kind in item]) == 0:
+                                    if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
+                                        if not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1 and movie.get('title').lower().find('podcast') == -1:
+                                            found = True
+                                            print(f"\t\t\t4 Found for '{title}' {looking_year} --> {kind} and {movie.movieID} {found}")
+                                            break
                         if found:
                             print(f"\t1FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
                             break
+                    else:
+                        found = False
+                        movie = None
+
                     if found:
                         print(f"\t2FOUND *---> title={title}, movieID={movie.movieID}, title={movie.get('title')}, year={movie.get('year')}, kind={movie.get('kind')}, rating={movie.get('rating')}")
                     else:
                         print(f"\tNOT FOUND *---> title={title}")
                         movie = None
 
+        except IMDbDataAccessError as iex:
+            print(f"1.0 ERROR title={title}, movieID={movie.movieID}, msg={iex.__str__()}")
+            iex_args = dict(tuple(iex.args)[0])
+            if iex_args.get('exception type') == 'IOError' and iex_args.get('original exception').__str__() == "HTTP Error 503: Service Unavailable":
+                print('-------------------------------------------------------------------------------------')
+                print(f'                             IMDB is kaput "{title}"')
+                print(iex)
+                print('-------------------------------------------------------------------------------------')
+            print(traceback.format_exc())
+            return {}
+
         except Exception as ex:
-            print(f"1 ERROR title={title}, movieID={movie.movieID}")
+            print(f"1.1 ERROR title={title}, movieID={movie.movieID}, msg={ex.__str__()}")
             print(traceback.format_exc())
     except IMDbError as ex:
         print(f"2 ERROR {ex}: {title}")
         print(traceback.format_exc())
         raise ex
 
-    if movie is None:
+    if not movie:
         print(f"\t3 ERROR - ************** IMDbError ************** Not found: {title}")
 
     else:
@@ -192,10 +211,6 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
             print(f"5 ERROR: {movie.movieID}, {title} --> {ex}")
             print(traceback.format_exc())
 
-        # print('1 ///////////////////////////////////////////////////////')
-        # print(json.dumps(MovieDetail.model_dump(), indent=4))
-        # print('2 ///////////////////////////////////////////////////////')
-
         for key in list(prop.keys()):
             if type(prop.get(key)) is imdb.Movie.Movie:
                 try:
@@ -204,22 +219,11 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                 except Exception as ex:
                     pass
 
-        # try:
-        #     print(f'JSON -> {title}')
-        #     json.dumps(prop, indent=4, sort_keys=True)
-        # except Exception as ex:
-        #     print(f'ERROR JSON -> {title}, {ex}')
-        #     print('--------------------------------------------------------------------')
-        #     print([f'{key}: {prop.get(key)}' for key in prop.keys()])
-        #     print([f'{key}: {type(prop.get(key))}' for key in prop.keys()])
-        #     print(traceback.format_exc())
-        #     print('--------------------------------------------------------------------')
-        #     prop: dict[str, None | list | tuple | dict | list | str] = {}
-
     return prop
 
 
-def save_json(prop: dict[str, any]) -> None:
+def save_json(prop: dict[str, Any]) -> None:
+    # if not prop or bool(prop):
     if os.path.isfile(OUTPUT_JSON_FILE):
         print(f"Deleting {OUTPUT_JSON_FILE}...")
         os.remove(OUTPUT_JSON_FILE)
@@ -237,6 +241,9 @@ def save_json(prop: dict[str, any]) -> None:
             print(f"5 ERROR: {ex}")
             print(f"5 ERROR: {prop}")
             print(traceback.format_exc())
+    # else:
+    #     # sys.exit(-1)
+    #     pass
 
 
 def spawn(thread_index: int, path: str, titles: list[str]):
@@ -248,7 +255,7 @@ def spawn(thread_index: int, path: str, titles: list[str]):
         title: str
         for title in titles:
             i += 1
-            prop = {}
+            prop: dict[str, None | list | tuple | dict | list] | None = {}
             try:
                 title = title.replace(".", " ")
             except Exception:
@@ -265,15 +272,11 @@ def spawn(thread_index: int, path: str, titles: list[str]):
                         )
                         print(traceback.format_exc())
                 finally:
-                    print(
-                        f"\t\tupdate: thread_id: {thread_index}, {i}/{size}, found: {title}"
-                    )
+                    print(f"\t\tupdate: thread_id: {thread_index}, {i}/{size}, found: {title}")
                     props.update({title: prop})
         print(f"\tEnding {thread_index}\r")
     except Exception as ex:
-        print(
-            f"\t7 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}"
-        )
+        print(f"\t7 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}")
         print(traceback.format_exc())
 
 
@@ -286,9 +289,7 @@ def args_search(path: str, files: list[str]):
         thread_nb: int = THREAD_NB
     files_per_thread: int = int(len(files) / thread_nb)
     remain_files: int = file_count - files_per_thread * thread_nb
-    print(
-        f"file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, toto: {file_count / thread_nb}"
-    )
+    print(f"file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
 
     threads = []
     i: int = 0
@@ -302,9 +303,7 @@ def args_search(path: str, files: list[str]):
         t1.start()
         threads.append(t1)
         i = k
-    print(
-        f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}"
-    )
+    print(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
     t1 = threading.Thread(
         target=spawn,
         args=(thread_id + 1, path, files[file_count - remain_files: file_count]),
@@ -316,10 +315,12 @@ def args_search(path: str, files: list[str]):
     for t in threads:
         t.join()
     print("All tasks has been finished")
-    save_json(props)
-    print(
-        f"Threads: {thread_nb}, Time elapsed: {datetime.fromtimestamp(datetime.timestamp(datetime.now()) - start).strftime('%M:%S.%f')} for {len(files)} titles, {datetime.fromtimestamp((datetime.timestamp(datetime.now()) - start) / len(files)).strftime('%M:%S.%f')} per title."
-    )
+
+    if len(props.keys()) > 0:
+        save_json(props)
+    else:
+        save_json({})
+    print(f"Threads: {thread_nb}, Time elapsed: {datetime.fromtimestamp(datetime.timestamp(datetime.now()) - start).strftime('%M:%S.%f')} for {len(files)} titles, {datetime.fromtimestamp((datetime.timestamp(datetime.now()) - start) / len(files)).strftime('%M:%S.%f')} per title.")
 
 
 def path_search(path):
@@ -351,7 +352,7 @@ def path_search(path):
     except ValueError:
         pass
 
-    print(files)
+    # print(files)
     for i, file in enumerate(files):
         if (
                 IGNORED_FOLDERS.__contains__(file)
@@ -368,13 +369,9 @@ def path_search(path):
 def pre_test():
     try:
         master_version: str = ""
-        for line_str in urllib.request.urlopen(
-                "https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py"
-        ):
+        for line_str in urllib.request.urlopen("https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py"):
             master_version: str = line_str.decode("utf-8")
-        master_version = (
-            master_version.removeprefix("__version__ = '").replace("'", "").strip()
-        )
+        master_version = (master_version.removeprefix("__version__ = '").replace("'", "").strip())
         print(f"imdb={imdb}")
         print(f"imdb.VERSION={imdb.VERSION}, master_version={master_version}")
         if imdb.VERSION != master_version:
@@ -444,9 +441,6 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        print("podcast episode".lower().find("podcast") == -1)
-        print("podcast episode".lower().find("podcast episode") == -1)
-
-        path_search("C:/Users/ADELE/Videos/W")
+        path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()
