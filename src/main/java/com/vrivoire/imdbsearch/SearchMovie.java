@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -145,7 +146,7 @@ public class SearchMovie {
 	    String next = ((String) iterator.next()).trim();
 	    try {
 		year = Integer.valueOf(next);
-		if (year > 1800) {
+		if (year >= 1890 && year <= Year.now().getValue()) {
 		    break;
 		}
 	    }
@@ -283,7 +284,7 @@ public class SearchMovie {
 	    pb.redirectErrorStream(true);
 	    pythonProcess = pb.start();
 
-	    try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()), 8192 * 4)) {
+	    try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()), 1024 * 40)) {
 		String line;
 		while ((line = stdInput.readLine()) != null) {
 		    LOG.info("ImdbSearchPY\t" + line);

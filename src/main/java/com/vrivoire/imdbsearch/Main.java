@@ -258,7 +258,7 @@ public class Main {
 					LOG.warn("--> Renaming file '" + originalName + "' failed.");
 				    } else {
 					LOG.info("--> File renamed: " + oldF + " --> " + newF);
-					nameYearBean.setOriginalName(newF.getName().toString());
+					nameYearBean.setOriginalName(newF.getName());
 					try {
 					    BasicFileAttributeView attributes = Files.getFileAttributeView(newF.toPath(), BasicFileAttributeView.class);
 					    FileTime time = FileTime.fromMillis(Date.from(new Date().toInstant()).getTime());

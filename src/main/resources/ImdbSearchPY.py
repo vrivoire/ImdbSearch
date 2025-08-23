@@ -14,7 +14,7 @@ from typing import Any
 
 import imdb
 import jsonpickle
-from imdb import Cinemagoer, Company, Movie, Person, IMDbError, IMDbDataAccessError
+from imdb import Cinemagoer, Movie, IMDbError, IMDbDataAccessError
 
 from imdbinfo.models import MovieDetail
 from imdbinfo.services import get_movie
@@ -26,7 +26,7 @@ props: dict[str, Any] = {}
 
 
 def get_movie_info(ia, movie_id: str, title):
-    movie = ia.get_movie(movie_id, info=["main", "plot", "synopsis"])
+    movie: Movie.Movie = ia.get_movie(movie_id, info=["main", "plot", "synopsis"])
     kind: str = movie.get("kind").lower()
     looking_year: int | None = None
     try:
@@ -41,7 +41,6 @@ def get_movie_info(ia, movie_id: str, title):
 
 # https://www.imdb.com/title/tt9561862/reference/
 def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | list]:
-    prop: dict[str, None | list | tuple | dict | list | str] = {}
     movie: Movie.Movie | None = None
     ia: Cinemagoer = Cinemagoer()
     try:
@@ -58,7 +57,11 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
 
                     #  'video game'  ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short')
                     if len([item for item in ["podcast", "podcast episode", "game", 'mini', 'VG'] if kind in item]) == 0:
-                        if os.path.isdir(path + '/' + title) and kind.find("tv") != -1 or (kind.find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0:
+
+                        if os.path.isdir(path + '/' + title) and (
+                                kind.find("tv") != -1 or
+                                (kind.find("movie") != -1 and len(glob.glob(f'{path + '/' + title}/*-00?.mkv'))) != 0
+                        ):
                             print(f"\t\t\t0 Looking for '{title}' {looking_year} --> {movie.get("kind")}")
                             if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
                                 print(f"\t\t\t1 Found for '{title}' {looking_year} --> {kind} and {movie.movieID}")
@@ -71,7 +74,9 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                                             print(f"\t\t\t2 Found for '{title}' {looking_year} --> {kind} and {movie.movieID} {found}")
                                             break
 
-                        elif not os.path.isdir(path + title) and kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1:
+                        elif not os.path.isdir(path + title) and (
+                                kind.find("movie") != -1 or kind.find("short") != -1 and kind.find("podcast") == -1
+                        ):
                             print(f"\t\t\t3 Looking for '{title}' {looking_year} --> {kind}")
                             if looking_year and looking_year > 1800 and looking_year == movie.get('year'):
                                 print(f"\t\t\t3 Found for '{title}' {looking_year} --> {kind} and {movie.movieID}")
@@ -104,6 +109,12 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
                 print(f'                             IMDB is kaput "{title}"')
                 print(iex)
                 print('-------------------------------------------------------------------------------------')
+                try:
+                    if movie:
+                        toto = get_movie(movie.movieID)
+                except Exception as ex:
+                    print(f"ERROR imdbinfo ({type(ex)} - {type(ex.__cause__)}): {ex}")
+                print('-------------------------------------------------------------------------------------')
             print(traceback.format_exc())
             return {}
 
@@ -115,111 +126,68 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
         print(traceback.format_exc())
         raise ex
 
-    if not movie:
-        print(f"\t3 ERROR - ************** IMDbError ************** Not found: {title}")
-
+    if movie:
+        return populate(movie.movieID, title)
     else:
-        for key in movie.infoset2keys:
-            values = movie.infoset2keys[key]
-            for value in values:
-                if (
-                        type(movie.get(value)) is list
-                        and len(movie.get(value)) > 0
-                        and (
-                        isinstance(movie.get(value)[0], Person.Person)
-                        or isinstance(movie.get(value)[0], Company.Company)
-                )
-                ):
-                    pass
-                else:
-                    prop[f"{key}.{value}"] = movie.get(value)
+        print(f"\t3 ERROR - ************** IMDbError ************** Not found: {title}")
+        return {}
 
-        try:
-            prop["main.casts"] = []
-            for val in movie["cast"]:
-                if len(val) > 0:
-                    prop["main.casts"].append(val.get("name", ""))
-        except KeyError:
-            pass
 
-        try:
-            prop["main.directors"] = []
-            for val in movie["director"]:
-                if len(val) > 0:
-                    prop["main.directors"].append(val["name"])
-        except KeyError:
-            pass
-
-        try:
-            prop["main.writers"] = []
-            for val in movie["writer"]:
-                if len(val) > 0:
-                    prop["main.writers"].append(val["name"])
-        except KeyError:
-            pass
-
-        prop["main.Imdbid"] = movie.movieID
-        prop["main.imdbID"] = movie.movieID
-        try:
-            movie2: MovieDetail | None = get_movie(movie.movieID)
-            prop["main.title"] = movie2.title
-            prop["main.votes"] = movie2.votes
-            prop["main.genres"] = movie2.genres if movie2.genres else []
-            if movie2.categories:
-                # print(f'2************************* {movie2.categories.get('director')}')
-                prop["main.writers"] = (
-                    [writer.name for writer in movie2.categories.get("writer")]
-                    if movie2.categories.get("writer")
-                    else []
-                )
-                prop["main.directors"] = (
-                    [director.name for director in movie2.categories.get("director")]
-                    if movie2.categories.get("director")
-                    else []
-                )
-                prop["main.casts"] = (
-                    [star.name for star in movie2.stars]
-                    if movie2.categories.get("cast")
-                    else []
-                )
-
-            prop["main.aspect ratio"] = (
-                movie2.aspect_ratios[0][0] if movie2.aspect_ratios else ""
-            )
-            prop["main.language codes"] = movie2.languages if movie2.languages else []
-
-            prop["main.Imdbid"] = movie.movieID
-            prop["main.imdbID"] = movie.movieID
+def populate(movie_id: str, title: str):
+    try:
+        movie_imdbinfo: MovieDetail | None = get_movie(movie_id)
+        if not movie_imdbinfo:
+            print(f"\t3 ERROR - ************** IMDbError ************** Not found: {movie_id} {title}")
+        else:
             try:
-                movie2: MovieDetail | None = get_movie(movie.movieID)
-                prop["main.title"] = movie2.title
-                prop["main.votes"] = movie2.votes
-                prop["main.genres"] = movie2.genres if movie2.genres else []
-                if movie2.categories:
-                    # print(f'2************************* {movie2.categories.get('director')}')
-                    prop['main.writers'] = [writer.name for writer in movie2.categories.get('writer')] if movie2.categories.get('writer') else []
-                    prop["main.directors"] = [director.name for director in movie2.categories.get('director')] if movie2.categories.get('director') else []
-                    prop["main.casts"] = [star.name for star in movie2.stars] if movie2.categories.get('cast') else []
+                prop: dict = {
+                    "main.imdbID": movie_id,
+                    'main.Imdbid': movie_id,
+                    "main.title": movie_imdbinfo.title,
+                    "main.votes": movie_imdbinfo.votes,
+                    "main.genres": movie_imdbinfo.genres if movie_imdbinfo.genres else [],
+                    "main.language codes": movie_imdbinfo.languages if movie_imdbinfo.languages else [],
+                    "main.aspect ratio": movie_imdbinfo.aspect_ratios[0][0] if movie_imdbinfo.aspect_ratios else '',
+                    "main.cover url": movie_imdbinfo.cover_url,
+                    "main.kind": movie_imdbinfo.kind,
+                    "main.rating": movie_imdbinfo.rating,
+                    "main.year": movie_imdbinfo.year,
+                    "plot.plot": [movie_imdbinfo.plot],
+                    "plot.synopsis": movie_imdbinfo.synopses,
+                    "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else []
+                }
+                if movie_imdbinfo.categories:
+                    prop["main.writers"] = (
+                        [writer.name for writer in movie_imdbinfo.categories.get("writer")]
+                        if movie_imdbinfo.categories.get("writer")
+                        else []
+                    )
+                    prop["main.directors"] = (
+                        [director.name for director in movie_imdbinfo.categories.get("director")]
+                        if movie_imdbinfo.categories.get("director")
+                        else []
+                    )
+                    prop["main.casts"] = (
+                        [star.name for star in movie_imdbinfo.stars]
+                        if movie_imdbinfo.categories.get("cast")
+                        else []
+                    )
 
-                prop["main.aspect ratio"] = movie2.aspect_ratios[0][0] if movie2.aspect_ratios else ''
-                prop["main.language codes"] = movie2.languages if movie2.languages else []
+                if movie_imdbinfo.categories:
+                    prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
+                    prop["main.directors"] = [director.name for director in movie_imdbinfo.categories.get('director')] if movie_imdbinfo.categories.get('director') else []
+                    prop["main.casts"] = [star.name for star in movie_imdbinfo.stars] if movie_imdbinfo.categories.get('cast') else []
 
+                return prop
             except Exception as ex:
-                print(f"4 ERROR: {movie.movieID}, {title} --> {ex}")
+                print(f"5 ERROR: {movie_id}, {title} --> {ex}")
                 print(traceback.format_exc())
-        except Exception as ex:
-            print(f"5 ERROR: {movie.movieID}, {title} --> {ex}")
-            print(traceback.format_exc())
+                return {}
 
-        for key in list(prop.keys()):
-            if type(prop.get(key)) is imdb.Movie.Movie:
-                try:
-                    print(f"{title} -> removing {key} prop because not serializable.")
-                    prop.pop(key)
-                except Exception as ex:
-                    pass
-
-    return prop
+    except Exception as ex:
+        print(f"1.1 ERROR title={title}, movieID={movie_id}, msg={ex.__str__()}")
+        print(traceback.format_exc())
+        return {}
 
 
 def save_json(prop: dict[str, Any]) -> None:
@@ -441,6 +409,6 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        path_search("C:/Users/ADELE/Videos/")
+        path_search("C:/Users/ADELE/Videos/W")
 
     sys.exit()

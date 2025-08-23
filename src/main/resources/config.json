@@ -2,7 +2,7 @@
 	"DB_PROTOCOL": "jdbc:sqlite:",
 	"DB_URL": "C:/Users/ADELE/Documents/ImdbSearch.db",
 	"ICON": "/IMDB.jpg",
-	"IGNORED_FOLDERS": ["Heavy Metal", "Anime", "Captures", "W", "W2", "W3", "NVIDIA"],
+	"IGNORED_FOLDERS": ["Heavy Metal", "Anime", "Captures", "W", "W2", "W3", "NVIDIA", "Zombieland", "Star Wars"],
 	"IMDBSEARCH_PY_PATH": "ImdbSearchPY.py",
 	"IS_IMAGES_EMBEDED": false,
 	"IS_SLIM": true,
@@ -10,11 +10,11 @@
 	"PATTERN": "[SsNn]\\d\\d",
 	"REPORT_NAME": "_report.html",
 	"SUPPORTED_EXTENSIONS": ["xyz", "xa", "wav", "dts", "tta", "tac", "ts", "mpg", "ra", "ram", "rm", "rv", "rmbv", "ogm", "ogg", "nut", "nsv", "nsc", "mpg", "mp3", "mp2", "mp4", "mov", "mkv", "mka", "flv", "avi", "au", "asf", "wmv", "asf", "wmv", "a52", "dts", "aac", "flac", "dv", "vid", "3gp", "m4v"],
-	"THREAD_NB": 10,
+	"THREAD_NB": 5,
 	"TORRENTS": [".im", ".lol", ".ms", ".my", ".pm", ".in", ".gy", ".si", "iNTEGRALE", "MULTi.1080p.WEB.H264-FW", "COMPLETE.MULTi.1080p.NF.WEB.DDP.AV1-BTT", ".ps", ".rs", ".eu", ".xyz", ".gs", ".tw", ".vg", "afi-", ".nz", ".uno", ".tv", ".cx", ".org", ".com", ".net", ".cm", ".cz", ".pw", ".cc", ".ws", ".ph", ".io", ".pl", ".vc", ".be", "x264", "www", ".bz", "FRENCH", "DVDRIP", "GkTorrent", "OxTorrent", "TorrentCouch", "Torrent911", "Torrenting", "Torrent9", "CpasBien", "vostfr", "1080p", "1080", "720p", "720", "null", ".pe", ".me"],
 	"VERSION_DATATABLES": "2.3.2",
 	"VERSION_DATATABLES_COLREORDER": "2.1.1",
-	"VERSION_JQUERY": "4.0.0-beta.2",
+	"VERSION_JQUERY": "4.0.0-rc.1",
 	"VERSION_JQUERY_UI": "1.14.1",
 	"WEB_BROWSER": "C:/Program Files/Google/Chrome/Application/chrome.exe"
 }
