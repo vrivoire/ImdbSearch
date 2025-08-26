@@ -40,7 +40,7 @@ def get_movie_info(ia, movie_id: str, title):
 
 
 # https://www.imdb.com/title/tt9561862/reference/
-def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | list]:
+def load_data(path: str, title: str) -> str:
     movie: Movie.Movie | None = None
     ia: Cinemagoer = Cinemagoer()
     try:
@@ -127,67 +127,65 @@ def load_data(path: str, title: str) -> dict[str, None | list | tuple | dict | l
         raise ex
 
     if movie:
-        return populate(movie.movieID, title)
+        return movie.movieID
     else:
         print(f"\t3 ERROR - ************** IMDbError ************** Not found: {title}")
-        return {}
+        return None
 
 
 def populate(movie_id: str, title: str):
     try:
-        movie_imdbinfo: MovieDetail | None = get_movie(movie_id)
-        if not movie_imdbinfo:
-            print(f"\t3 ERROR - ************** IMDbError ************** Not found: {movie_id} {title}")
-        else:
-            try:
-                prop: dict = {
-                    "main.imdbID": movie_id,
-                    'main.Imdbid': movie_id,
-                    "main.title": movie_imdbinfo.title,
-                    "main.votes": movie_imdbinfo.votes,
-                    "main.genres": movie_imdbinfo.genres if movie_imdbinfo.genres else [],
-                    "main.language codes": movie_imdbinfo.languages if movie_imdbinfo.languages else [],
-                    "main.aspect ratio": movie_imdbinfo.aspect_ratios[0][0] if movie_imdbinfo.aspect_ratios else '',
-                    "main.cover url": movie_imdbinfo.cover_url,
-                    "main.kind": movie_imdbinfo.kind,
-                    "main.rating": movie_imdbinfo.rating,
-                    "main.year": movie_imdbinfo.year,
-                    "plot.plot": [movie_imdbinfo.plot],
-                    "plot.synopsis": movie_imdbinfo.synopses,
-                    "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else []
-                }
-                if movie_imdbinfo.categories:
-                    prop["main.writers"] = (
-                        [writer.name for writer in movie_imdbinfo.categories.get("writer")]
-                        if movie_imdbinfo.categories.get("writer")
-                        else []
-                    )
-                    prop["main.directors"] = (
-                        [director.name for director in movie_imdbinfo.categories.get("director")]
-                        if movie_imdbinfo.categories.get("director")
-                        else []
-                    )
-                    prop["main.casts"] = (
-                        [star.name for star in movie_imdbinfo.stars]
-                        if movie_imdbinfo.categories.get("cast")
-                        else []
-                    )
+        if movie_id:
+            movie_imdbinfo: MovieDetail | None = get_movie(movie_id)
+            if movie_imdbinfo:
+                try:
+                    prop: dict = {
+                        "main.imdbID": movie_id,
+                        'main.Imdbid': movie_id,
+                        "main.title": movie_imdbinfo.title,
+                        "main.votes": movie_imdbinfo.votes,
+                        "main.genres": movie_imdbinfo.genres if movie_imdbinfo.genres else [],
+                        "main.language codes": movie_imdbinfo.languages if movie_imdbinfo.languages else [],
+                        "main.aspect ratio": movie_imdbinfo.aspect_ratios[0][0] if movie_imdbinfo.aspect_ratios else '',
+                        "main.cover url": movie_imdbinfo.cover_url,
+                        "main.kind": movie_imdbinfo.kind,
+                        "main.rating": movie_imdbinfo.rating if movie_imdbinfo.rating else 0.0,
+                        "main.year": movie_imdbinfo.year,
+                        "plot.plot": [movie_imdbinfo.plot],
+                        "plot.synopsis": movie_imdbinfo.synopses,
+                        "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else []
+                    }
+                    if movie_imdbinfo.categories:
+                        prop["main.writers"] = (
+                            [writer.name for writer in movie_imdbinfo.categories.get("writer")]
+                            if movie_imdbinfo.categories.get("writer")
+                            else []
+                        )
+                        prop["main.directors"] = (
+                            [director.name for director in movie_imdbinfo.categories.get("director")]
+                            if movie_imdbinfo.categories.get("director")
+                            else []
+                        )
+                        prop["main.casts"] = (
+                            [star.name for star in movie_imdbinfo.stars]
+                            if movie_imdbinfo.categories.get("cast")
+                            else []
+                        )
 
-                if movie_imdbinfo.categories:
-                    prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
-                    prop["main.directors"] = [director.name for director in movie_imdbinfo.categories.get('director')] if movie_imdbinfo.categories.get('director') else []
-                    prop["main.casts"] = [star.name for star in movie_imdbinfo.stars] if movie_imdbinfo.categories.get('cast') else []
+                    if movie_imdbinfo.categories:
+                        prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
+                        prop["main.directors"] = [director.name for director in movie_imdbinfo.categories.get('director')] if movie_imdbinfo.categories.get('director') else []
+                        prop["main.casts"] = [star.name for star in movie_imdbinfo.stars] if movie_imdbinfo.categories.get('cast') else []
 
-                return prop
-            except Exception as ex:
-                print(f"5 ERROR: {movie_id}, {title} --> {ex}")
-                print(traceback.format_exc())
-                return {}
+                    return prop
 
+                except Exception as ex:
+                    print(f"5 ERROR: {movie_id}, {title} --> {ex}")
+                    print(traceback.format_exc())
     except Exception as ex:
         print(f"1.1 ERROR title={title}, movieID={movie_id}, msg={ex.__str__()}")
         print(traceback.format_exc())
-        return {}
+    return {}
 
 
 def save_json(prop: dict[str, Any]) -> None:
@@ -230,10 +228,12 @@ def spawn(thread_index: int, path: str, titles: list[str]):
                 pass  # No dot and extension
             finally:
                 try:
-                    prop = load_data(path, title)
+                    imdb_id: str = load_data(path, title)
+                    prop = populate(imdb_id, title)
                 except Exception:
                     try:
-                        prop = load_data(path, title)
+                        imdb_id: str = load_data(path, title)
+                        prop = populate(imdb_id, title)
                     except Exception as ex:
                         print(
                             f"\t6 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {title}"
@@ -251,13 +251,17 @@ def spawn(thread_index: int, path: str, titles: list[str]):
 def args_search(path: str, files: list[str]):
     print(f"Searching path: {path}, files: {files}")
     file_count: int = len(files)
-    if len(files) < THREAD_NB:
-        thread_nb: int = int(THREAD_NB / 3)
+
+    if file_count <= THREAD_NB:
+        thread_nb: int = file_count
+        files_per_thread: int = 1
     else:
         thread_nb: int = THREAD_NB
-    files_per_thread: int = int(len(files) / thread_nb)
+        files_per_thread: int = int(file_count / thread_nb)
+
     remain_files: int = file_count - files_per_thread * thread_nb
-    print(f"file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
+
+    print(f"THREAD_NB: {THREAD_NB}, file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
 
     threads = []
     i: int = 0
@@ -266,7 +270,9 @@ def args_search(path: str, files: list[str]):
         k: int = thread_id * files_per_thread
         print(f"thread_id: {thread_id}, {range(i, k)}, size: {len(files[i:k])}")
         t1 = threading.Thread(
-            target=spawn, args=(thread_id, path, files[i:k]), name=thread_id.__str__()
+            target=spawn,
+            args=(thread_id, path, files[i:k]),
+            name=thread_id.__str__()
         )
         t1.start()
         threads.append(t1)
@@ -320,17 +326,22 @@ def path_search(path):
     except ValueError:
         pass
 
-    # print(files)
+    print(f'IGNORED_FOLDERS: {IGNORED_FOLDERS}')
+    print(f'SUPPORTED_EXTENSIONS: {SUPPORTED_EXTENSIONS}')
     for i, file in enumerate(files):
+        _, file_extension = os.path.splitext(file)
         if (
-                IGNORED_FOLDERS.__contains__(file)
-                or not file.endswith(SUPPORTED_EXTENSIONS)
-                and not os.path.isdir(path + file)
-                and file.endswith(".html")
+                (
+                        os.path.isdir(path + file)
+                        and file in IGNORED_FOLDERS
+                )
+                or file_extension[1:] not in SUPPORTED_EXTENSIONS
         ):
             files.remove(file)
-        if file.rfind(".") != -1:
-            files[i] = file[0: len(file) - 4]
+            print(f'removed {file}')
+        else:
+            if file.rfind(".") != -1:
+                files[i] = file[0: len(file) - 4]
     args_search(path, files)
 
 
@@ -388,12 +399,14 @@ if __name__ == "__main__":
 
     file_path: str = get_config_path()
     CONFIG = json.load(open(file_path.format(**os.environ)))
-
+    # print(CONFIG)
     for line in CONFIG:
         CONFIG[line] = str(CONFIG[line]).replace("${", "{").format(**os.environ)
-    SUPPORTED_EXTENSIONS = tuple(CONFIG["SUPPORTED_EXTENSIONS"])
-    IGNORED_FOLDERS = tuple(CONFIG["IGNORED_FOLDERS"])
+
+    SUPPORTED_EXTENSIONS = CONFIG["SUPPORTED_EXTENSIONS"]
+    IGNORED_FOLDERS = CONFIG["IGNORED_FOLDERS"]
     THREAD_NB: int = int(CONFIG["THREAD_NB"])
+
     OUTPUT_JSON_FILE: str = (
         CONFIG["OUTPUT_JSON_FILE"].replace("${", "{").format(**os.environ)
     )
@@ -409,6 +422,7 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        path_search("C:/Users/ADELE/Videos/W")
+        path_search("C:/Users/ADELE/Videos/W/The Hobbit")
+        # path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()
