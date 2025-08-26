@@ -113,7 +113,8 @@ def load_data(path: str, title: str) -> str:
                     if movie:
                         toto = get_movie(movie.movieID)
                 except Exception as ex:
-                    print(f"ERROR imdbinfo ({type(ex)} - {type(ex.__cause__)}): {ex}\n{ex.with_traceback()}")
+                    print(f"ERROR imdbinfo ({type(ex)} - {type(ex.__cause__)}): {ex}")
+                    print(traceback.format_exc())
                 print('-------------------------------------------------------------------------------------')
             print(traceback.format_exc())
             return {}
