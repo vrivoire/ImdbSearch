@@ -28,7 +28,7 @@ props: dict[str, Any] = {}
 def get_movie_info(ia, movie_id: str, title):
     movie: Movie.Movie = ia.get_movie(movie_id, info=["main", "plot", "synopsis"])
     kind: str = movie.get("kind").lower()
-    looking_year: int | None = None
+    looking_year: int | None
     try:
         first, *middle, last = title.split()
         looking_year = int(last)
@@ -113,7 +113,7 @@ def load_data(path: str, title: str) -> str:
                     if movie:
                         toto = get_movie(movie.movieID)
                 except Exception as ex:
-                    print(f"ERROR imdbinfo ({type(ex)} - {type(ex.__cause__)}): {ex}")
+                    print(f"ERROR imdbinfo ({type(ex)} - {type(ex.__cause__)}): {ex}\n{ex.with_traceback()}")
                 print('-------------------------------------------------------------------------------------')
             print(traceback.format_exc())
             return {}
