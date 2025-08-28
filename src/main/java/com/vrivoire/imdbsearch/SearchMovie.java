@@ -128,10 +128,8 @@ public class SearchMovie {
         }
 
         fileName = fileName.replace('_', ' ')
-                .replace('.', ' ').replace('-', ' ').replace('(', ' ').replace(')', ' ')
-                .replace('[', ' ').replace(']', ' ').replace('_', ' ')
-                .trim()
-                .replaceAll(" +", " ");
+                .replace('.', ' ').replace('(', ' ').replace(')', ' ')
+                .replace('[', ' ').replace(']', ' ').trim().replaceAll(" +", " ");
         StringTokenizer tokenizer = new StringTokenizer(fileName, " ");
         return (List<String>) IteratorUtils.toList(tokenizer.asIterator());
     }
@@ -158,7 +156,6 @@ public class SearchMovie {
             }
             stringBuilder.append(next).append(' ');
         }
-
         NameYearBean nameYearBean = new NameYearBean();
         nameYearBean.setIsDirectory(file.isDirectory());
         nameYearBean.setName(stringBuilder.toString().trim().toLowerCase());
