@@ -55,10 +55,10 @@ def load_data(path: str, title: str) -> str:
                         try:
                             looking_year = int(last)
                         except Exception as ex:
-                            print(f'ERROR year not found for {title}, {ex}')
+                            # print(f'ERROR year not found for {title}, {ex}')
                             looking_year = None
 
-                    if looking_title in titles:
+                    for looking_title in titles:
                         if (
                                 'podcast' not in kind
                                 and 'game' not in kind
