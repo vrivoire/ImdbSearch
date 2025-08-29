@@ -9,6 +9,7 @@ import threading
 import traceback
 import urllib.request
 from datetime import datetime
+from queue import Queue
 from threading import Thread
 from typing import Any
 
@@ -21,7 +22,6 @@ from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 search_path = None
-props: dict[str, Any] = {}
 
 
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
@@ -32,14 +32,22 @@ def load_data(path: str, title: str) -> str:
     print(f'Looking for path: {path}, title: {title}')
 
     imdb_id: str | None = ''
+    *middle, last = title.split()
+    if len(middle) == 0:
+        looking_title: str = last.lower()
+    else:
+        looking_title: str = " ".join(middle).lower()
+        try:
+            looking_year: int | None = int(last)
+        except Exception as ex:
+            # print(f'ERROR year not found for {title}, {ex}')
+            looking_year: int | None = None
+
     try:
         result: SearchResult | None = search_title(title)
         if result:
             movies: list[MovieBriefInfo] = result.titles
             kind: str | None = None
-            looking_title: str | None = None
-            looking_year: int | None = None
-
             for movie in movies:
                 akas: list[str] = [cleanup_title(aka.title) for aka in get_akas(movie.imdb_id)['akas']]
                 akas.insert(0, cleanup_title(movie.title))
@@ -47,32 +55,21 @@ def load_data(path: str, title: str) -> str:
 
                 if not imdb_id:
                     kind = movie.kind.lower()
-                    *middle, last = title.split()
-                    if len(middle) == 0:
-                        looking_title = last.lower()
-                    else:
-                        looking_title = " ".join(middle).lower()
-                        try:
-                            looking_year = int(last)
-                        except Exception as ex:
-                            # print(f'ERROR year not found for {title}, {ex}')
-                            looking_year = None
 
-                    for looking_title in titles:
-                        if (
-                                'podcast' not in kind
-                                and 'game' not in kind
-                                and 'mimi' not in kind
-                                and 'vg' not in kind
-                                and not movie.is_episode()
-                        ):
-                            print(f'{looking_title} --> kind: {kind}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
-                            if os.path.isdir(path + '/' + title) and movie.is_series():
-                                imdb_id = movie.imdb_id
-                                break
-                            elif not os.path.isdir(path + '/' + title) and not movie.is_series() and movie.year == looking_year:
-                                imdb_id = movie.imdb_id
-                                break
+                    if (
+                            'podcast' not in kind
+                            and 'game' not in kind
+                            and 'mimi' not in kind
+                            and 'vg' not in kind
+                            and not movie.is_episode()
+                    ):
+                        print(f'{looking_title} --> kind: {kind}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
+                        if os.path.isdir(path + '/' + title) and movie.is_series():
+                            imdb_id = movie.imdb_id
+                            break
+                        elif not os.path.isdir(path + '/' + title) and not movie.is_series() and movie.year == looking_year:
+                            imdb_id = movie.imdb_id
+                            break
 
             # print(f'{kind} - looking={looking_title} {looking_year} - title={movie.title.lower()} {movie.year}')
             if imdb_id:
@@ -165,12 +162,11 @@ def save_json(prop: dict[str, Any]) -> None:
             print(traceback.format_exc())
 
 
-def spawn(thread_index: int, path: str, titles: list[str]):
+def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
     try:
         print(f"\tStarting thread_id: {thread_index}, path: {path}, titles: {titles}")
         size: int = len(titles)
         i: int = 0
-        global props
         title: str
         for title in titles:
             i += 1
@@ -185,7 +181,7 @@ def spawn(thread_index: int, path: str, titles: list[str]):
                 prop = populate(imdb_id, title)
             finally:
                 print(f"\t\tupdate: thread_id: {thread_index}, {i}/{size}, found: {title}")
-                props.update({title: prop})
+                result_queue.put({title: prop})
         print(f"\tEnding {thread_index}\r")
     except Exception as ex:
         print(f"\t7 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}")
@@ -204,7 +200,7 @@ def args_search(path: str, files: list[str]):
         files_per_thread: int = int(file_count / thread_nb)
 
     remain_files: int = file_count - files_per_thread * thread_nb
-
+    result_queue: Queue = Queue()
     print(f"THREAD_NB: {THREAD_NB}, file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
 
     threads: list[Thread] = []
@@ -215,7 +211,7 @@ def args_search(path: str, files: list[str]):
         print(f"thread_id: {thread_id}, {range(i, k)}, size: {len(files[i:k])}")
         thread: Thread = threading.Thread(
             target=spawn,
-            args=(thread_id, path, files[i:k]),
+            args=(thread_id, path, files[i:k], result_queue),
             name=thread_id.__str__()
         )
         threads.append(thread)
@@ -224,7 +220,7 @@ def args_search(path: str, files: list[str]):
     print(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
     thread: Thread = threading.Thread(
         target=spawn,
-        args=(thread_id + 1, path, files[file_count - remain_files: file_count]),
+        args=(thread_id + 1, path, files[file_count - remain_files: file_count], result_queue),
         name=(thread_nb + 1).__str__(),
     )
     threads.append(thread)
@@ -232,6 +228,10 @@ def args_search(path: str, files: list[str]):
 
     for thread in threads:
         thread.join()
+
+    props: dict[str, Any] = {}
+    while not result_queue.empty():
+        props.update(result_queue.get())
     print("All tasks has been finished")
 
     print(f'Start retrying -----------------------------------------------')
