@@ -21,6 +21,7 @@ from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
+OUTPUT_JSON_FILE = None
 search_path = None
 
 
@@ -32,16 +33,18 @@ def load_data(path: str, title: str) -> str:
     print(f'Looking for path: {path}, title: {title}')
 
     imdb_id: str | None = ''
+    looking_year: str = ''
     *middle, last = title.split()
     if len(middle) == 0:
         looking_title: str = last.lower()
     else:
         looking_title: str = " ".join(middle).lower()
         try:
-            looking_year: int | None = int(last)
-        except Exception as ex:
-            # print(f'ERROR year not found for {title}, {ex}')
-            looking_year: int | None = None
+            looking_year: int = int(last)
+        except ValueError as ex:
+            print(f'ERROR year not found for {title}, {ex}')
+            looking_year: str = ''
+            looking_title = title
 
     try:
         result: SearchResult | None = search_title(title)
@@ -67,11 +70,10 @@ def load_data(path: str, title: str) -> str:
                         if os.path.isdir(path + '/' + title) and movie.is_series():
                             imdb_id = movie.imdb_id
                             break
-                        elif not os.path.isdir(path + '/' + title) and not movie.is_series() and movie.year == looking_year:
+                        elif not os.path.isdir(path + '/' + title) and not movie.is_series() and (movie.year == looking_year):
                             imdb_id = movie.imdb_id
                             break
 
-            # print(f'{kind} - looking={looking_title} {looking_year} - title={movie.title.lower()} {movie.year}')
             if imdb_id:
                 print(f'FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
             else:
@@ -89,13 +91,13 @@ def cleanup_title(movie_title: str) -> str:
             .replace('<', '').replace('>', '').replace('|', '').replace('.', '').replace('  ', ' '))
 
 
-def populate(imdb_id: str, title: str):
+def populate(imdb_id: str, title: str) -> dict[str, Any]:
     try:
         if imdb_id:
             movie_imdbinfo: MovieDetail | None = get_movie(imdb_id)
             if movie_imdbinfo:
                 try:
-                    prop: dict = {
+                    prop: dict[str, Any] = {
                         "main.imdbID": imdb_id,
                         'main.Imdbid': imdb_id,
                         "main.title": movie_imdbinfo.title,
@@ -145,6 +147,7 @@ def populate(imdb_id: str, title: str):
 
 
 def save_json(prop: dict[str, Any]) -> None:
+    print(f'OUTPUT_JSON_FILE: {OUTPUT_JSON_FILE}')
     if os.path.isfile(OUTPUT_JSON_FILE):
         print(f"Deleting {OUTPUT_JSON_FILE}...")
         os.remove(OUTPUT_JSON_FILE)
@@ -178,7 +181,7 @@ def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
 
             try:
                 imdb_id: str | None = load_data(path, title)
-                prop = populate(imdb_id, title)
+                prop: dict[str, Any] = populate(imdb_id, title)
             finally:
                 print(f"\t\tupdate: thread_id: {thread_index}, {i}/{size}, found: {title}")
                 result_queue.put({title: prop})
@@ -234,15 +237,13 @@ def args_search(path: str, files: list[str]):
         props.update(result_queue.get())
     print("All tasks has been finished")
 
-    print(f'Start retrying -----------------------------------------------')
     for i in range(1, 5):
         for key in props.keys():
             if len(props.get(key)) == 0:
                 print(f'Retrying {key}')
                 imdb_id: str = load_data(path, key)
-                prop: dict = populate(imdb_id, key)
+                prop: dict[str, Any] = populate(imdb_id, key)
                 props.update({key: prop})
-    print(f'Ended retrying -----------------------------------------------')
 
     save_json(props)
     print(f"Threads: {thread_nb}, Time elapsed: {datetime.fromtimestamp(datetime.timestamp(datetime.now()) - start).strftime('%M:%S.%f')} for {len(files)} titles, {datetime.fromtimestamp((datetime.timestamp(datetime.now()) - start) / len(files)).strftime('%M:%S.%f')} per title.")
@@ -252,23 +253,25 @@ def path_search(path):
     print(f"Searching into path: {path}")
     files: list[str] = os.listdir(path)
     print(f"Searching into files: {files}")
-    print(f'IGNORED_FOLDERS: {IGNORED_FOLDERS}')
+    print(f'IGNORED_FOLDERS: {type(IGNORED_FOLDERS)}')
     print(f'SUPPORTED_EXTENSIONS: {SUPPORTED_EXTENSIONS}')
-    for i, file in enumerate(files):
-        _, file_extension = os.path.splitext(file)
-        if (
-                (
-                        os.path.isdir(f'{path}/{file}')
-                        and file in IGNORED_FOLDERS
-                )
-                or file_extension[1:] not in SUPPORTED_EXTENSIONS
-        ):
-            files.remove(file)
-            print(f'removed {file}')
+    for folder in IGNORED_FOLDERS:
+        try:
+            print(f'removing {folder} {files.remove(folder)}')
+        except ValueError as ve:
+            pass
+
+    OUTPUT_JSON_FILE: str = CONFIG["OUTPUT_JSON_FILE"].replace("${", "{").format(**os.environ)
+    print(f'OUTPUT_JSON_FILE: {OUTPUT_JSON_FILE}')
 
     for i, file in enumerate(files):
         if file.rfind(".") != -1:
-            files[i] = file[0: len(file) - 4]
+            if file[file.rfind(".") + 1:] in SUPPORTED_EXTENSIONS:
+                files[i] = file[0: len(file) - 4]
+            else:
+                print(f'removing {file} {files.remove(file)}')
+
+    print(f'files={files}')
     args_search(path, files)
 
 
@@ -324,19 +327,19 @@ if __name__ == "__main__":
 
     pre_test()
 
-    file_path: str = get_config_path()
-    CONFIG = json.load(open(file_path.format(**os.environ)))
-    # print(CONFIG)
-    for line in CONFIG:
-        CONFIG[line] = str(CONFIG[line]).replace("${", "{").format(**os.environ)
+    file_path: str = get_config_path().format(**os.environ)
+    with open(file_path) as infile:
+        CONFIG = json.load(infile)
+    print(f'CONFIG={CONFIG}')
 
     SUPPORTED_EXTENSIONS = CONFIG["SUPPORTED_EXTENSIONS"]
+    print(f'SUPPORTED_EXTENSIONS={SUPPORTED_EXTENSIONS}')
     IGNORED_FOLDERS = CONFIG["IGNORED_FOLDERS"]
+    print(f'IGNORED_FOLDERS={IGNORED_FOLDERS}')
     THREAD_NB: int = int(CONFIG["THREAD_NB"])
-
-    OUTPUT_JSON_FILE: str = (
-        CONFIG["OUTPUT_JSON_FILE"].replace("${", "{").format(**os.environ)
-    )
+    print(f'THREAD_NB={THREAD_NB}')
+    OUTPUT_JSON_FILE: str = CONFIG["OUTPUT_JSON_FILE"].replace("${", "{").format(**os.environ)
+    print(f'OUTPUT_JSON_FILE: {OUTPUT_JSON_FILE}')
 
     print(f"sys.argv={sys.argv}")
     if len(sys.argv[1:]) > 0:
