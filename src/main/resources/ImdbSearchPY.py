@@ -58,7 +58,6 @@ def load_data(path: str, title: str) -> str:
 
                 if not imdb_id:
                     kind = movie.kind.lower()
-
                     if (
                             'podcast' not in kind
                             and 'game' not in kind
@@ -352,7 +351,7 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        path_search("C:/Users/ADELE/Videos/W")
-        # path_search("C:/Users/ADELE/Videos/")
+        # path_search("C:/Users/ADELE/Videos/W")
+        path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()

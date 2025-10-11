@@ -243,7 +243,7 @@ public class Main {
                         String newName = WordUtils.capitalize(
                                 (name + " " + (year != null ? year : "") + "." + extension).toLowerCase()
                                         .replace('\\', ' ').replace('/', ' ').replace(':', ' ').replace('*', ' ').replace('?', ' ').replace('<', ' ').replace('>', ' ')
-                                        .replace('|', ' ').replace("\"", ""), new char[]{}
+                                        .replace("  ", " ").replace('|', ' ').replace("\"", ""), new char[]{}
                         );
                         if (!newName.equalsIgnoreCase(originalName)) {
                             LOG.info("--> Renaming file '" + originalName + "' to '" + newName + "'");
