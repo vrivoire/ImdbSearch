@@ -234,6 +234,8 @@ public class SearchMovie {
                             Integer.class;
                         case "LinkedHashMap" ->
                             Map.class;
+                        case "Boolean" ->
+                            Boolean.class;
                         default ->
                             String.class;
                     };

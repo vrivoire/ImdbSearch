@@ -62,7 +62,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            LOG.info("--------------------------------------------------------------------------------");
+            LOG.info("---------------------------------------------------------------------------------");
             LOG.info("OS name:   " + System.getProperty("os.name") + ", version: " + System.getProperty("os.version") + ", architechture: " + System.getProperty("os.arch"));
             LOG.info("Java: " + System.getProperty("java.vendor") + ", version: " + System.getProperty("java.version") + ", home: " + System.getProperty("java.home"));
             LOG.info("args: " + Arrays.toString(args) + " " + args.length);

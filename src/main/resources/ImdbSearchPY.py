@@ -110,8 +110,11 @@ def populate(imdb_id: str, title: str) -> dict[str, Any]:
                         "main.year": movie_imdbinfo.year,
                         "plot.plot": [movie_imdbinfo.plot],
                         "plot.synopsis": movie_imdbinfo.synopses,
-                        "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else []
+                        "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else [],
+                        'is Series': movie_imdbinfo.is_series(),
+                        'actors': [actor.name for actor in movie_imdbinfo.info_series.get_creators()] if movie_imdbinfo.is_series() else []
                     }
+
                     if movie_imdbinfo.categories:
                         prop["main.writers"] = (
                             [writer.name for writer in movie_imdbinfo.categories.get("writer")]

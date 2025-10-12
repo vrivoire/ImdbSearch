@@ -5,7 +5,7 @@
     "IGNORED_FOLDERS": ["Captures", "NVIDIA", "W", "W2", "W3", "Anime", "Heavy Metal", "Star Wars", "Dune", "Les Ripoux", "Taxi", "Terminator", "Top Gun", "Jason Bourne"],
     "IMDBSEARCH_PY_PATH": "ImdbSearchPY.py",
     "IS_IMAGES_EMBEDED": false,
-    "IS_SLIM": false,
+    "IS_SLIM": true,
     "OUTPUT_JSON_FILE": "C:/Users/ADELE/AppData/Local/Temp/IMDB.json",
     "PATTERN": "[SsNn]\\d\\d",
     "REPORT_NAME": "_report.html",
