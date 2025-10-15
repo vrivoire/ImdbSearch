@@ -17,13 +17,13 @@ function insertAll(film: any) {
 						</span>
 						<br/>
 						<span style="text-wrap: balance;">${film.mainKind}&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span>&nbsp;${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
-						<span style="text-wrap: balance;"><b>Year:</b> ${film.mainYear}${film.mainCountries}</span>
+						<span style="text-wrap: balance;"><b>Year:</b> ${film.mainYear} ${film.seasons} ${film.mainCountries}</span>
 						<span style="text-wrap: balance;"><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i></span>
 					</div>
 				</div>`;
 }
 
-function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string, countryFlags: string) {
+function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string, countryFlags: string, seasons: string) {
     var str: string = `<tr >
 				<td align="center" style="text-align: left;">
 					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
@@ -37,7 +37,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 						<span><i>${film.mainGenres}</i></span>
 						<table>
 							<tr>
-								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}, ${countryFlags}</td>
+								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear} ${seasons}, ${countryFlags}</td>
 								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;"><b>Language:</b>&nbsp;${languageFlags}&nbsp;</td>
 								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${audioFlags}</td>
 							</tr>
@@ -46,8 +46,8 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 							</tr>
 						</table>
 						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>`;
-    if (film.actors != undefined && film.actors != null && film.actors.length != 0) {
-        str += `<span><b>Actors: </b> ${film.actors}</span>`;
+    if (film.creactors != undefined && film.creactors != null && film.creactors.length != 0) {
+        str += `<span><b>Creactors: </b> ${film.creactors}</span>`;
     }
     if (film.mainDirectors != undefined && film.mainDirectors != null && film.mainDirectors.length != 0) {
         str += `<span><b>Director: </b> ${film.mainDirectors}</span>`;
@@ -56,7 +56,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
         str += `<span><b>Writer: </b> ${film.mainWriters}</span>`;
     }
     if (film.mainCasts != undefined && film.mainCasts != null && film.mainCasts.length != 0) {
-        str += `<span><b>Stars: </b> ${film.mainCasts}</span>`;
+        str += `<span><b>Casts: </b> ${film.mainCasts}</span>`;
     }
     str += `<br>
                                         <div class="inner-tabs">
@@ -307,7 +307,8 @@ $(document).ready(function() {
         var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
         var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
         var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
-        textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags);
+        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(Season${film.seasons > 1 ? 's' : ''}: ${film.seasons})` : '';
+        textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
     }
     var textByRank = "";
     for (let film of jsonByRank) {
@@ -315,11 +316,11 @@ $(document).ready(function() {
     }
     var textByName = "";
     for (let film of jsonByName) {
-        textByName += insertBody(film, '', '', '');
+        textByName += insertBody(film, '', '', '', '');
     }
     var textByLength = "";
     for (let film of jsonByLength) {
-        textByLength += insertBody(film, '', '', '');
+        textByLength += insertBody(film, '', '', '', '');
     }
     $("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
 								<div id='tabs-sorted'>

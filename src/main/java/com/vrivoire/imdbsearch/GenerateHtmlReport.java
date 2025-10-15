@@ -307,7 +307,7 @@ public class GenerateHtmlReport {
         map.put("isOnDrive", true);
 
         map.put("isSeries", movie.isSeries());
-        map.put("actors", movie.getActors() != null && movie.getActors().isEmpty() ? null : movie.getActors());
+        map.put("creactors", movie.getCreators() != null && movie.getCreators().isEmpty() ? null : movie.getCreators());
 
         map.put("subTitles", movie.getSubTitles());
         map.put("audio", movie.getAudio());

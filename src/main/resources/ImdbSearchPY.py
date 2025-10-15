@@ -13,7 +13,6 @@ from queue import Queue
 from threading import Thread
 from typing import Any
 
-import imdb
 import jsonpickle
 
 from imdbinfo import get_movie, search_title, get_akas
@@ -107,30 +106,22 @@ def populate(imdb_id: str, title: str) -> dict[str, Any]:
                         "main.cover url": movie_imdbinfo.cover_url,
                         "main.kind": movie_imdbinfo.kind,
                         "main.rating": movie_imdbinfo.rating if movie_imdbinfo.rating else 0.0,
-                        "main.year": movie_imdbinfo.year,
+                        "main.year": str(movie_imdbinfo.year),
                         "plot.plot": [movie_imdbinfo.plot],
                         "plot.synopsis": movie_imdbinfo.synopses,
                         "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else [],
                         'is Series': movie_imdbinfo.is_series(),
-                        'actors': [actor.name for actor in movie_imdbinfo.info_series.get_creators()] if movie_imdbinfo.is_series() else []
                     }
+                    
+                    if movie_imdbinfo.is_series():
+                        prop['creators'] = list(reversed([creator.name for creator in movie_imdbinfo.info_series.get_creators()]))
+                        prop['seasons'] = len(movie_imdbinfo.info_series.display_seasons)
 
-                    if movie_imdbinfo.categories:
-                        prop["main.writers"] = (
-                            [writer.name for writer in movie_imdbinfo.categories.get("writer")]
-                            if movie_imdbinfo.categories.get("writer")
-                            else []
-                        )
-                        prop["main.directors"] = (
-                            [director.name for director in movie_imdbinfo.categories.get("director")]
-                            if movie_imdbinfo.categories.get("director")
-                            else []
-                        )
-                        prop["main.casts"] = (
-                            [star.name for star in movie_imdbinfo.stars]
-                            if movie_imdbinfo.categories.get("cast")
-                            else []
-                        )
+                        l = list(reversed([year for year in movie_imdbinfo.info_series.display_years]))
+                        if prop['seasons'] == 1:
+                            prop["main.year"] = l[0]
+                        else:
+                            prop["main.year"] = f'{l[0]}...{l[len(l) - 1]}'
 
                     if movie_imdbinfo.categories:
                         prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
@@ -277,38 +268,6 @@ def path_search(path):
     args_search(path, files)
 
 
-def pre_test():
-    try:
-        master_version: str = ""
-        for line_str in urllib.request.urlopen("https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/imdb/version.py"):
-            master_version: str = line_str.decode("utf-8")
-        master_version = (master_version.removeprefix("__version__ = '").replace("'", "").strip())
-        print(f"imdb={imdb}")
-        print(f"imdb.VERSION={imdb.VERSION}, master_version={master_version}")
-        if imdb.VERSION != master_version:
-            print(
-                "**********************************************************************************************"
-            )
-            print(
-                "**********************************************************************************************"
-            )
-            print(
-                "**********************************************************************************************"
-            )
-            print(f"					 UPDATE Cinemagoer to version {master_version}")
-            print(
-                "**********************************************************************************************"
-            )
-            print(
-                "**********************************************************************************************"
-            )
-            print(
-                "**********************************************************************************************"
-            )
-    except Exception as ex:
-        print(f"0 ERROR {ex}: Check version")
-
-
 def get_config_path():
     global file_path
     file_path = "config.json"
@@ -326,8 +285,6 @@ def get_config_path():
 
 if __name__ == "__main__":
     start: float = datetime.timestamp(datetime.now())
-
-    pre_test()
 
     file_path: str = get_config_path().format(**os.environ)
     with open(file_path) as infile:

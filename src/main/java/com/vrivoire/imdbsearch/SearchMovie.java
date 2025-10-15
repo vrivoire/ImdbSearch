@@ -159,7 +159,7 @@ public class SearchMovie {
         NameYearBean nameYearBean = new NameYearBean();
         nameYearBean.setIsDirectory(file.isDirectory());
         nameYearBean.setName(stringBuilder.toString().trim().toLowerCase());
-        nameYearBean.setMainYear(year == null ? null : year);
+        nameYearBean.setMainYear(year == null ? null : year.toString());
         nameYearBean.setFileDate(file.lastModified());
         nameYearBean.setOriginalName(originalName);
         nameYearBean.setFile(file);

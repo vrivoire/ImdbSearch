@@ -233,7 +233,7 @@ public class Main {
             var originalName = nameYearBean.getOriginalName();
 //			var name = nameYearBean.getMainOriginalTitle();
             String name = nameYearBean.getMainTitle();
-            Integer year = nameYearBean.getMainYear();
+            String year = nameYearBean.getMainYear();
             File file = nameYearBean.getFile();
 
             List<String> extensions = (List<String>) Config.SUPPORTED_EXTENSIONS.get();

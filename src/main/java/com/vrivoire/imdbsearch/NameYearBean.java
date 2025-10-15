@@ -51,7 +51,7 @@ public class NameYearBean implements Serializable {
     private List<String> mainVideos = null;
     private Integer mainVotes = null;
     private List<String> mainWriters = null;
-    private Integer mainYear = null;
+    private String mainYear = null;
     private List<String> plotPlot = null;
     private List<String> plotSynopsis = null;
     private Integer mainSeasons = null;
@@ -78,9 +78,18 @@ public class NameYearBean implements Serializable {
     private List<String> mainStars = null;
     private String mainTvSeriesTitle = null;
     private Boolean isSeries = false;
-    private List<String> actors = null;
+    private List<String> creators = null;
+    private Integer seasons = null;
 
     public NameYearBean() {
+    }
+
+    public Integer getSeasons() {
+        return seasons;
+    }
+
+    public void setSeasons(Integer seasons) {
+        this.seasons = seasons;
     }
 
     public boolean isSeries() {
@@ -91,12 +100,12 @@ public class NameYearBean implements Serializable {
         this.isSeries = isSeries;
     }
 
-    public List<String> getActors() {
-        return actors;
+    public List<String> getCreators() {
+        return creators;
     }
 
-    public void setActors(List<String> actors) {
-        this.actors = actors;
+    public void setCreators(List<String> creators) {
+        this.creators = creators;
     }
 
     public String getMainTvSeriesTitle() {
@@ -526,11 +535,11 @@ public class NameYearBean implements Serializable {
         return mainWriters;
     }
 
-    public void setMainYear(Integer mainYear) {
+    public void setMainYear(String mainYear) {
         this.mainYear = mainYear;
     }
 
-    public Integer getMainYear() {
+    public String getMainYear() {
         return mainYear;
     }
 
@@ -642,9 +651,9 @@ public class NameYearBean implements Serializable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("NameYearBean [");
-        builder.append("actors=").append(actors);
-        builder.append(", audio=").append(audio);
+        builder.append("audio=").append(audio);
         builder.append(", codecDescription=").append(codecDescription);
+        builder.append(", creators=").append(creators);
         builder.append(", error=").append(error);
         builder.append(", file=").append(file);
         builder.append(", fileCount=").append(fileCount);
@@ -701,6 +710,7 @@ public class NameYearBean implements Serializable {
         builder.append(", plotPlot=").append(plotPlot);
         builder.append(", plotSynopsis=").append(plotSynopsis);
         builder.append(", resolutionDescription=").append(resolutionDescription);
+        builder.append(", seasons=").append(seasons);
         builder.append(", serialVersionUID=").append(serialVersionUID);
         builder.append(", size=").append(size);
         builder.append(", subTitles=").append(subTitles);
