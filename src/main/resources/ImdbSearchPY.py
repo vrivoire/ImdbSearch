@@ -25,11 +25,11 @@ search_path = None
 
 
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
-def load_data(path: str, title: str) -> str:
+def load_data(thread_index: int, path: str, title: str) -> str:
     sys.stdout.reconfigure(encoding='utf-8')
     title = title.encode('utf-8') if type(title) == bytes else title
 
-    print(f'Looking for path: {path}, title: {title}')
+    print(f'{thread_index} Looking for path: {path}, title: {title}')
 
     imdb_id: str | None = ''
     looking_year: str = ''
@@ -41,7 +41,7 @@ def load_data(path: str, title: str) -> str:
         try:
             looking_year: int = int(last)
         except ValueError as ex:
-            print(f'ERROR year not found for {title}, {ex}')
+            print(f'{thread_index} ERROR year not found for {title}, {ex}')
             looking_year: str = ''
             looking_title = title
 
@@ -50,7 +50,9 @@ def load_data(path: str, title: str) -> str:
         if result:
             movies: list[MovieBriefInfo] = result.titles
             kind: str | None = None
+            print(f'{thread_index} *** ({title}) {len(movies)}')
             for movie in movies:
+                print(f'{thread_index} *** ({title}) {movie}')
                 akas: list[str] = [cleanup_title(aka.title) for aka in get_akas(movie.imdb_id)['akas']]
                 akas.insert(0, cleanup_title(movie.title))
                 titles: set[str] = set(akas)
@@ -64,7 +66,7 @@ def load_data(path: str, title: str) -> str:
                             and 'vg' not in kind
                             and not movie.is_episode()
                     ):
-                        print(f'{looking_title} --> kind: {kind}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
+                        print(f'{thread_index} {looking_title} --> kind: {kind}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
                         if os.path.isdir(path + '/' + title) and movie.is_series():
                             imdb_id = movie.imdb_id
                             break
@@ -73,12 +75,12 @@ def load_data(path: str, title: str) -> str:
                             break
 
             if imdb_id:
-                print(f'FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
+                print(f'{thread_index} FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
             else:
-                print(f'NOT FOUND looking={looking_title} {looking_year}')
+                print(f'{thread_index} NOT FOUND looking: {looking_title} {looking_year}')
 
     except Exception as ex:
-        print(f"1 ERROR {ex}: {title}")
+        print(f"{thread_index} 1 ERROR {ex}: {title}")
         print(traceback.format_exc())
 
     return imdb_id
@@ -89,7 +91,7 @@ def cleanup_title(movie_title: str) -> str:
             .replace('<', '').replace('>', '').replace('|', '').replace('.', '').replace('  ', ' '))
 
 
-def populate(imdb_id: str, title: str) -> dict[str, Any]:
+def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
     try:
         if imdb_id:
             movie_imdbinfo: MovieDetail | None = get_movie(imdb_id)
@@ -107,21 +109,22 @@ def populate(imdb_id: str, title: str) -> dict[str, Any]:
                         "main.kind": movie_imdbinfo.kind,
                         "main.rating": movie_imdbinfo.rating if movie_imdbinfo.rating else 0.0,
                         "main.year": str(movie_imdbinfo.year),
+                        "main.duration": movie_imdbinfo.duration,
                         "plot.plot": [movie_imdbinfo.plot],
                         "plot.synopsis": movie_imdbinfo.synopses,
                         "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else [],
                         'is Series': movie_imdbinfo.is_series(),
                     }
-                    
+
                     if movie_imdbinfo.is_series():
                         prop['creators'] = list(reversed([creator.name for creator in movie_imdbinfo.info_series.get_creators()]))
                         prop['seasons'] = len(movie_imdbinfo.info_series.display_seasons)
 
-                        l = list(reversed([year for year in movie_imdbinfo.info_series.display_years]))
-                        if prop['seasons'] == 1:
-                            prop["main.year"] = l[0]
+                        year_list = list(reversed([year for year in movie_imdbinfo.info_series.display_years]))
+                        if len(year_list) == 1:
+                            prop["main.year"] = year_list[0]
                         else:
-                            prop["main.year"] = f'{l[0]}...{l[len(l) - 1]}'
+                            prop["main.year"] = f'{year_list[0]}...{year_list[len(year_list) - 1]}'
 
                     if movie_imdbinfo.categories:
                         prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
@@ -173,8 +176,8 @@ def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
                 pass  # No dot and extension
 
             try:
-                imdb_id: str | None = load_data(path, title)
-                prop: dict[str, Any] = populate(imdb_id, title)
+                imdb_id: str | None = load_data(thread_index, path, title)
+                prop: dict[str, Any] = populate(thread_index, imdb_id, title)
             finally:
                 print(f"\t\tupdate: thread_id: {thread_index}, {i}/{size}, found: {title}")
                 result_queue.put({title: prop})
@@ -234,8 +237,8 @@ def args_search(path: str, files: list[str]):
         for key in props.keys():
             if len(props.get(key)) == 0:
                 print(f'Retrying {key}')
-                imdb_id: str = load_data(path, key)
-                prop: dict[str, Any] = populate(imdb_id, key)
+                imdb_id: str = load_data(0, path, key)
+                prop: dict[str, Any] = populate(0, imdb_id, key)
                 props.update({key: prop})
 
     save_json(props)
@@ -311,7 +314,8 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
+        path_search("C:/Users/ADELE/Videos/W/toto")
         # path_search("C:/Users/ADELE/Videos/W")
-        path_search("C:/Users/ADELE/Videos/")
+        # path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()

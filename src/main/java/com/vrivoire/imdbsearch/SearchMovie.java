@@ -450,13 +450,13 @@ public class SearchMovie {
                                         }
                                     }
                                 }
-                                String timeInHHMMSS = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
-                                nameYearBean.setTimeInHHMMSS(timeInHHMMSS == null ? "" : timeInHHMMSS);
+                                String timeInHHMM = DurationFormatUtils.formatDuration(mediaPlayer.media().info().duration(), "HH:mm", true);
+                                nameYearBean.setTimeInHHMM(timeInHHMM == null ? "" : timeInHHMM);
                                 nameYearBean.setSubTitles(subTitleList);
                                 nameYearBean.setAudio(audioList);
 
                                 LOG.info("\t" + nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
-                                        + nameYearBean.getResolutionDescription() + ", " + nameYearBean.getTimeInHHMMSS() + ", SubTitles[" + nameYearBean.getSubTitles() + "], Audio[" + nameYearBean.getAudio() + "]");
+                                        + nameYearBean.getResolutionDescription() + ", " + nameYearBean.getTimeInHHMM() + ", SubTitles[" + nameYearBean.getSubTitles() + "], Audio[" + nameYearBean.getAudio() + "]");
                             } else {
                                 LOG.info("\t" + nameYearBean.getFile().getName() + ", Empty");
                             }

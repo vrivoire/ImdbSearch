@@ -307,7 +307,7 @@ $(document).ready(function() {
         var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
         var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
         var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
-        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(Season${film.seasons > 1 ? 's' : ''}: ${film.seasons})` : '';
+        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(${film.seasons} season${film.seasons > 1 ? 's' : ''})` : '';
         textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
     }
     var textByRank = "";

@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.time.Duration;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,7 +41,6 @@ public class NameYearBean implements Serializable {
     private String mainOriginalTitle = null;
     private String mainPlotOutline = null;
     private Double mainRating;
-    private List<String> mainRuntimes = null;
     private List<String> mainSoundMix = null;
     private List<String> mainCasts = null;
     private String mainTitle = null;
@@ -70,7 +67,7 @@ public class NameYearBean implements Serializable {
     private Integer width = null;
     private Integer heigth = null;
     private String codecDescription = null;
-    private String timeInHHMMSS = null;
+    private String timeInHHMM = null;
     private Set<String> subTitles = new TreeSet<>();
     private Set<String> audio = new TreeSet<>();
     private Map<String, Map> mainEpisodeOf = null;
@@ -80,6 +77,7 @@ public class NameYearBean implements Serializable {
     private Boolean isSeries = false;
     private List<String> creators = null;
     private Integer seasons = null;
+    private Integer mainDuration = null;
 
     public NameYearBean() {
     }
@@ -450,29 +448,27 @@ public class NameYearBean implements Serializable {
         return mainRating == null ? 0.0 : mainRating;
     }
 
-    public void setMainRuntimes(List<String> mainRuntimes) {
-        this.mainRuntimes = mainRuntimes;
+    public String getTimeInHHMM() {
+        return timeInHHMM;
     }
 
-    public List<String> getMainRuntimes() {
-        return mainRuntimes;
+    public void setTimeInHHMM(String timeInHHMM) {
+        this.timeInHHMM = timeInHHMM;
+    }
+
+    public Integer getMainDuration() {
+        return mainDuration;
+    }
+
+    public void setMainDuration(Integer mainDuration) {
+        this.mainDuration = mainDuration;
     }
 
     public String getRuntimeHM() {
-        String s = (getMainRuntimes() == null ? "N/A" : getMainRuntimes().get(0));
-        if (s == null || "".equals(s) || s.contains("N/A")) {
-            s = "0";
+        String s = getTimeInHHMM();
+        if ((s == null || s.isBlank()) && getMainDuration() != null) {
+            s = String.format("%02d:%02d", getMainDuration() / 60, getMainDuration() % 60);
         }
-        s = s.replace("min", "").trim();
-        try {
-            s = LocalTime.MIN.plus(Duration.ofMinutes(Long.parseLong(s))).toString();
-        }
-        catch (NumberFormatException e) {
-            s = LocalTime.MIN.plus(Duration.ofMinutes(0l)).toString();
-        }
-        s = s.replace(':', 'h') + 'm';
-        s = s == null || s.equals("00h00m") ? getTimeInHHMMSS() : s;
-
         return s;
     }
 
@@ -607,14 +603,6 @@ public class NameYearBean implements Serializable {
         this.heigth = heigth;
     }
 
-    public String getTimeInHHMMSS() {
-        return timeInHHMMSS;
-    }
-
-    public void setTimeInHHMMSS(String timeInHHMMSS) {
-        this.timeInHHMMSS = timeInHHMMSS;
-    }
-
     void setSubTitles(Set<String> subTitles) {
         this.subTitles = subTitles;
     }
@@ -654,6 +642,7 @@ public class NameYearBean implements Serializable {
         builder.append("audio=").append(audio);
         builder.append(", codecDescription=").append(codecDescription);
         builder.append(", creators=").append(creators);
+        builder.append(", duration=").append(mainDuration);
         builder.append(", error=").append(error);
         builder.append(", file=").append(file);
         builder.append(", fileCount=").append(fileCount);
@@ -692,7 +681,6 @@ public class NameYearBean implements Serializable {
         builder.append(", mainProductionStatus=").append(mainProductionStatus);
         builder.append(", mainProductionStatusUpdated=").append(mainProductionStatusUpdated);
         builder.append(", mainRating=").append(mainRating);
-        builder.append(", mainRuntimes=").append(mainRuntimes);
         builder.append(", mainSeason=").append(mainSeason);
         builder.append(", mainSeasons=").append(mainSeasons);
         builder.append(", mainSeriesYears=").append(mainSeriesYears);
@@ -714,7 +702,7 @@ public class NameYearBean implements Serializable {
         builder.append(", serialVersionUID=").append(serialVersionUID);
         builder.append(", size=").append(size);
         builder.append(", subTitles=").append(subTitles);
-        builder.append(", timeInHHMMSS=").append(timeInHHMMSS);
+        builder.append(", timeInHHMM=").append(timeInHHMM);
         builder.append(", width=").append(width);
         builder.append("]");
         return builder.toString();
