@@ -286,7 +286,7 @@ public class SearchMovie {
             try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()), 1024 * 40)) {
                 String line;
                 while ((line = stdInput.readLine()) != null) {
-                    LOG.info("ImdbSearchPY\t" + line);
+                    LOG.info(line);
                 }
             }
             catch (IOException ex) {
