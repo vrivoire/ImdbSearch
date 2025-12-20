@@ -386,7 +386,7 @@ public class SearchMovie {
                             if (!trackInfoList.isEmpty()) {
                                 Set<String> subTitleList = new TreeSet<>();
                                 Set<String> audioList = new TreeSet<>();
-                                String resolutionDescription;
+                                String resolutionDescription = "";
                                 for (TrackInfo trackInfo : trackInfoList) {
                                     if (trackInfo != null) {
                                         switch (trackInfo) {
@@ -440,9 +440,9 @@ public class SearchMovie {
                                                         resolutionDescription = "8K 4320p";
                                                         break;
                                                     default:
-                                                        resolutionDescription = null;
+                                                        resolutionDescription = "";
                                                 }
-                                                nameYearBean.setResolutionDescription(resolutionDescription);
+                                                nameYearBean.setResolutionDescription(resolutionDescription == null ? "" : resolutionDescription + " " + videoTrackInfo.height() + "x" + videoTrackInfo.width());
                                                 nameYearBean.setCodecDescription(videoTrackInfo.codecDescription());
                                             }
                                             default ->

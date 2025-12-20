@@ -54,9 +54,9 @@ def load_data(thread_index: int, path: str, title: str) -> str:
             looking_title = title
 
     try:
-        result: SearchResult | None = search_title(title)
-        if result:
-            movies: list[MovieBriefInfo] = result.titles
+        search_result: SearchResult | None = search_title(title)
+        if search_result:
+            movies: list[MovieBriefInfo] = search_result.titles
             kind: str | None = None
             log.info(f'\t\tid: {thread_index} {title}: len: {len(movies)}')
             for movie in movies:
@@ -74,7 +74,7 @@ def load_data(thread_index: int, path: str, title: str) -> str:
                             and 'vg' not in kind
                             and not movie.is_episode()
                     ):
-                        log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
+                        log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
                         if os.path.isdir(path + '/' + title) and movie.is_series():
                             imdb_id = movie.imdb_id
                             break
@@ -102,33 +102,37 @@ def cleanup_title(movie_title: str) -> str:
 def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
     try:
         if imdb_id:
-            movie_imdbinfo: MovieDetail | None = get_movie(imdb_id)
-            if movie_imdbinfo:
+            movie_detail: MovieDetail | None = get_movie(imdb_id)
+            if movie_detail:
                 try:
                     prop: dict[str, Any] = {
                         "main.imdbID": imdb_id,
                         'main.Imdbid': imdb_id,
-                        "main.title": movie_imdbinfo.title,
-                        "main.votes": movie_imdbinfo.votes,
-                        "main.genres": movie_imdbinfo.genres if movie_imdbinfo.genres else [],
-                        "main.language codes": movie_imdbinfo.languages if movie_imdbinfo.languages else [],
-                        "main.aspect ratio": movie_imdbinfo.aspect_ratios[0][0] if movie_imdbinfo.aspect_ratios else '',
-                        "main.cover url": movie_imdbinfo.cover_url,
-                        "main.kind": movie_imdbinfo.kind,
-                        "main.rating": movie_imdbinfo.rating if movie_imdbinfo.rating else 0.0,
-                        "main.year": str(movie_imdbinfo.year),
-                        "main.duration": movie_imdbinfo.duration,
-                        "plot.plot": [movie_imdbinfo.plot],
-                        "plot.synopsis": movie_imdbinfo.synopses,
-                        "main.country codes": [x.lower() for x in movie_imdbinfo.country_codes] if movie_imdbinfo.country_codes else [],
-                        'is Series': movie_imdbinfo.is_series(),
+                        "main.title": movie_detail.title,
+                        "main.votes": movie_detail.votes,
+                        "main.genres": movie_detail.genres if movie_detail.genres else [],
+                        "main.language codes": movie_detail.languages if movie_detail.languages else [],
+                        "main.aspect ratio": movie_detail.aspect_ratios[0][0] if movie_detail.aspect_ratios else '',
+                        "main.cover url": movie_detail.cover_url,
+                        "main.kind": movie_detail.kind,
+                        "main.rating": movie_detail.rating if movie_detail.rating else 0.0,
+                        "main.year": str(movie_detail.year),
+                        "main.duration": movie_detail.duration,
+                        "plot.plot": [movie_detail.plot],
+                        "plot.synopsis": movie_detail.synopses,
+                        "main.country codes": [x.lower() for x in movie_detail.country_codes] if movie_detail.country_codes else [],
+                        'is Series': movie_detail.is_series(),
                     }
+                    if movie_detail.awards:
+                        prop['main.awards.wins'] = movie_detail.awards.wins
+                        prop['main.awards.nominations'] = movie_detail.awards.nominations
+                        prop['main.awards.prestigious_award'] = movie_detail.awards.prestigious_award
 
-                    if movie_imdbinfo.is_series():
-                        prop['creators'] = list(reversed([creator.name for creator in movie_imdbinfo.info_series.get_creators()]))
-                        prop['seasons'] = len(movie_imdbinfo.info_series.display_seasons)
+                    if movie_detail.is_series():
+                        prop['creators'] = list(reversed([creator.name for creator in movie_detail.info_series.get_creators()]))
+                        prop['seasons'] = len(movie_detail.info_series.display_seasons)
 
-                        year_list = list(reversed([year for year in movie_imdbinfo.info_series.display_years]))
+                        year_list = list(reversed([year for year in movie_detail.info_series.display_years]))
                         if len(year_list) == 0:
                             pass
                         elif len(year_list) == 1:
@@ -136,10 +140,10 @@ def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
                         else:
                             prop["main.year"] = f'{year_list[0]}...{year_list[len(year_list) - 1]}'
 
-                    if movie_imdbinfo.categories:
-                        prop['main.writers'] = [writer.name for writer in movie_imdbinfo.categories.get('writer')] if movie_imdbinfo.categories.get('writer') else []
-                        prop["main.directors"] = [director.name for director in movie_imdbinfo.categories.get('director')] if movie_imdbinfo.categories.get('director') else []
-                        prop["main.casts"] = [star.name for star in movie_imdbinfo.stars] if movie_imdbinfo.categories.get('cast') else []
+                    if movie_detail.categories:
+                        prop['main.writers'] = [writer.name for writer in movie_detail.categories.get('writer')] if movie_detail.categories.get('writer') else []
+                        prop["main.directors"] = [director.name for director in movie_detail.categories.get('director')] if movie_detail.categories.get('director') else []
+                        prop["main.casts"] = [star.name for star in movie_detail.stars] if movie_detail.categories.get('cast') else []
 
                     return prop
 
@@ -325,7 +329,7 @@ if __name__ == "__main__":
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
         # path_search("C:/Users/ADELE/Videos/W3")
-        path_search("C:/Users/ADELE/Videos/W")
+        path_search("C:/Users/ADELE/Videos/W4")
         # path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()

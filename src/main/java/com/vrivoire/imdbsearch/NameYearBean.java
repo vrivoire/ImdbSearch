@@ -78,8 +78,35 @@ public class NameYearBean implements Serializable {
     private List<String> creators = null;
     private Integer seasons = null;
     private Integer mainDuration = null;
+    private Integer mainAwardsNominations = 0;
+    private Integer mainAwardsWins = 0;
+    private Map<String, Object> mainAwardsPrestigious_award = null;
 
     public NameYearBean() {
+    }
+
+    public Integer getMainAwardsNominations() {
+        return mainAwardsNominations;
+    }
+
+    public void setMainAwardsNominations(Integer mainAwardsNominations) {
+        this.mainAwardsNominations = mainAwardsNominations;
+    }
+
+    public Integer getMainAwardsWins() {
+        return mainAwardsWins;
+    }
+
+    public void setMainAwardsWins(Integer mainAwardsWins) {
+        this.mainAwardsWins = mainAwardsWins;
+    }
+
+    public Map<String, Object> getMainAwardsPrestigious_award() {
+        return mainAwardsPrestigious_award;
+    }
+
+    public void setMainAwardsPrestigious_award(Map<String, Object> mainAwardsPrestigious_award) {
+        this.mainAwardsPrestigious_award = mainAwardsPrestigious_award;
     }
 
     public Integer getSeasons() {
@@ -642,7 +669,6 @@ public class NameYearBean implements Serializable {
         builder.append("audio=").append(audio);
         builder.append(", codecDescription=").append(codecDescription);
         builder.append(", creators=").append(creators);
-        builder.append(", duration=").append(mainDuration);
         builder.append(", error=").append(error);
         builder.append(", file=").append(file);
         builder.append(", fileCount=").append(fileCount);
@@ -654,6 +680,9 @@ public class NameYearBean implements Serializable {
         builder.append(", mainAkas=").append(mainAkas);
         builder.append(", mainAlternativeKind=").append(mainAlternativeKind);
         builder.append(", mainAspectRatio=").append(mainAspectRatio);
+        builder.append(", mainAwardsNominations=").append(mainAwardsNominations);
+        builder.append(", mainAwardsPrestigious_award=").append(mainAwardsPrestigious_award);
+        builder.append(", mainAwardsWins=").append(mainAwardsWins);
         builder.append(", mainBottom100Rank=").append(mainBottom100Rank);
         builder.append(", mainBoxOffice=").append(mainBoxOffice);
         builder.append(", mainCasts=").append(mainCasts);
@@ -663,6 +692,7 @@ public class NameYearBean implements Serializable {
         builder.append(", mainCountryCodes=").append(mainCountryCodes);
         builder.append(", mainCoverUrl=").append(mainCoverUrl);
         builder.append(", mainDirectors=").append(mainDirectors);
+        builder.append(", mainDuration=").append(mainDuration);
         builder.append(", mainEpisode=").append(mainEpisode);
         builder.append(", mainEpisodeOf=").append(mainEpisodeOf);
         builder.append(", mainGenres=").append(mainGenres);

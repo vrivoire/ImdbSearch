@@ -31,7 +31,7 @@ function insertBody(film: any, audioFlags: string, subTitlesFlags: string, langu
 							<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
 								${film.mainTitle}
 							</a>
-							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
+							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<span style="color: slategray;font-size: medium;">${film.mainAwardsWins > 0 ? "Wins: " + film.mainAwardsWins : ""}&nbsp;${film.mainAwardsPrestigious_award ? ", " + film.mainAwardsPrestigious_award.name : ""}</span>&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
 						<br/>
 						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
 						<span><i>${film.mainGenres}</i></span>
