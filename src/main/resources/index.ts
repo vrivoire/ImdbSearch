@@ -312,15 +312,30 @@ $(document).ready(function() {
     }
     var textByRank = "";
     for (let film of jsonByRank) {
-        textByRank += insertBody(film, '', '', '');
+        var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
+        var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
+        var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
+        var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
+        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(${film.seasons} season${film.seasons > 1 ? 's' : ''})` : '';
+        textByRank += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
     }
     var textByName = "";
     for (let film of jsonByName) {
-        textByName += insertBody(film, '', '', '', '');
+        var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
+        var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
+        var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
+        var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
+        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(${film.seasons} season${film.seasons > 1 ? 's' : ''})` : '';
+        textByName += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
     }
     var textByLength = "";
     for (let film of jsonByLength) {
-        textByLength += insertBody(film, '', '', '', '');
+        var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
+        var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
+        var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
+        var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
+        var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `(${film.seasons} season${film.seasons > 1 ? 's' : ''})` : '';
+        textByLength += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
     }
     $("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
 								<div id='tabs-sorted'>
