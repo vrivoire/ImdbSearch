@@ -137,8 +137,10 @@ def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
                             pass
                         elif len(year_list) == 1:
                             prop["main.year"] = year_list[0]
+                            prop["main.years"] = ''
                         else:
-                            prop["main.year"] = f'{year_list[0]}...{year_list[len(year_list) - 1]}'
+                            prop["main.year"] = year_list[0]
+                            prop["main.years"] = f'{year_list[0]}...{year_list[len(year_list) - 1]}'
 
                     if movie_detail.categories:
                         prop['main.writers'] = [writer.name for writer in movie_detail.categories.get('writer')] if movie_detail.categories.get('writer') else []
@@ -329,7 +331,7 @@ if __name__ == "__main__":
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
         # path_search("C:/Users/ADELE/Videos/W3")
-        path_search("C:/Users/ADELE/Videos/W4")
+        path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()

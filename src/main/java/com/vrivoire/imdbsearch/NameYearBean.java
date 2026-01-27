@@ -49,10 +49,10 @@ public class NameYearBean implements Serializable {
     private Integer mainVotes = null;
     private List<String> mainWriters = null;
     private String mainYear = null;
+    private String mainYears = null;
     private List<String> plotPlot = null;
     private List<String> plotSynopsis = null;
     private Integer mainSeasons = null;
-    private String mainSeriesYears = null;
     private Integer mainNumberOfSeasons = null;
     private String mainProductionStatusUpdated = null;
     private String mainProductionStatus = null;
@@ -566,6 +566,14 @@ public class NameYearBean implements Serializable {
         return mainYear;
     }
 
+    public void setMainYears(String mainYears) {
+        this.mainYears = mainYears;
+    }
+
+    public String getMainYears() {
+        return mainYears;
+    }
+
     public void setPlotPlot(List<String> plotPlot) {
         this.plotPlot = plotPlot;
     }
@@ -586,16 +594,8 @@ public class NameYearBean implements Serializable {
         this.mainSeasons = mainSeasons;
     }
 
-    public void setMainSeriesYears(String mainSeriesYears) {
-        this.mainSeriesYears = mainSeriesYears;
-    }
-
     public Integer getMainSeasons() {
         return mainSeasons;
-    }
-
-    public String getMainSeriesYears() {
-        return mainSeriesYears;
     }
 
     public Integer getMainNumberOfSeasons() {
@@ -713,7 +713,6 @@ public class NameYearBean implements Serializable {
         builder.append(", mainRating=").append(mainRating);
         builder.append(", mainSeason=").append(mainSeason);
         builder.append(", mainSeasons=").append(mainSeasons);
-        builder.append(", mainSeriesYears=").append(mainSeriesYears);
         builder.append(", mainSoundMix=").append(mainSoundMix);
         builder.append(", mainStars=").append(mainStars);
         builder.append(", mainTitle=").append(mainTitle);
@@ -723,6 +722,7 @@ public class NameYearBean implements Serializable {
         builder.append(", mainVotes=").append(mainVotes);
         builder.append(", mainWriters=").append(mainWriters);
         builder.append(", mainYear=").append(mainYear);
+        builder.append(", mainYears=").append(mainYears);
         builder.append(", name=").append(name);
         builder.append(", originalName=").append(originalName);
         builder.append(", plotPlot=").append(plotPlot);

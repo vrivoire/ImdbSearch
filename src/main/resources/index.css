@@ -42,9 +42,9 @@ body{
 .hist-outer-cell {
     border-style: hidden;
     width: 25em;
-    height: 38em;
+    height: auto;
     display: inline-block;
-    white-space: nowrap;
+    white-space: normal;
     text-align: center;
 }
 .hist-text-cell {

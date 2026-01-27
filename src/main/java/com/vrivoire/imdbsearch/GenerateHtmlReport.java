@@ -146,7 +146,6 @@ public class GenerateHtmlReport {
             map.put("jquery_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/" + Config.VERSION_JQUERY.getString() + "/jquery.min.js\"></script>\n");
             map.put("jqueryui_js", "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/jquery-ui.min.js\"></script>\n");
 
-//			https://datatables.net/download/
             map.put("datatables_css", "<link href=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/css/dataTables.jqueryui.min.css\" rel=\"stylesheet\">\n");
             map.put("datatables_colreorder_css", "<link href=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/css/colReorder.jqueryui.min.css\" rel=\"stylesheet\">\n");
             map.put("datatables_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.min.js\"></script>\n");
@@ -251,11 +250,11 @@ public class GenerateHtmlReport {
             type = type.trim().toLowerCase();
             if (type.contains("series") || type.contains("TV Special")) {
                 map.put("mainKind", SERIES);
-                if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {
-                    map.put("mainYear", map.get("mainYear"));
-                } else {
-                    map.put("mainYear", movie.getMainSeriesYears() + (movie.getMainNumberOfSeasons() == null ? "" : " (<b>Seasons:</b> " + movie.getMainNumberOfSeasons() + ")"));
-                }
+//                if (movie.getMainSeriesYears() == null || movie.getMainSeriesYears().isBlank()) {
+//                    map.put("mainYear", map.get("mainYear"));
+//                } else {
+//                    map.put("mainYear", movie.getMainSeriesYears() + (movie.getMainNumberOfSeasons() == null ? "" : " (<b>Seasons:</b> " + movie.getMainNumberOfSeasons() + ")"));
+//                }
             } else if (type.toLowerCase().contains("movie")) {
                 map.put("mainKind", MOVIES);
             } else {
@@ -263,6 +262,7 @@ public class GenerateHtmlReport {
             }
         }
         map.put("mainYear", map.get("mainYear") == null ? "" : map.get("mainYear").toString());
+        map.put("mainYears", map.get("mainYears") == null ? "" : map.get("mainYears").toString());
 
         map.entrySet().stream().filter(entry -> (entry.getValue() != null && entry.getValue() instanceof List)).forEachOrdered(entry -> {
             String s = entry.getValue().toString().substring(1, entry.getValue().toString().length() - 1);
