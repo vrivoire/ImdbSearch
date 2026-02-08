@@ -7,4 +7,5 @@ for %%P in ("W3") DO (
 	timeout 3
 )
 
-pause
+rem pause
+

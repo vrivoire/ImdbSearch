@@ -1,6 +1,6 @@
-rem @echo off
+@echo off
 
-set "DIRECTORY=Détective Surprenant 2023"
+set "DIRECTORY=Les Gouttes de Dieu 2023"
 set "LANG=eng,fre"
 rem set "LANG=eng"
 rem set "LANG=fre"
@@ -17,4 +17,4 @@ for %%f in ("%INPUT_DIR%\*.mkv") do (
 	call "%mkvmerge%" -o "%OUTPUT_DIR%\%%~nf_%LANG%.mkv" --audio-tracks %LANG% --subtitle-tracks %LANG% "%%f"
 )
 
-pause
+rem pause

@@ -18,7 +18,7 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
                 </a>
                 <div class="hist-text-cell">
                         <span style="font-weight: bold; border:0px; text-wrap: balance;">
-                            <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.plotPlot}">${film.mainTitle}</a>
+                            <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.file}">${film.mainTitle}</a>
                         </span>
                         <span style="font-weight: lighter; font-size: x-small; font-family: monospace; padding: 1em; display: flex; justify-content: center; align-items: center;">
                             <a href="${alloCine}" target="_blank" rel="noreferrer noopener external"><img src="${alloCineIcon}" alt="AlloCiné ${film.mainOriginalTitle}" width="20px" title="AlloCiné"/></a>&nbsp;
@@ -59,7 +59,7 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
     }
     str += `
                     <span style = "text-wrap: balance;padding: 0px;margin: 0px;" >
-                        <b>Counties: </b>&nbsp;${countryFlags}&nbsp;
+                        <b>Countries: </b>&nbsp;${countryFlags}&nbsp;
                         <b>Language: </b>&nbsp;${languageFlags}
                         </br>
                         <b>Audio: </b>&nbsp;${audioFlags}&nbsp;
@@ -175,6 +175,9 @@ function getCountryFlagsByCode(mainCountryCodes: string[]) {
                 if (lang === 'xko') {
                     lang = 'kr'
                 }
+                if (lang === 'cmn') {
+                    lang = 'zh';
+                }
                 var country = ISO_3166_1_alpha_2[lang.toUpperCase()] === undefined ? lang : ISO_3166_1_alpha_2[lang.toUpperCase()];
                 flags += `<img src='https://flagpedia.net/data/flags/h80/${lang}.webp' height='15px' alt='${country}' title='${country}'> `;
             } else {
@@ -190,6 +193,9 @@ function getLanguageFlagsByCode2(list: string[]) {
     if (list != null) {
         for (let lang of list) {
             if (lang && lang !== "und") {
+                if (lang === 'cmn') {
+                    lang = 'zh';
+                }
                 var map = json_iso_639_1[lang];
                 if (map != undefined) {
                     var country = map['name'];
@@ -211,6 +217,9 @@ function getaAdioSubTitlesFlagsByCode(list: string[]) {
                 var map = json_iso_639_2[element];
                 if (map != undefined) {
                     var lang = map['639-1'];
+                    if (lang === 'cmn') {
+                        lang = 'zh';
+                    }
                     var country = map['en'][0];
                     flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
                 } else {

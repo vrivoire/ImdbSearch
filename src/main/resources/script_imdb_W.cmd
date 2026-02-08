@@ -7,4 +7,4 @@ for %%P in ("\", "W", "W\Anime", "W\Guardians of the Galaxy", "W\Heavy Metal") D
 	timeout 3
 )
 
-pause
+rem pause

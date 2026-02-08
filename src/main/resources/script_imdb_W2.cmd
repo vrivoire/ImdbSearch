@@ -7,4 +7,5 @@ for %%P in ("W2", "W2\Top Gun", "W2\Dune", "W2\Les Ripoux") DO (
 	timeout 3
 )
 
-pause
+rem pause
+
