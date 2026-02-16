@@ -8,8 +8,10 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
     if (seasons !== '') {
         seasons = `, <b>Seasons:</b>&nbsp;${seasons}`
     }
-    var alloCine = `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(film.mainTitle + ' ' + film.mainYear)}`;
-    var rottenTomatoes = `https://www.rottentomatoes.com/search?search=${encodeURIComponent(film.mainTitle + ' ' + film.mainYear)}`;
+    var name = film.mainTitle === null ? (film.name === null ? '' : film.name) : film.mainTitle;
+    var year = film.mainYear === null ? '' : film.mainYear;
+    var alloCine = `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(name + ' ' + year)}`;
+    var rottenTomatoes = `https://www.rottentomatoes.com/search?search=${encodeURIComponent(name + ' ' + year)}`;
 
     var str: string = `
         <div class="hist-outer-cell" align="center">
@@ -35,8 +37,8 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
             `<span style="font-weight: bold; color: #104e8b;font-size: medium;">${film.mainAwardsWins > 0 ? "Wins:&nbsp;" + film.mainAwardsWins : ""}${film.mainAwardsPrestigious_award ? ",&nbsp;" + film.mainAwardsPrestigious_award.name : ""}</span>
             </br>`;
     }
-    str += `<span>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
-            <span style = "text-wrap: balance;"><b>Year: </b>${film.mainYears === '' ? film.mainYear : film.mainYears}${seasons} <span/>
+    str += `<span style="font-size: medium;"><span>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
+            <span style="text-wrap: balance;"><b>Year: </b>${film.mainYears === '' ? film.mainYear : film.mainYears}${seasons} </span></span>
             </br>`;
     str += `<span><b>Res.: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}</span></br>`;
     if (film.mainAspectRatio != undefined && film.mainAspectRatio != null && film.mainAspectRatio != '') {
