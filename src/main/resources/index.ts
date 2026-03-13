@@ -10,7 +10,7 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
     }
     var name = film.mainTitle === null ? (film.name === null ? '' : film.name) : film.mainTitle;
     var year = film.mainYear === null ? '' : film.mainYear;
-    var alloCine = `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(name + ' ' + year)}`;
+    var alloCine = `https://www.allocine.fr/rechercher/?q=${(name + ' ' + year).replaceAll(" ", "+")}`;
     var rottenTomatoes = `https://www.rottentomatoes.com/search?search=${encodeURIComponent(name + ' ' + year)}`;
 
     var str: string = `

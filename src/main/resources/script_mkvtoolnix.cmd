@@ -1,6 +1,6 @@
 @echo off
 
-set "DIRECTORY=Les Gouttes de Dieu 2023"
+set "DIRECTORY=Hijack 2023"
 set "LANG=eng,fre"
 rem set "LANG=eng"
 rem set "LANG=fre"

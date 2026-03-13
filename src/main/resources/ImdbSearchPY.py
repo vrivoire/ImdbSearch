@@ -70,7 +70,7 @@ def load_data(thread_index: int, path: str, title: str) -> str:
                     if (
                             'podcast' not in kind
                             and 'game' not in kind
-                            and 'mimi' not in kind
+                            # and 'mini' not in kind
                             and 'vg' not in kind
                             and not movie.is_episode()
                     ):
@@ -330,7 +330,7 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        # path_search("C:/Users/ADELE/Videos/W3")
+        # path_search("C:/Users/ADELE/Videos/W")
         path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/")
 
