@@ -50,7 +50,7 @@ public class NameYearBean implements Serializable {
     private List<String> mainWriters = null;
     private String mainYear = null;
     private String mainYears = null;
-    private List<String> plotPlot = null;
+    private String plotPlot = null;
     private List<String> plotSynopsis = null;
     private Integer mainSeasons = null;
     private Integer mainNumberOfSeasons = null;
@@ -574,11 +574,11 @@ public class NameYearBean implements Serializable {
         return mainYears;
     }
 
-    public void setPlotPlot(List<String> plotPlot) {
+    public void setPlotPlot(String plotPlot) {
         this.plotPlot = plotPlot;
     }
 
-    public List<String> getPlotPlot() {
+    public String getPlotPlot() {
         return plotPlot;
     }
 

@@ -11,12 +11,14 @@ import traceback
 from datetime import datetime
 from queue import Queue
 from threading import Thread
-from typing import Any
+from typing import Any, Optional
 
+import jmespath
 import jsonpickle
 
 from imdbinfo import get_movie, search_title, get_akas
 from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
+from imdbinfo.services import normalize_imdb_id, request_json_url
 
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
@@ -33,17 +35,17 @@ log.basicConfig(
 
 
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
-def load_data(thread_index: int, path: str, title: str) -> str:
+def load_data(thread_index: int, path: str, title: str) -> str | None:
     sys.stdout.reconfigure(encoding='utf-8')
     title = title.encode('utf-8') if type(title) == bytes else title
-
+    title = title.lower()
     log.info(f'\t\tid: {thread_index} Looking for path: {path}, title: {title}')
 
-    imdb_id: str | None = ''
+    imdb_id: str | None = None
     looking_year: str = ''
     *middle, last = title.split()
     if len(middle) == 0:
-        looking_title: str = last.lower()
+        looking_title: str = last
     else:
         looking_title: str = " ".join(middle).lower()
         try:
@@ -58,12 +60,13 @@ def load_data(thread_index: int, path: str, title: str) -> str:
         if search_result:
             movies: list[MovieBriefInfo] = search_result.titles
             kind: str | None = None
-            log.info(f'\t\tid: {thread_index} {title}: len: {len(movies)}')
+            log.info(f'\t\tid: {thread_index} {title}: len: {len(movies)}, {movies}')
             for movie in movies:
                 log.info(f'\t\tid: {thread_index} {title}: {movie}')
                 akas: list[str] = [cleanup_title(aka.title) for aka in get_akas(movie.imdb_id)['akas']]
                 akas.insert(0, cleanup_title(movie.title))
                 titles: set[str] = set(akas)
+                log.info(f'\t\tid: {thread_index} {title}: AKAS: {titles}')
 
                 if not imdb_id:
                     kind = movie.kind.lower()
@@ -75,12 +78,22 @@ def load_data(thread_index: int, path: str, title: str) -> str:
                             and not movie.is_episode()
                     ):
                         log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
-                        if os.path.isdir(path + '/' + title) and movie.is_series():
-                            imdb_id = movie.imdb_id
-                            break
-                        elif not os.path.isdir(path + '/' + title) and not movie.is_series() and (movie.year == looking_year):
-                            imdb_id = movie.imdb_id
-                            break
+                        found_year = looking_year != '' and movie.year == looking_year
+                        if looking_title in titles:
+                            if found_year and (movie.year == looking_year):
+                                if os.path.isdir(path + '/' + title) and movie.is_series():
+                                    imdb_id = movie.imdb_id
+                                    break
+                                elif not os.path.isdir(path + '/' + title) and not movie.is_series():
+                                    imdb_id = movie.imdb_id
+                                    break
+                            else:
+                                if os.path.isdir(path + '/' + title) and movie.is_series():
+                                    imdb_id = movie.imdb_id
+                                    break
+                                elif not os.path.isdir(path + '/' + title) and not movie.is_series():
+                                    imdb_id = movie.imdb_id
+                                    break
 
             if imdb_id:
                 log.info(f'\t\tid: {thread_index} FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
@@ -90,13 +103,36 @@ def load_data(thread_index: int, path: str, title: str) -> str:
     except Exception as ex:
         log.error(f"\t\tid: {thread_index} 1 ERROR {ex}: {title}")
         log.error(traceback.format_exc())
-
+        if ex.__str__().find('****** AWS WAF enforcement in place. Try again later. ******') != -1:
+            return None
     return imdb_id
 
 
 def cleanup_title(movie_title: str) -> str:
     return (movie_title.lower().replace('\\', '').replace('/', '').replace(':', '').replace('?', '').replace('"', '')
             .replace('<', '').replace('>', '').replace('|', '').replace('.', '').replace('  ', ' '))
+
+
+# https://github.com/tveronesi/imdbinfo/issues/141
+def get_fr_plot(imdb_id: str) -> str:
+    plots = set()
+    imdb_id, lang = normalize_imdb_id(imdb_id)
+    raw_json: dict = request_json_url(f"https://www.imdb.com/{lang}/title/tt{imdb_id}/reference")
+    result = jmespath.search('props.pageProps.mainColumnData.plot.plotText.plainText', raw_json)
+    plots.add(result) if result is not None else None
+    for locale in raw_json['locales']:
+        if locale.rfind('fr') != -1:
+            imdb_id, lang = normalize_imdb_id(imdb_id, locale.lower())
+            raw_json_fr: dict = request_json_url(f"https://www.imdb.com/{lang}/title/tt{imdb_id}/reference")
+            result = jmespath.search('props.pageProps.mainColumnData.plot.plotText.plainText', raw_json_fr)
+            plots.add(result) if result is not None else None
+
+    plot_list = sorted(list(plots))
+    plot_list_str: str = ''
+    for plot in plot_list:
+        plot_list_str = f'{plot_list_str}{plot}\n\n'
+    plot_list_str = plot_list_str[0:len(plot_list_str)-2]    if len(plot_list_str) > 0 else None
+    return plot_list_str
 
 
 def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
@@ -118,7 +154,7 @@ def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
                         "main.rating": movie_detail.rating if movie_detail.rating else 0.0,
                         "main.year": str(movie_detail.year),
                         "main.duration": movie_detail.duration,
-                        "plot.plot": [movie_detail.plot],
+                        "plot.plot": get_fr_plot(imdb_id),
                         "plot.synopsis": movie_detail.synopses,
                         "main.country codes": [x.lower() for x in movie_detail.country_codes] if movie_detail.country_codes else [],
                         'is Series': movie_detail.is_series(),
@@ -204,6 +240,7 @@ def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
 
 
 def args_search(path: str, files: list[str]):
+    now: datetime = datetime.now()
     file_count: int = len(files)
     log.info(f"args_search: {path}, {len(files)} files, files: {files}")
 
@@ -250,15 +287,16 @@ def args_search(path: str, files: list[str]):
     log.info("All tasks has been finished")
 
     for i in range(1, 5):
-        for key in props.keys():
-            if len(props.get(key)) == 0:
-                log.info(f'Retrying {key}')
-                imdb_id: str = load_data(0, path, key)
-                prop: dict[str, Any] = populate(0, imdb_id, key)
-                props.update({key: prop})
+        for title in props.keys():
+            if len(props.get(title)) == 0:
+                log.info(f'Retrying {title}')
+                imdb_id: str = load_data(0, path, title)
+                prop: dict[str, Any] = populate(0, imdb_id, title)
+                props.update({title: prop})
 
     save_json(props)
-    log.info(f"Threads: {thread_nb}, Time elapsed: {datetime.fromtimestamp(datetime.timestamp(datetime.now()) - start).strftime('%M:%S.%f')} for {len(files)} titles, {datetime.fromtimestamp((datetime.timestamp(datetime.now()) - start) / len(files)).strftime('%M:%S.%f')} per title.")
+    elapsed = datetime.now().now() - now
+    log.info(f"Threads: {thread_nb}, Time elapsed: {elapsed} for {len(files)} titles, {elapsed / len(files)} per title.")
 
 
 def path_search(path):
@@ -303,8 +341,6 @@ def get_config_path():
 
 
 if __name__ == "__main__":
-    start: float = datetime.timestamp(datetime.now())
-
     file_path: str = get_config_path().format(**os.environ)
     with open(file_path) as infile:
         CONFIG = json.load(infile)
@@ -330,8 +366,8 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        # path_search("C:/Users/ADELE/Videos/W")
         path_search("C:/Users/ADELE/Videos")
+        # path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/")
 
     sys.exit()

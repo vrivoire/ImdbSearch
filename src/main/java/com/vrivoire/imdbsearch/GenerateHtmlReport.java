@@ -293,14 +293,12 @@ public class GenerateHtmlReport {
         }
 
         if (movie.getPlotPlot() != null) {
-            map.put("plotPlot", movie.getPlotPlot().get(0));
+            map.put("plotPlot", movie.getPlotPlot());
         } else if (movie.getMainPlotOutline() != null) {
             map.put("plotPlot", movie.getMainPlotOutline().substring(0));
         }
         if (map.get("plotPlot") == null) {
             map.put("plotPlot", "");
-        } else {
-            map.put("plotPlot", ((String) map.get("plotPlot")).replace('"', '\''));
         }
         if (movie.getMainPlotOutline() != null && !movie.getMainPlotOutline().isEmpty()) {
             map.put("plotSynopsis", movie.getMainPlotOutline());
