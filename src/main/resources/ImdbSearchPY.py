@@ -11,11 +11,11 @@ import traceback
 from datetime import datetime
 from queue import Queue
 from threading import Thread
-from typing import Any, Optional
+from typing import Any
 
 import jmespath
 import jsonpickle
-
+import unicodedata
 from imdbinfo import get_movie, search_title, get_akas
 from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
 from imdbinfo.services import normalize_imdb_id, request_json_url
@@ -32,6 +32,10 @@ log.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+
+def remove_accents(text):
+    return "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
 
 
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
@@ -54,6 +58,7 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
             log.warning(f'\t\tid: {thread_index} year not found for {title}, {ex}')
             looking_year: str = ''
             looking_title = title
+    log.info(f'\t\tid: {thread_index} {looking_title} {looking_year}')
 
     try:
         search_result: SearchResult | None = search_title(title)
@@ -79,7 +84,7 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
                     ):
                         log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
                         found_year = looking_year != '' and movie.year == looking_year
-                        if looking_title in titles:
+                        if remove_accents(looking_title) in [remove_accents(t) for t in titles]:
                             if found_year and (movie.year == looking_year):
                                 if os.path.isdir(path + '/' + title) and movie.is_series():
                                     imdb_id = movie.imdb_id
@@ -131,7 +136,7 @@ def get_fr_plot(imdb_id: str) -> str:
     plot_list_str: str = ''
     for plot in plot_list:
         plot_list_str = f'{plot_list_str}{plot}\n\n'
-    plot_list_str = plot_list_str[0:len(plot_list_str)-2]    if len(plot_list_str) > 0 else None
+    plot_list_str = plot_list_str[0:len(plot_list_str) - 2] if len(plot_list_str) > 0 else None
     return plot_list_str
 
 
@@ -269,14 +274,15 @@ def args_search(path: str, files: list[str]):
         threads.append(thread)
         thread.start()
         i = k
-    log.info(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
-    thread: Thread = threading.Thread(
-        target=spawn,
-        args=(thread_id + 1, path, files[file_count - remain_files: file_count], result_queue),
-        name=(thread_nb + 1).__str__(),
-    )
-    threads.append(thread)
-    thread.start()
+    if len(files[file_count - remain_files:file_count]) > 0:
+        log.info(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
+        thread: Thread = threading.Thread(
+            target=spawn,
+            args=(thread_id + 1, path, files[file_count - remain_files: file_count], result_queue),
+            name=(thread_nb + 1).__str__(),
+        )
+        threads.append(thread)
+        thread.start()
 
     for thread in threads:
         thread.join()
@@ -303,7 +309,7 @@ def path_search(path):
     log.info(f"Searching into path: {path}")
     files: list[str] = os.listdir(path)
     log.info(f"Searching into files: {files}")
-    log.info(f'IGNORED_FOLDERS: {type(IGNORED_FOLDERS)}')
+    log.info(f'IGNORED_FOLDERS: {IGNORED_FOLDERS}')
     log.info(f'SUPPORTED_EXTENSIONS: {SUPPORTED_EXTENSIONS}')
     for folder in IGNORED_FOLDERS:
         try:
@@ -348,7 +354,7 @@ if __name__ == "__main__":
 
     SUPPORTED_EXTENSIONS = CONFIG["SUPPORTED_EXTENSIONS"]
     log.info(f'SUPPORTED_EXTENSIONS={SUPPORTED_EXTENSIONS}')
-    IGNORED_FOLDERS = CONFIG["IGNORED_FOLDERS"]
+    IGNORED_FOLDERS: list[str] = CONFIG["IGNORED_FOLDERS"]
     log.info(f'IGNORED_FOLDERS={IGNORED_FOLDERS}')
     THREAD_NB: int = int(CONFIG["THREAD_NB"])
     log.info(f'THREAD_NB={THREAD_NB}')
@@ -366,7 +372,7 @@ if __name__ == "__main__":
         # path_search("D:/Films/W2/")
         # path_search("C:/Users/rivoi/Videos/W/Underworld")
 
-        path_search("C:/Users/ADELE/Videos")
+        path_search("C:/Users/ADELE/Videos/W4")
         # path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/")
 

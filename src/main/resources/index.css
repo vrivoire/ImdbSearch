@@ -41,14 +41,14 @@ body{
 
 .hist-outer-cell {
     border-style: hidden;
-    width: 25em;
+    width: 23.5em;
     height: auto;
     display: inline-block;
     white-space: normal;
     text-align: center;
 }
 .hist-text-cell {
-    padding: 1em;
+    padding: 0px;
     display: flex;
     flex-direction: column;
 }
