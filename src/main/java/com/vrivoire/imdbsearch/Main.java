@@ -147,7 +147,7 @@ public class Main {
             LOG.info("Found " + listFound.size() + " movie" + (listFound.size() > 1 ? "s" : ""));
             LOG.info("Not found " + listNotFound.size() + " movie" + (listNotFound.size() > 1 ? "s" : ""));
 
-            String[] cmd = {'"' + Config.WEB_BROWSER.getString() + '"', '"' + default_path + "_report.html\""};
+            String[] cmd = {'"' + Config.WEB_BROWSER.getString() + '"', '"' + "--allow-file-access-from-files" + '"', '"' + default_path + "_report.html\""};
             LOG.info("cmd: " + Arrays.toString(cmd));
             Runtime.getRuntime().exec(cmd);
         }

@@ -126,7 +126,6 @@ public class SearchMovie {
                 fileName = fn.substring(0, index) + fn.substring(index + t.length());
             }
         }
-
         fileName = fileName.replace('_', ' ')
                 .replace('.', ' ').replace('(', ' ').replace(')', ' ')
                 .replace('[', ' ').replace(']', ' ').trim().replaceAll(" +", " ");

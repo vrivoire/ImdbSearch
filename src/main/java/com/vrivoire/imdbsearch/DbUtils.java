@@ -4,6 +4,10 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,6 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.apache.logging.log4j.LogManager;
@@ -206,6 +213,7 @@ public final class DbUtils {
     }
 
     public static void saveDB(List<NameYearBean> listFound) {
+        LOG.info("--- saveDB ---");
         if (!new File(Config.DB_URL.getString()).exists()) {
             DDLs();
         }
@@ -269,13 +277,31 @@ public final class DbUtils {
             }
 
             deleteNoRates();
+            zipFile(Config.DB_URL.getString(), Config.DB_URL.getString().substring(0, Config.DB_URL.getString().lastIndexOf('/') + 1) + "BkpScripts" + Config.DB_URL.getString().substring(Config.DB_URL.getString().lastIndexOf('/')) + ".zip");
         }
         catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
+
         float duration = System.currentTimeMillis() - start;
         int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size());
         LOG.info("DB - Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
+    }
+
+    public static void zipFile(String sourcePath, String zipPath) throws IOException {
+        LOG.info("Zip " + sourcePath + " to " + zipPath);
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipPath))) {
+            File fileToZip = new File(sourcePath);
+            // Create a new entry inside the ZIP
+            zos.setLevel(Deflater.BEST_COMPRESSION);
+            zos.putNextEntry(new ZipEntry(fileToZip.getName()));
+            // Copy file content to the entry
+            Files.copy(fileToZip.toPath(), zos);
+            zos.closeEntry();
+        }
+        long sizeFrom = Files.size(Paths.get(sourcePath));
+        long sizeTo = Files.size(Paths.get(zipPath));
+        LOG.info("Zip from " + sizeFrom + " to " + sizeTo + " (" + String.format("%.2f", 100 - ((float) sizeTo / (float) sizeFrom) * 100) + "%)");
     }
 
     public static List<Map<String, Object>> sqlFindAll() {
@@ -371,15 +397,30 @@ public final class DbUtils {
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL1);
             }
+            catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL2);
+            }
+            catch (Exception e1) {
+                LOG.error(e1.getMessage(), e1);
             }
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL3);
             }
+            catch (Exception e2) {
+                LOG.error(e2.getMessage(), e2);
+            }
+            try (Statement stmt = conn.createStatement()) {
+                boolean b = stmt.execute(DDL4);
+            }
+            catch (Exception e3) {
+                LOG.error(e3.getMessage(), e3);
+            }
         }
-        catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+        catch (Exception e4) {
+            LOG.error(e4.getMessage(), e4);
             File file = new File(Config.DB_URL.getString());
             if (file.exists()) {
                 file.delete();
