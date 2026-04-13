@@ -22,6 +22,12 @@
         ${babel_js}
 
         ${jsonListAll}
+
+        <!--
+        https://www.google.com/search?q=javascript+sort+list+of+objects+by+property&oq=javascript+sort+list+of+objects+by+property&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIICAEQABgWGB4yCAgCEAAYFhgeMggIAxAAGBYYHjIICAQQABgWGB4yDQgFEAAYhgMYgAQYigUyBwgGEAAY7wUyCggHEAAYgAQYogQyBwgIEAAY7wUyCggJEAAYgAQYogTSAQkyNjUyN2owajeoAgiwAgHxBToDqxg7UrYM8QU6A6sYO1K2DA&sourceid=chrome&ie=UTF-8
+        https://www.google.com/search?q=typescript+sort+list+of+objects+by+property&sca_esv=f2ad961a722eda37&biw=2221&bih=1263&sxsrf=ANbL-n6ua9OVPc6F8SKJZDczB8gKCZCofA%3A1776012093890&ei=PcvbacaGNvjiruEPzPHesAE&ved=0ahUKEwiGmeTP4OiTAxV4sSsGHcy4FxYQ4dUDCBE&uact=5&oq=typescript+sort+list+of+objects+by+property&gs_lp=Egxnd3Mtd2l6LXNlcnAiK3R5cGVzY3JpcHQgc29ydCBsaXN0IG9mIG9iamVjdHMgYnkgcHJvcGVydHkyBRAAGIAEMgYQABgWGB4yBRAAGO8FMgUQABjvBTIFEAAY7wUyCBAAGIAEGKIESJAkULkIWNEfcAJ4AZABAJgB0wGgAbEEqgEFMC4xLjK4AQPIAQD4AQH4AQKYAgWgAsYEwgIKEAAYsAMY1gQYR8ICDRAAGIAEGLADGEMYigXCAg4QABiwAxjkAhjWBNgBAcICFxAuGLADGLgGGNgCGMgDGNoGGNwG2AEBwgINEAAYgAQYsQMYQxiKBcICChAAGIAEGEMYigWYAwCIBgGQBhO6BgYIARABGAmSBwUyLjEuMqAHnBCyBwUwLjEuMrgHugTCBwUwLjMuMsgHEYAIAA&sclient=gws-wiz-serp
+        -->
+
         ${jsonByDate}
         ${jsonByRank}
         ${jsonByName}
@@ -42,10 +48,7 @@
             <ul id="tablist" class="tablist">
                 <li><a href="#tabs-List">List</a></li>
                 <li><a href="#tabs-Table">Table</a></li>
-                <li><a href="#tabs-History">History</a></li>
                 <li><a href="#tabs-Stats">Stats</a></li>
-                <!--				<li><a href="#tabs-NotFound">Not Found</a></li>-->
-                <li><a href="#tabs-Logs">Logs</a></li>
             </ul>
 
             <div id="tabs-List" class="content">
@@ -54,10 +57,6 @@
 
             <div id="tabs-Table" class="content">
                 <table id="table_and_search" class="display tablesorter" style="width:100%;"></table>
-            </div>
-
-            <div id="tabs-History" class="content">
-                <div id="historyData"></div>
             </div>
 
             <div id="tabs-Stats" style="padding: 1em; " class="content ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
@@ -78,14 +77,6 @@
                         </td>
                     </tr>
                 </table>
-            </div>
-
-            <!--			<div id="tabs-NotFound">
-                                            <p>${NOT_FOUND}</p>
-                                    </div>-->
-
-            <div id="tabs-Logs" class="content">
-                ${logsData}
             </div>
 
         </div>

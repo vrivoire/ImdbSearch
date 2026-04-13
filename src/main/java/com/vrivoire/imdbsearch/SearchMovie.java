@@ -134,6 +134,41 @@ public class SearchMovie {
     }
 
     private NameYearBean getFileNameYear(List<String> tokenized, String originalName, File file) {
+//        tokenized.remove(tokenized.size() - 1);
+//        Iterator iterator = tokenized.iterator();
+//        ListIterator<String> iterator2 = tokenized.listIterator(tokenized.size());
+//        StringBuilder stringBuilder = new StringBuilder();
+//        stringBuilder.append(iterator.next()).append(' ');
+//        while (iterator.hasNext()) {
+//            String next = ((String) iterator.next()).trim();
+//            Matcher matcher = PATTERN.matcher(next);
+//            if (matcher.find()) {
+//                break;
+//            }
+//            stringBuilder.append(next).append(' ');
+//        }
+//        Integer year = null;
+//        while (iterator2.hasPrevious()) {
+//            String next = ((String) iterator2.previous()).trim();
+//            try {
+//                year = Integer.valueOf(next);
+//                if (year >= 1890 && year <= Year.now().getValue()) {
+//                    tokenized.remove(year.toString());
+//                    break;
+//                }
+//            }
+//            catch (NumberFormatException nfe) {
+//            }
+//        }
+//
+//        String name = stringBuilder.toString().trim().toLowerCase();
+//        if (year != null) {
+//            System.out.println("++++++++++++++++++++++++++++++++++" + year);
+        ////            name = name.replaceFirst("\\" + year.toString() + "$", "");
+//            name = Strings.CS.removeEnd(name, year.toString());
+//        }
+//        System.out.println("name=" + name);
+
         Iterator iterator = tokenized.iterator();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(iterator.next()).append(' ');
@@ -305,6 +340,8 @@ public class SearchMovie {
     }
 
     private static String getSearchKey(NameYearBean nameYearBean) {
+        System.out.println(nameYearBean.getName());
+        System.out.println(nameYearBean.getMainYear());
         return (nameYearBean.getName() + " " + (nameYearBean.getMainYear() == null ? "" : nameYearBean.getMainYear())).trim();
     }
 

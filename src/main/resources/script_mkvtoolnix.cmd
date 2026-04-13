@@ -1,9 +1,9 @@
 rem @echo off
 
-set "DIRECTORY=Maniac 2018"
-set "LANG=eng,fre"
+set "DIRECTORY=Furies 2024"
+rem set "LANG=eng,fre"
 rem set "LANG=eng"
-rem set "LANG=fre"
+set "LANG=fre"
 
 set "mkvmerge=C:\Program Files\MKVToolNix\mkvmerge.exe"
 set "VIDEO=C:\Users\ADELE\Videos\"

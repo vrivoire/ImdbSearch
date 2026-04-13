@@ -447,16 +447,6 @@ $(document).ready(function() {
                                                                         </div>
                                                                     </div>`;
 
-    if (!IS_SLIM) {
-        var textListAll = "";
-        for (let film of jsonByDate) {
-            textListAll += insertAll(film)
-        }
-        $("#historyData")[0].innerHTML = `${$("#historyData")[0].innerHTML}
-			${textListAll}
-			</br>
-			<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>`;
-    }
 
     $('span').each(function(index: any) {
         th = $(this);

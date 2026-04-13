@@ -75,6 +75,7 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
 
                 if not imdb_id:
                     kind = movie.kind.lower()
+                    log.info(f'\t\tid: {thread_index} {title}: {kind}, is_series: {movie.is_series()}, is_episode: {movie.is_episode()}')
                     if (
                             'podcast' not in kind
                             and 'game' not in kind
@@ -84,19 +85,30 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
                     ):
                         log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
                         found_year = looking_year != '' and movie.year == looking_year
-                        if remove_accents(looking_title) in [remove_accents(t) for t in titles]:
+                        # log.info(f'found_year={found_year}')
+                        r_accentes = remove_accents(looking_title)
+                        # log.info(f'looking_title = {looking_title}, r_accentes = {r_accentes}')
+                        # log.info('toto1={remove_accents(t) for t in titles}')
+                        # log.info(f'toto1={r_accentes in [remove_accents(t) for t in titles]}')
+                        if r_accentes in [remove_accents(t) for t in titles]:
                             if found_year and (movie.year == looking_year):
+                                # log.info(1)
                                 if os.path.isdir(path + '/' + title) and movie.is_series():
+                                    # log.info(2)
                                     imdb_id = movie.imdb_id
                                     break
                                 elif not os.path.isdir(path + '/' + title) and not movie.is_series():
+                                    # log.info(3)
                                     imdb_id = movie.imdb_id
                                     break
                             else:
+                                # log.info(4)
                                 if os.path.isdir(path + '/' + title) and movie.is_series():
+                                    # log.info(5)
                                     imdb_id = movie.imdb_id
                                     break
                                 elif not os.path.isdir(path + '/' + title) and not movie.is_series():
+                                    # log.info(6)
                                     imdb_id = movie.imdb_id
                                     break
 
@@ -213,6 +225,7 @@ def save_json(prop: dict[str, Any]) -> None:
                 log.info("json_str is empty, trying with jsonpickle.")
                 json_str = jsonpickle.encode(prop, indent=4)
             outfile.write(json_str)
+            # log.info(json_str)
         except Exception as ex:
             log.error(f"5 ERROR: {ex}\n{prop}")
             log.error(traceback.format_exc())
@@ -367,13 +380,14 @@ if __name__ == "__main__":
         args_search(sys.argv[1], sys.argv[2:])
     else:
         log.info("Default path.")
-        # path_search(str(Path.home()) + os.sep + "Videos" + os.sep)
-        # path_search(str(Path.home()) + os.sep + "Videos" + os.sep + "W" + os.sep)
-        # path_search("D:/Films/W2/")
-        # path_search("C:/Users/rivoi/Videos/W/Underworld")
+        path_search("C:/Users/ADELE/Videos")
+        # path_search("C:/Users/ADELE/Videos/W")
+        # path_search("C:/Users/ADELE/Videos/W2")
+        # path_search("C:/Users/ADELE/Videos/W3")
+        # path_search("C:/Users/ADELE/Videos/W4")
 
-        path_search("C:/Users/ADELE/Videos/")
-        # path_search("C:/Users/ADELE/Videos")
-        # path_search("C:/Users/ADELE/Videos/")
+        if os.path.isfile(OUTPUT_JSON_FILE):
+            with open(OUTPUT_JSON_FILE, 'r', encoding='utf-8') as file:
+                print(json.dumps(json.load(file), indent=4))
 
     sys.exit()

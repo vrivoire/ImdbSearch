@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import static com.vrivoire.imdbsearch.Main.default_path;
-import com.vrivoire.imdbsearch.log4j.LogGrabberAppender;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -75,42 +74,6 @@ public class GenerateHtmlReport {
      * @throws IOException
      */
     public void generate(List<NameYearBean> movieList, List<NameYearBean> notFound) throws IOException {
-        var sb = new StringBuilder();
-        notFound.forEach((var item) -> {
-            var name = escapeHtml4(item.getName());
-            var year = (item.getMainYear() != null ? item.getMainYear() : "");
-            var originalName = escapeHtml4(item.getOriginalName());
-            sb.append("<a href=\"https://www.imdb.com/find?ref_=nv_sr_fn&q=")
-                    .append(name.replace(' ', '+'))
-                    .append('+')
-                    .append(year)
-                    .append("&s=all\" target =\"_blank\"><button  class=\"ui-button ui-widget ui-corner-all\">");
-            String kind = item.getMainKind();
-            if (kind != null && kind.equals("series")) {
-                sb.append(SERIES);
-            } else if (kind != null && kind.equals("movie")) {
-                sb.append(MOVIES);
-            } else {
-                sb.append(UNKNOWN).append(" '").append(item.getMainKind()).append("'");
-            }
-            sb.append("&nbsp;")
-                    .append(name)
-                    .append(" | ")
-                    .append(year)
-                    .append(" (")
-                    .append(originalName)
-                    .append(')')
-                    .append("</button></a><p/>");
-        });
-
-        List<String> logs = LogGrabberAppender.getLogs();
-        StringBuilder sb1 = new StringBuilder("<code>");
-        if (logs != null) {
-            logs.forEach((log) -> {
-                sb1.append(log).append("<br/>");
-            });
-            sb1.append("</code>");
-        }
         String spaceUsed = "";
         try {
             spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
@@ -127,19 +90,6 @@ public class GenerateHtmlReport {
         map.put("notFoundCount", notFound.size());
         map.put("notFoundCount_s", notFound.size() > 1 ? "s" : "");
         map.put("total", notFound.size() + movieList.size());
-        if (!Config.IS_SLIM.getBoolean()) {
-            map.put("logsData", """
-                    <div>
-                        """ + sb1.toString() + """
-						</br>
-						<div style="left: 50%; transform: translate(-50%, -50%);" class="ui-button ui-widget ui-corner-all" onclick="window.scrollTo({top: 0, left: 0, behavior: 'smooth'});">&nbsp;&nbsp;Top&nbsp;&nbsp;</div>
-                    </div>
-                      """);
-        } else {
-            map.put("logsData", "");
-        }
-
-        map.put("NOT_FOUND", sb.toString());
 
         if (!Config.IS_IMAGES_EMBEDED.getBoolean()) {
             map.put("jqueryui_css", "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css\"/>\n");
