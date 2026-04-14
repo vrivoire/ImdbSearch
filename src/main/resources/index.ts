@@ -1,4 +1,4 @@
-function callTs(jsonListAll) {
+function callTs() {
 
     declare var jQuery: JQueryStatic;
     declare var $: JQueryStatic;
@@ -73,66 +73,6 @@ function callTs(jsonListAll) {
             </div>
         </div>`;
         return str;
-    }
-
-    function insertBody(film: any, audioFlags: string, subTitlesFlags: string, languageFlags: string, countryFlags: string, seasons: string) {
-        if (seasons !== '') {
-            seasons = `, Seasons:&nbsp;${seasons}`
-        }
-        var str: string = `<tr >
-				<td align="center" style="text-align: left;">
-					<div style="height: 100%; padding: 1em; display: flex; flex-direction: column;" class="ui-accordion-content ui-corner-all ui-helper-reset ui-widget-content ui-accordion-content-active">
-						<span style="font-weight: bold; ">
-							<a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank">
-								${film.mainTitle}
-							</a>
-							&nbsp;&nbsp;<span data-color="${film.mainRating}">${film.mainRating}</span> ${film.mainVotes}&nbsp;<span style="color: slategray;font-size: medium;">${film.mainAwardsWins > 0 ? "Wins: " + film.mainAwardsWins : ""}&nbsp;${film.mainAwardsPrestigious_award ? ", " + film.mainAwardsPrestigious_award.name : ""}</span>&nbsp;<small style="font-weight: lighter; font-size: small; font-family: monospace;">${film.mainImdbid}</small></span>
-						<br/>
-						<span><b>${film.mainKind}&nbsp;${film.name} | ${film.originalName}</b></span>
-						<span><i>${film.mainGenres}</i></span>
-						<table>
-							<tr>
-								<td rowspan="2"><b>Ratio:</b>&nbsp;${film.mainAspectRatio},&nbsp;<b>Year:</b>&nbsp;${film.mainYear}, Seasons:&nbsp;${seasons}, ${countryFlags}</td>
-								<td rowspan="2" style="font-size: x-small;padding: 0px;margin: 0px;"><b>Language:</b>&nbsp;${languageFlags}&nbsp;</td>
-								<td style="font-size: x-small;padding: 0px;margin: 0px;"><b>Audio:</b>&nbsp;${audioFlags}</td>
-							</tr>
-							<tr>
-								<td style="font-size: x-small; width: 40em;padding: 0px;margin: 0px;"><b>Sub&nbsp;Title:</b>&nbsp;${subTitlesFlags}</td>
-							</tr>
-						</table>
-						<span><b>Duration: </b>${film.runtimeHM}, <b>Resolution: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}, <b>Size: </b>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>`;
-        if (film.creactors != undefined && film.creactors != null && film.creactors.length != 0) {
-            str += `<span><b>Creactors: </b> ${film.creactors}</span>`;
-        }
-        if (film.mainDirectors != undefined && film.mainDirectors != null && film.mainDirectors.length != 0) {
-            str += `<span><b>Director: </b> ${film.mainDirectors}</span>`;
-        }
-        if (film.mainWriters != undefined && film.mainWriters != null && film.mainWriters.length != 0) {
-            str += `<span><b>Writer: </b> ${film.mainWriters}</span>`;
-        }
-        if (film.mainCasts != undefined && film.mainCasts != null && film.mainCasts.length != 0) {
-            str += `<span><b>Casts: </b> ${film.mainCasts}</span>`;
-        }
-        str += `<br>
-                                        <div class="inner-tabs">
-                                                <ul>
-                                                        <li><a href="#tabs-1">Plot</a></li>
-                                                        <li><a href="#tabs-2">Synopsis</a></li>
-                                                </ul>
-                                                <div id="tabs-1">
-                                                        ${film.plotPlot}
-                                                </div>
-                                                <div id="tabs-2">
-                                                        ${film.plotSynopsis}
-                                                </div>
-                                        </div>
-                                </div>
-                        </td>
-                        <td width="400px" align="center">
-                                <a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank"><img src="${film.mainCoverUrl}" alt="${film.name}" width="300"/></a>
-                        </td>
-                </tr>`;
-        return str
     }
 
     var mc = {
@@ -368,15 +308,6 @@ function callTs(jsonListAll) {
 
         json_iso_639_2['English'] = json_iso_639_2['eng'];
 
-        var textSheet = "";
-        for (let film of jsonByDate) {
-            var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
-            var subTitlesFlags: string = getaAdioSubTitlesFlagsByCode(film.subTitles);
-            var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
-            var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
-            var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textSheet += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
-        }
         var textByDate = "";
         for (let film of jsonByDate) {
             var audioFlags: string = getaAdioSubTitlesFlagsByCode(film.audio);
@@ -384,7 +315,7 @@ function callTs(jsonListAll) {
             var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
             var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
             var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textByDate += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
+            textByDate += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         var textByRank = "";
         for (let film of jsonByRank) {
@@ -393,7 +324,7 @@ function callTs(jsonListAll) {
             var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
             var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
             var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textByRank += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
+            textByRank += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         var textByName = "";
         for (let film of jsonByName) {
@@ -402,7 +333,7 @@ function callTs(jsonListAll) {
             var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
             var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
             var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textByName += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
+            textByName += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         var textByLength = "";
         for (let film of jsonByLength) {
@@ -411,7 +342,7 @@ function callTs(jsonListAll) {
             var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
             var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
             var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textByLength += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
+            textByLength += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         var textBySize = "";
         for (let film of jsonBySize) {
@@ -420,23 +351,17 @@ function callTs(jsonListAll) {
             var languageFlags: string = getLanguageFlagsByCode2(film.mainLanguageCodes);
             var countryFlags = getCountryFlagsByCode(film.mainCountryCodes);
             var seasons = (film.seasons != undefined && film.seasons != null && film.seasons != 0) ? `${film.seasons}` : '';
-            textBySize += insertBody(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
+            textBySize += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         $("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
 								<div id='tabs-sorted'>
 									<ul>
-                                                                                <li><a href="#tabs-Sheet">By Sheet</a></li>
 										<li><a href="#tabs-Date">By Date</a></li>
 										<li><a href="#tabs-Rank">By Rank</a></li>
 										<li><a href="#tabs-Name">By Name</a></li>
 										<li><a href="#tabs-Length">By Length</a></li>
                                                                                 <li><a href="#tabs-Size">By Size</a></li>
 									</ul>
-                                                                        <div id='tabs-Sheet'>
-										<table>
-											<tbody>${textSheet}</tbody>
-										</table>
-                                                                        </div>
                                                                         <div id='tabs-Date' >
                                                                             <table>
                                                                                 <tbody>${textByDate} </tbody>

@@ -112,6 +112,8 @@
         ${jsonListAllGzipB64Data}
 
         <script>
+            var jsonListAll = [];
+
             async function decompressString(base64String) {
 
                 const binaryString = atob(base64String);
@@ -129,13 +131,15 @@
             myPromise
                     .then(json => {
                         jsonListAll = JSON.parse(json);
-                        callTs(jsonListAll);
                     })
                     .catch(error => {
                         console.log("Error:", error.status);
                         console.log("Error:", error.message);
                     })
-                    .finally(() => console.log("Done"));
+                    .finally(() => {
+                        console.log("Done");
+                        callTs();
+                    });
         </script>
     </body>
 </html>
