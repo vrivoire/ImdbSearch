@@ -17,23 +17,23 @@ function callTs() {
 
         var str: string = `
         <div class="hist-outer-cell" align="center">
-                <a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" style="display: flex; align-items: center; justify-content: center; height: 540px;">
-                        <img src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300" title="${film.plotPlot}"/>
-                </a>
-                <div class="hist-text-cell">
-                        <span style="font-weight: bold; border:0px; text-wrap: balance;">
-                            <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.file}">${film.mainTitle}</a>
-                        </span>
-                        <span style="font-weight: lighter; font-size: x-small; font-family: monospace; padding: 1em; display: flex; justify-content: center; align-items: center;">
-                            <a href="${alloCine}" target="_blank" rel="noreferrer noopener external"><img src="${alloCineIcon}" alt="AlloCiné ${film.mainOriginalTitle}" width="20px" title="AlloCiné"/></a>&nbsp;
-                            <a href="${rottenTomatoes}" target="_blank" rel="noreferrer noopener external"><img src="${rottenTomatoesIcon}" alt="Rotten Tomatoes ${film.mainOriginalTitle}" width="20px" title="Rotten Tomatoes"/></a>&nbsp;
-                            ${film.mainImdbid}
-                         </span>
-                        <span style="text-wrap: balance;">${film.mainKind}&nbsp;
-                        <span data-color="${film.mainRating} style="font-weight: bold">${film.mainRating}</span>&nbsp;${film.mainVotes}&nbsp;
-                        <span style="text-wrap: balance;"><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i></span>
-                        </br>
-                        <span style="font-size: small">`;
+            <a href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" style="display: flex; align-items: center; justify-content: center; height: 540px;">
+                <img src="${film.mainCoverUrl}" alt="${film.mainOriginalTitle}" width="300" title="${film.plotPlot}"/>
+            </a>
+            <div class="hist-text-cell">
+                <span style="font-weight: bold; border:0px; text-wrap: balance;">
+                    <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.file}">${film.mainTitle}</a>
+                </span>
+                <span style="font-weight: lighter; font-size: x-small; font-family: monospace; padding: 1em; display: flex; justify-content: center; align-items: center;">
+                    <a href="${alloCine}" target="_blank" rel="noreferrer noopener external"><img src="${alloCineIcon}" alt="AlloCiné ${film.mainOriginalTitle}" width="20px" title="AlloCiné"/></a>&nbsp;
+                    <a href="${rottenTomatoes}" target="_blank" rel="noreferrer noopener external"><img src="${rottenTomatoesIcon}" alt="Rotten Tomatoes ${film.mainOriginalTitle}" width="20px" title="Rotten Tomatoes"/></a>&nbsp;
+                    ${film.mainImdbid}
+                 </span>
+                <span style="text-wrap: balance;">${film.mainKind}&nbsp;
+                <span data-color="${film.mainRating} style="font-weight: bold">${film.mainRating}</span>&nbsp;${film.mainVotes}&nbsp;
+                <span style="text-wrap: balance;"><b>${film.runtimeHM}</b>, <i>${film.mainGenres}</i></span>
+                </br>
+                <span style="font-size: small">`;
         if (film.mainAwardsWins > 0 || film.mainAwardsPrestigious_award) {
             str +=
                 `<span style="font-weight: bold; color: #104e8b;font-size: medium;">${film.mainAwardsWins > 0 ? "Wins:&nbsp;" + film.mainAwardsWins : ""}${film.mainAwardsPrestigious_award ? ",&nbsp;" + film.mainAwardsPrestigious_award.name : ""}</span>
@@ -193,14 +193,14 @@ function callTs() {
             ).join("");
 
             $("#table_and_search")[0].innerHTML = `
-                                                <thead>
-                                                        <tr>
-                                                                ${titles}
-                                                        </tr>
-                                                </thead>
-                                                <tbody>
-                                                        ${rows}
-                                                </tbody>`;
+                <thead>
+                    <tr>
+                        ${titles}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>`;
 
             $('#table_and_search').DataTable({
                 retrieve: true,
@@ -354,40 +354,40 @@ function callTs() {
             textBySize += insertAll(film, audioFlags, subTitlesFlags, languageFlags, countryFlags, seasons);
         }
         $("#List")[0].innerHTML = `${$("#List")[0].innerHTML} \n
-								<div id='tabs-sorted'>
-									<ul>
-										<li><a href="#tabs-Date">By Date</a></li>
-										<li><a href="#tabs-Rank">By Rank</a></li>
-										<li><a href="#tabs-Name">By Name</a></li>
-										<li><a href="#tabs-Length">By Length</a></li>
-                                                                                <li><a href="#tabs-Size">By Size</a></li>
-									</ul>
-                                                                        <div id='tabs-Date' >
-                                                                            <table>
-                                                                                <tbody>${textByDate} </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                        <div id='tabs-Rank' >
-                                                                            <table>
-                                                                                <tbody>${textByRank} </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                        <div id='tabs-Name' >
-                                                                            <table>
-                                                                                <tbody>${textByName} </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                        <div id='tabs-Length' >
-                                                                            <table>
-                                                                                <tbody>${textByLength} </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                        <div id='tabs-Size' >
-                                                                            <table>
-                                                                                <tbody>${textBySize} </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                    </div>`;
+            <div id='tabs-sorted'>
+                    <ul>
+                        <li><a href="#tabs-Date">By Date</a></li>
+                        <li><a href="#tabs-Rank">By Rank</a></li>
+                        <li><a href="#tabs-Name">By Name</a></li>
+                        <li><a href="#tabs-Length">By Length</a></li>
+                        <li><a href="#tabs-Size">By Size</a></li>
+                    </ul>
+                    <div id='tabs-Date' >
+                        <table>
+                            <tbody>${textByDate} </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-Rank' >
+                        <table>
+                            <tbody>${textByRank} </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-Name' >
+                        <table>
+                            <tbody>${textByName} </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-Length' >
+                        <table>
+                            <tbody>${textByLength} </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-Size' >
+                        <table>
+                            <tbody>${textBySize} </tbody>
+                        </table>
+                    </div>
+                </div>`;
 
 
         $('span').each(function(index: any) {

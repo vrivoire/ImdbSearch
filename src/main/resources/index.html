@@ -21,8 +21,6 @@
 
         ${babel_js}
 
-
-
         ${json_iso_639_1}
         ${json_iso_639_2}
         ${ISO_3166_1_alpha_2}
@@ -34,7 +32,7 @@
 
         <div id="tabs">
             <script>
-                $("#tabs").addClass('hidden');
+                                $("#tabs").addClass('hidden');
             </script>
             <ul id="tablist" class="tablist">
                 <li><a href="#tabs-List">List</a></li>
@@ -73,7 +71,7 @@
         </div>
 
         <script type="text/babel">
-            /// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
+                        /// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
         </script>
 
         ${index_ts}
@@ -83,82 +81,82 @@
         ${jsonByDateGzipB64Data}
 
         <script>
-            var jsonListAll = [];
-            var jsonByDate = [];
-            var jsonByRank = [];
-            var jsonBySize = [];
-            var jsonByName = [];
-            var jsonByLength = [];
+                        var jsonListAll = [];
+                        var jsonByDate = [];
+                        var jsonByRank = [];
+                        var jsonBySize = [];
+                        var jsonByName = [];
+                        var jsonByLength = [];
 
-            async function decompressString(base64String) {
+                        async function decompressString(base64String) {
 
-                const binaryString = atob(base64String);
-                const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+                                const binaryString = atob(base64String);
+                                const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
 
-                const ds = new DecompressionStream("gzip");
-                const decompressedStream = new Blob([bytes]).stream().pipeThrough(ds);
+                                const ds = new DecompressionStream("gzip");
+                                const decompressedStream = new Blob([bytes]).stream().pipeThrough(ds);
 
-                const response = new Response(decompressedStream);
-                const buffer = await response.arrayBuffer();
-                return new TextDecoder().decode(buffer);
-            }
+                                const response = new Response(decompressedStream);
+                                const buffer = await response.arrayBuffer();
+                                return new TextDecoder().decode(buffer);
+                        }
 
-            function sortJsons() {
-                console.log("sortJsons");
-                myPromise = decompressString(jsonByDateGzipB64Data);
-                myPromise
-                        .then(json => {
-                            jsonByDate = JSON.parse(json);
-                        })
-                        .catch(error => {
-                            console.log("Error:", error.status);
-                            console.log("Error:", error.message);
-                        })
-                        .finally(() => {
-                            console.log("2 Done");
+                        function sortJsons() {
+                                console.log("sortJsons");
+                                myPromise = decompressString(jsonByDateGzipB64Data);
+                                myPromise
+                                                .then(json => {
+                                                        jsonByDate = JSON.parse(json);
+                                                })
+                                                .catch(error => {
+                                                        console.log("Error:", error.status);
+                                                        console.log("Error:", error.message);
+                                                })
+                                                .finally(() => {
+                                                        console.log("Done sortJsons");
 
-                            try {
-                                jsonByRank = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
-                            } catch (err) {
-                                jsonByRank = JSON.parse(JSON.stringify(jsonByDate));
-                                console.error("jsonByRank Caught a type-specific error:", err.message);
-                            }
-                            try {
-                                jsonBySize = jsonByDate.toSorted((a, b) => b.bytes - a.bytes);
-                            } catch (err) {
-                                jsonBySize = JSON.parse(JSON.stringify(jsonByDate));
-                                console.error("jsonBySize Caught a type-specific error:", err.message);
-                            }
-                            try {
-                                jsonByName = jsonByDate.toSorted((a, b) => a.mainTitle.localeCompare(b.mainTitle));
-                            } catch (err) {
-                                jsonByName = JSON.parse(JSON.stringify(jsonByDate));
-                                console.error("jsonByName Caught a type-specific error:", err.message);
-                            }
-                            try {
-                                jsonByLength = jsonByDate.toSorted((a, b) => b.runtimeHM.localeCompare(a.runtimeHM));
-                            } catch (err) {
-                                jsonByLength = JSON.parse(JSON.stringify(jsonByDate));
-                                console.error("jsonByLength Caught a type-specific error:", err.message);
-                            }
+                                                        try {
+                                                                jsonByRank = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
+                                                        } catch (err) {
+                                                                jsonByRank = JSON.parse(JSON.stringify(jsonByDate));
+                                                                console.error("jsonByRank Caught a type-specific error:", err.message);
+                                                        }
+                                                        try {
+                                                                jsonBySize = jsonByDate.toSorted((a, b) => b.bytes - a.bytes);
+                                                        } catch (err) {
+                                                                jsonBySize = JSON.parse(JSON.stringify(jsonByDate));
+                                                                console.error("jsonBySize Caught a type-specific error:", err.message);
+                                                        }
+                                                        try {
+                                                                jsonByName = jsonByDate.toSorted((a, b) => a.mainTitle.localeCompare(b.mainTitle));
+                                                        } catch (err) {
+                                                                jsonByName = JSON.parse(JSON.stringify(jsonByDate));
+                                                                console.error("jsonByName Caught a type-specific error:", err.message);
+                                                        }
+                                                        try {
+                                                                jsonByLength = jsonByDate.toSorted((a, b) => b.runtimeHM.localeCompare(a.runtimeHM));
+                                                        } catch (err) {
+                                                                jsonByLength = JSON.parse(JSON.stringify(jsonByDate));
+                                                                console.error("jsonByLength Caught a type-specific error:", err.message);
+                                                        }
 
-                            callTs();
-                        });
-            }
+                                                        callTs();
+                                                });
+                        }
 
-            myPromise = decompressString(jsonListAllGzipB64Data);
-            myPromise
-                    .then(json => {
-                        jsonListAll = JSON.parse(json);
-                    })
-                    .catch(error => {
-                        console.log("Error:", error.status);
-                        console.log("Error:", error.message);
-                    })
-                    .finally(() => {
-                        console.log("1 Done");
-                        sortJsons()
-                    });
+                        myPromise = decompressString(jsonListAllGzipB64Data);
+                        myPromise
+                                        .then(json => {
+                                                jsonListAll = JSON.parse(json);
+                                        })
+                                        .catch(error => {
+                                                console.log("Error:", error.status);
+                                                console.log("Error:", error.message);
+                                        })
+                                        .finally(() => {
+                                                console.log("Done sortJsons");
+                                                sortJsons()
+                                        });
         </script>
     </body>
 </html>
