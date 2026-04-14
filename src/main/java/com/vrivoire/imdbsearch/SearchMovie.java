@@ -340,8 +340,6 @@ public class SearchMovie {
     }
 
     private static String getSearchKey(NameYearBean nameYearBean) {
-        System.out.println(nameYearBean.getName());
-        System.out.println(nameYearBean.getMainYear());
         return (nameYearBean.getName() + " " + (nameYearBean.getMainYear() == null ? "" : nameYearBean.getMainYear())).trim();
     }
 

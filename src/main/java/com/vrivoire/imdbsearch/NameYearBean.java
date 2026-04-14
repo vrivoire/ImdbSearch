@@ -19,6 +19,7 @@ public class NameYearBean implements Serializable {
     private long fileDate;
     private boolean isDirectory;
     private String size;
+    private long bytes;
     private File file;
     private int fileCount = 1;
     private List<String> mainAkas = null;
@@ -279,6 +280,11 @@ public class NameYearBean implements Serializable {
 
     public void setSize(long bytes) {
         size = convertBytesToHumanReadable(bytes);
+        this.bytes = bytes;
+    }
+
+    public long getBytes() {
+        return bytes;
     }
 
     public static String convertBytesToHumanReadable(long bytes) {
@@ -667,6 +673,7 @@ public class NameYearBean implements Serializable {
         StringBuilder builder = new StringBuilder();
         builder.append("NameYearBean [");
         builder.append("audio=").append(audio);
+        builder.append(", bytes=").append(bytes);
         builder.append(", codecDescription=").append(codecDescription);
         builder.append(", creators=").append(creators);
         builder.append(", error=").append(error);

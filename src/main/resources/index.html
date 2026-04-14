@@ -21,17 +21,8 @@
 
         ${babel_js}
 
-        ${jsonListAll}
-
-        <!--
-        https://www.google.com/search?q=javascript+sort+list+of+objects+by+property&oq=javascript+sort+list+of+objects+by+property&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIICAEQABgWGB4yCAgCEAAYFhgeMggIAxAAGBYYHjIICAQQABgWGB4yDQgFEAAYhgMYgAQYigUyBwgGEAAY7wUyCggHEAAYgAQYogQyBwgIEAAY7wUyCggJEAAYgAQYogTSAQkyNjUyN2owajeoAgiwAgHxBToDqxg7UrYM8QU6A6sYO1K2DA&sourceid=chrome&ie=UTF-8
-        https://www.google.com/search?q=typescript+sort+list+of+objects+by+property&sca_esv=f2ad961a722eda37&biw=2221&bih=1263&sxsrf=ANbL-n6ua9OVPc6F8SKJZDczB8gKCZCofA%3A1776012093890&ei=PcvbacaGNvjiruEPzPHesAE&ved=0ahUKEwiGmeTP4OiTAxV4sSsGHcy4FxYQ4dUDCBE&uact=5&oq=typescript+sort+list+of+objects+by+property&gs_lp=Egxnd3Mtd2l6LXNlcnAiK3R5cGVzY3JpcHQgc29ydCBsaXN0IG9mIG9iamVjdHMgYnkgcHJvcGVydHkyBRAAGIAEMgYQABgWGB4yBRAAGO8FMgUQABjvBTIFEAAY7wUyCBAAGIAEGKIESJAkULkIWNEfcAJ4AZABAJgB0wGgAbEEqgEFMC4xLjK4AQPIAQD4AQH4AQKYAgWgAsYEwgIKEAAYsAMY1gQYR8ICDRAAGIAEGLADGEMYigXCAg4QABiwAxjkAhjWBNgBAcICFxAuGLADGLgGGNgCGMgDGNoGGNwG2AEBwgINEAAYgAQYsQMYQxiKBcICChAAGIAEGEMYigWYAwCIBgGQBhO6BgYIARABGAmSBwUyLjEuMqAHnBCyBwUwLjEuMrgHugTCBwUwLjMuMsgHEYAIAA&sclient=gws-wiz-serp
-        -->
-
         ${jsonByDate}
-        ${jsonByRank}
-        ${jsonByName}
-        ${jsonByLength}
+
         ${json_iso_639_1}
         ${json_iso_639_2}
         ${ISO_3166_1_alpha_2}
@@ -80,10 +71,71 @@
             </div>
 
         </div>
+
+        <script>
+            var jsonByRank = [];
+            try {
+                jsonByRank = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
+            } catch (err) {
+                jsonByRank = JSON.parse(JSON.stringify(jsonByDate));
+                console.error("jsonByRank Caught a type-specific error:", err.message);
+            }
+            var jsonBySize = [];
+            try {
+                jsonBySize = jsonByDate.toSorted((a, b) => b.bytes - a.bytes);
+            } catch (err) {
+                jsonBySize = JSON.parse(JSON.stringify(jsonByDate));
+                console.error("jsonBySize Caught a type-specific error:", err.message);
+            }
+            var jsonByName = [];
+            try {
+                jsonByName = jsonByDate.toSorted((a, b) => a.mainTitle.localeCompare(b.mainTitle));
+            } catch (err) {
+                jsonByName = JSON.parse(JSON.stringify(jsonByDate));
+                console.error("jsonByName Caught a type-specific error:", err.message);
+            }
+            var jsonByLength = [];
+            try {
+                jsonByLength = jsonByDate.toSorted((a, b) => b.runtimeHM.localeCompare(a.runtimeHM));
+            } catch (err) {
+                jsonByLength = JSON.parse(JSON.stringify(jsonByDate));
+                console.error("jsonByLength Caught a type-specific error:", err.message);
+            }
+        </script>
+
         <script type="text/babel">
             /// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
         </script>
 
         ${index_ts}
+
+        ${jsonListAllGzipB64Data}
+
+        <script>
+            async function decompressString(base64String) {
+
+                const binaryString = atob(base64String);
+                const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+
+                const ds = new DecompressionStream("gzip");
+                const decompressedStream = new Blob([bytes]).stream().pipeThrough(ds);
+
+                const response = new Response(decompressedStream);
+                const buffer = await response.arrayBuffer();
+                return new TextDecoder().decode(buffer);
+            }
+
+            myPromise = decompressString(jsonListAllGzipB64Data);
+            myPromise
+                    .then(json => {
+                        jsonListAll = JSON.parse(json);
+                        callTs(jsonListAll);
+                    })
+                    .catch(error => {
+                        console.log("Error:", error.status);
+                        console.log("Error:", error.message);
+                    })
+                    .finally(() => console.log("Done"));
+        </script>
     </body>
 </html>

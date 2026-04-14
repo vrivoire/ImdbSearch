@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import static com.vrivoire.imdbsearch.Main.default_path;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -24,6 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
@@ -130,43 +134,11 @@ public class GenerateHtmlReport {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
         String jsonByDate = ow.writeValueAsString(getMapList(movieList));
-        map.put("jsonByDate", "\n<script>\nvar jsonByDate = " + jsonByDate + ";\n</script>\n");
+        map.put("jsonByDate", "\n<script>\nconst jsonByDate = " + jsonByDate + ";\n</script>\n");
 
-        String jsonByRank = "[]";
-        if (!Config.IS_SLIM.getBoolean()) {
-            Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getMainRating() > ovf2.getMainRating() ? 1 : -1));
-            jsonByRank = ow.writeValueAsString(getMapList(movieList));
-        }
-        map.put("jsonByRank", "\n<script>\nvar jsonByRank = " + jsonByRank + ";\n</script>\n");
+        map.put("IS_SLIM", "\n<script>\nconst IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n</script>\n");
 
-        String jsonByName = "[]";
-        try {
-            if (!Config.IS_SLIM.getBoolean()) {
-                Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf2.getMainTitle().compareToIgnoreCase(ovf1.getMainTitle())));
-                jsonByName = ow.writeValueAsString(getMapList(movieList));
-            }
-        }
-        catch (NullPointerException npe) {
-            LOG.error(npe.getMessage(), npe);
-        }
-        map.put("jsonByName", "\n<script>\nvar jsonByName = " + jsonByName + ";\n</script>\n");
-
-        String jsonByLength = "[]";
-        if (!Config.IS_SLIM.getBoolean()) {
-            Collections.sort(movieList, (NameYearBean o1, NameYearBean o2) -> {
-                return (o1.getRuntimeHM() != null && o2.getRuntimeHM() != null) ? o2.getRuntimeHM().compareToIgnoreCase(o1.getRuntimeHM()) : 0;
-            });
-            jsonByLength = ow.writeValueAsString(getMapList(movieList));
-        }
-        map.put("jsonByLength", "\n<script>\nvar jsonByLength = " + jsonByLength + ";\n</script>\n");
-
-        map.put("IS_SLIM", "\n<script>\nvar IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n</script>\n");
-
-        String jsonListAll = "[]";
-        if (!Config.IS_SLIM.getBoolean()) {
-            jsonListAll = ow.writeValueAsString(DbUtils.sqlFindAll());
-        }
-        map.put("jsonListAll", "\n<script>\nvar jsonListAll = " + jsonListAll + "\n</script>\n");
+        map.put("jsonListAllGzipB64Data", "\n<script>\nvar jsonListAllGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(DbUtils.sqlFindAll())) + "';\n</script>\n");
 
         map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + ";\n</script>\n");
         map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + ";\n</script>\n");
@@ -175,6 +147,27 @@ public class GenerateHtmlReport {
 
         var index = Config.fill(read("/index.html"), map);
         Files.writeString(Paths.get(fullReportPath), index);
+    }
+
+    private String compressAndEncode(String str) throws IOException {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        // 1. Setup streams
+        ByteArrayOutputStream obj = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(obj) {
+            {
+                def.setLevel(Deflater.BEST_COMPRESSION);
+            }
+        }) {
+            // 2. Write string bytes to GZIP stream
+            gzip.write(str.getBytes(StandardCharsets.UTF_8));
+            // Closing the GZIPOutputStream finishes the compression
+        }
+
+        // 3. Encode the compressed bytes to Base64
+        return Base64.getEncoder().encodeToString(obj.toByteArray());
     }
 
     private List<Map<String, Object>> getMapList(List<NameYearBean> movieList) {
