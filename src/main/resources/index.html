@@ -21,7 +21,7 @@
 
         ${babel_js}
 
-        ${jsonByDate}
+
 
         ${json_iso_639_1}
         ${json_iso_639_2}
@@ -72,37 +72,6 @@
 
         </div>
 
-        <script>
-            var jsonByRank = [];
-            try {
-                jsonByRank = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
-            } catch (err) {
-                jsonByRank = JSON.parse(JSON.stringify(jsonByDate));
-                console.error("jsonByRank Caught a type-specific error:", err.message);
-            }
-            var jsonBySize = [];
-            try {
-                jsonBySize = jsonByDate.toSorted((a, b) => b.bytes - a.bytes);
-            } catch (err) {
-                jsonBySize = JSON.parse(JSON.stringify(jsonByDate));
-                console.error("jsonBySize Caught a type-specific error:", err.message);
-            }
-            var jsonByName = [];
-            try {
-                jsonByName = jsonByDate.toSorted((a, b) => a.mainTitle.localeCompare(b.mainTitle));
-            } catch (err) {
-                jsonByName = JSON.parse(JSON.stringify(jsonByDate));
-                console.error("jsonByName Caught a type-specific error:", err.message);
-            }
-            var jsonByLength = [];
-            try {
-                jsonByLength = jsonByDate.toSorted((a, b) => b.runtimeHM.localeCompare(a.runtimeHM));
-            } catch (err) {
-                jsonByLength = JSON.parse(JSON.stringify(jsonByDate));
-                console.error("jsonByLength Caught a type-specific error:", err.message);
-            }
-        </script>
-
         <script type="text/babel">
             /// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/JQuery.d.ts"/>
         </script>
@@ -111,8 +80,15 @@
 
         ${jsonListAllGzipB64Data}
 
+        ${jsonByDateGzipB64Data}
+
         <script>
             var jsonListAll = [];
+            var jsonByDate = [];
+            var jsonByRank = [];
+            var jsonBySize = [];
+            var jsonByName = [];
+            var jsonByLength = [];
 
             async function decompressString(base64String) {
 
@@ -127,6 +103,49 @@
                 return new TextDecoder().decode(buffer);
             }
 
+            function sortJsons() {
+                console.log("sortJsons");
+                myPromise = decompressString(jsonByDateGzipB64Data);
+                myPromise
+                        .then(json => {
+                            jsonByDate = JSON.parse(json);
+                        })
+                        .catch(error => {
+                            console.log("Error:", error.status);
+                            console.log("Error:", error.message);
+                        })
+                        .finally(() => {
+                            console.log("2 Done");
+
+                            try {
+                                jsonByRank = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
+                            } catch (err) {
+                                jsonByRank = JSON.parse(JSON.stringify(jsonByDate));
+                                console.error("jsonByRank Caught a type-specific error:", err.message);
+                            }
+                            try {
+                                jsonBySize = jsonByDate.toSorted((a, b) => b.bytes - a.bytes);
+                            } catch (err) {
+                                jsonBySize = JSON.parse(JSON.stringify(jsonByDate));
+                                console.error("jsonBySize Caught a type-specific error:", err.message);
+                            }
+                            try {
+                                jsonByName = jsonByDate.toSorted((a, b) => a.mainTitle.localeCompare(b.mainTitle));
+                            } catch (err) {
+                                jsonByName = JSON.parse(JSON.stringify(jsonByDate));
+                                console.error("jsonByName Caught a type-specific error:", err.message);
+                            }
+                            try {
+                                jsonByLength = jsonByDate.toSorted((a, b) => b.runtimeHM.localeCompare(a.runtimeHM));
+                            } catch (err) {
+                                jsonByLength = JSON.parse(JSON.stringify(jsonByDate));
+                                console.error("jsonByLength Caught a type-specific error:", err.message);
+                            }
+
+                            callTs();
+                        });
+            }
+
             myPromise = decompressString(jsonListAllGzipB64Data);
             myPromise
                     .then(json => {
@@ -137,8 +156,8 @@
                         console.log("Error:", error.message);
                     })
                     .finally(() => {
-                        console.log("Done");
-                        callTs();
+                        console.log("1 Done");
+                        sortJsons()
                     });
         </script>
     </body>
