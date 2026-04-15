@@ -123,6 +123,7 @@ public class GenerateHtmlReport {
         map.put("statsImage", DbUtils.getHistogram());
 
         map.put("index_css", "\n<style>\n" + read("/index.css") + "\n</style>\n");
+
         map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
 
         for (NameYearBean nameYearBean : movieList) {
@@ -133,14 +134,21 @@ public class GenerateHtmlReport {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         Collections.sort(movieList, (var ovf2, var ovf1) -> (ovf1.getFileDate() > ovf2.getFileDate() ? 1 : -1));
-        map.put("jsonByDateGzipB64Data", "\n<script>\nconst jsonByDateGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(getMapList(movieList))) + "';\n</script>\n");
 
-        map.put("jsonListAllGzipB64Data", "\n<script>\nvar jsonListAllGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(DbUtils.sqlFindAll())) + "';\n</script>\n");
+        map.put("jsScripts",
+                "<script>\n"
+                + "     const jsonByDateGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(getMapList(movieList))) + "';\n"
+                + "     const jsonListAllGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(DbUtils.sqlFindAll())) + "';\n"
+                + "     const IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n"
+                + "     const json_iso_639_1 = " + read("/iso_639-1.json") + ";\n"
+                + "     const json_iso_639_2 = " + read("/iso_639-2.json") + ";\n"
+                + "     const ISO_3166_1_alpha_2 = " + read("/ISO-3166-1.alpha2.json") + ";\n"
+                + "</script>\n");
 
-        map.put("IS_SLIM", "\n<script>\nconst IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n</script>\n");
-        map.put("json_iso_639_1", "\n<script>\nvar json_iso_639_1 = " + read("/iso_639-1.json") + ";\n</script>\n");
-        map.put("json_iso_639_2", "\n<script>\nvar json_iso_639_2 = " + read("/iso_639-2.json") + ";\n</script>\n");
-        map.put("ISO_3166_1_alpha_2", "\n<script>\nvar ISO_3166_1_alpha_2 = " + read("/ISO-3166-1.alpha2.json") + ";\n</script>\n");
+        String path = Paths.get(fullReportPath).getParent().toString();
+        path = path.substring(path.lastIndexOf("\\") + 1);
+        map.put("path", path);
+
         LOG.info("Report file: " + Paths.get(fullReportPath));
 
         var index = Config.fill(read("/index.html"), map);
