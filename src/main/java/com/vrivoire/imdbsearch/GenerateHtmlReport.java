@@ -137,8 +137,8 @@ public class GenerateHtmlReport {
 
         map.put("jsScripts",
                 "<script>\n"
-                + "     const jsonByDateGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(getMapList(movieList))) + "';\n"
-                + "     const jsonListAllGzipB64Data = '" + (Config.IS_SLIM.getBoolean() ? "" : compressAndEncode(ow.writeValueAsString(DbUtils.sqlFindAll()))) + "';\n"
+                + "     var jsonByDateGzipB64Data = '" + compressAndEncode(ow.writeValueAsString(getMapList(movieList))) + "';\n"
+                + "     var jsonListAllGzipB64Data = '" + (Config.IS_SLIM.getBoolean() ? "" : compressAndEncode(ow.writeValueAsString(DbUtils.sqlFindAll()))) + "';\n"
                 + "     const IS_SLIM = " + Config.IS_SLIM.getBoolean() + ";\n"
                 + "     const json_iso_639_1 = " + read("/iso_639-1.json") + ";\n"
                 + "     const json_iso_639_2 = " + read("/iso_639-2.json") + ";\n"

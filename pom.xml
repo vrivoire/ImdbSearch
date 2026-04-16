@@ -40,8 +40,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.release>[3.9.11]</maven.release>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.release>[3.9.14]</maven.release>
+        <maven.compiler.release>26</maven.compiler.release>
+        <maven.compiler.target>26</maven.compiler.target>
         <mainClass>com.vrivoire.imdbsearch.Main</mainClass>
     </properties>
 
@@ -54,7 +55,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.51.3.0</version>
+            <version>3.53.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>
