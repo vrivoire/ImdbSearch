@@ -75,16 +75,19 @@
 
         <script>
             async function decompressString(base64String) {
+                if (base64String === '') {
+                    return null;
+                } else {
+                    const binaryString = atob(base64String);
+                    const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
 
-                const binaryString = atob(base64String);
-                const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+                    const ds = new DecompressionStream("gzip");
+                    const decompressedStream = new Blob([bytes]).stream().pipeThrough(ds);
 
-                const ds = new DecompressionStream("gzip");
-                const decompressedStream = new Blob([bytes]).stream().pipeThrough(ds);
-
-                const response = new Response(decompressedStream);
-                const buffer = await response.arrayBuffer();
-                return new TextDecoder().decode(buffer);
+                    const response = new Response(decompressedStream);
+                    const buffer = await response.arrayBuffer();
+                    return new TextDecoder().decode(buffer);
+                }
             }
 
             function getJsonByDate(jsonListAll) {
