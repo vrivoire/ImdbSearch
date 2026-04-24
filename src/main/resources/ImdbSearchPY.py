@@ -87,8 +87,8 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
                         found_year = looking_year != '' and movie.year == looking_year
                         # log.info(f'found_year={found_year}')
                         r_accentes = remove_accents(looking_title)
-                        # log.info(f'looking_title = {looking_title}, r_accentes = {r_accentes}')
-                        # log.info('toto1={remove_accents(t) for t in titles}')
+                        log.info(f'looking_title = {looking_title}, r_accentes = {r_accentes}')
+                        # log.info(f'toto1={remove_accents(t) for t in titles}')
                         # log.info(f'toto1={r_accentes in [remove_accents(t) for t in titles]}')
                         if r_accentes in [remove_accents(t) for t in titles]:
                             if found_year and (movie.year == looking_year):
@@ -132,17 +132,17 @@ def cleanup_title(movie_title: str) -> str:
 
 # https://github.com/tveronesi/imdbinfo/issues/141
 def get_fr_plot(imdb_id: str) -> str:
-    plots = set()
+    plots: set[str] = set()
     imdb_id, lang = normalize_imdb_id(imdb_id)
     raw_json: dict = request_json_url(f"https://www.imdb.com/{lang}/title/tt{imdb_id}/reference")
     result = jmespath.search('props.pageProps.mainColumnData.plot.plotText.plainText', raw_json)
-    plots.add(result) if result is not None else None
+    plots.add(result.replace('"', "'")) if result is not None else None
     for locale in raw_json['locales']:
         if locale.rfind('fr') != -1:
             imdb_id, lang = normalize_imdb_id(imdb_id, locale.lower())
             raw_json_fr: dict = request_json_url(f"https://www.imdb.com/{lang}/title/tt{imdb_id}/reference")
             result = jmespath.search('props.pageProps.mainColumnData.plot.plotText.plainText', raw_json_fr)
-            plots.add(result) if result is not None else None
+            plots.add(result.replace('"', "'")) if result is not None else None
 
     plot_list = sorted(list(plots))
     plot_list_str: str = ''
@@ -152,7 +152,7 @@ def get_fr_plot(imdb_id: str) -> str:
     return plot_list_str
 
 
-def populate(thread_index: int, imdb_id: str, title: str) -> dict[str, Any]:
+def populate(thread_index: int, imdb_id: str|None, title: str) -> dict[str, Any]:
     try:
         if imdb_id:
             movie_detail: MovieDetail | None = get_movie(imdb_id)
@@ -309,7 +309,7 @@ def args_search(path: str, files: list[str]):
         for title in props.keys():
             if len(props.get(title)) == 0:
                 log.info(f'Retrying {title}')
-                imdb_id: str = load_data(0, path, title)
+                imdb_id: str|None = load_data(0, path, title)
                 prop: dict[str, Any] = populate(0, imdb_id, title)
                 props.update({title: prop})
 
@@ -380,11 +380,12 @@ if __name__ == "__main__":
         args_search(sys.argv[1], sys.argv[2:])
     else:
         log.info("Default path.")
-        path_search("C:/Users/ADELE/Videos")
+        # path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/W")
         # path_search("C:/Users/ADELE/Videos/W2")
         # path_search("C:/Users/ADELE/Videos/W3")
-        # path_search("C:/Users/ADELE/Videos/W4")
+        path_search("C:/Users/ADELE/Videos/W4")
+        # path_search("C:/Users/ADELE/Videos/W/Kaamelott")
 
         if os.path.isfile(OUTPUT_JSON_FILE):
             with open(OUTPUT_JSON_FILE, 'r', encoding='utf-8') as file:

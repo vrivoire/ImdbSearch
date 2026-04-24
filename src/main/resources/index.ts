@@ -96,7 +96,7 @@ function screenshotPreview() {
     var innerW = innerWidth;
     var innerH = innerHeight;
     $("a.screenshot").hover(
-        function (e) {
+        function(e) {
             var x = e.pageX;
             var y = e.pageY;
             var left = (x + 305) >= innerW ? innerW - 305 : x;
@@ -107,7 +107,7 @@ function screenshotPreview() {
                 .css("left", left + "px")
                 .fadeIn("fast");
         },
-        function () {
+        function() {
             $("#screenshot").remove();
         }
     );
@@ -195,7 +195,7 @@ function populate(jsonBy: Record<string, any>): string {
 
 function finalise() {
     $("#tabs").tabs({
-        beforeActivate: function (event, ui) {
+        beforeActivate: function(event, ui) {
             if (ui.newPanel[0].id === 'tabs-Table') {
                 $('#table_and_search_wrapper').css('visibility', 'visible');
             } else {
@@ -223,7 +223,7 @@ function fillTabs() {
     try {
         var jsonByRank: Record<string, any> = jsonByDate.toSorted((a, b) => b.mainRating - a.mainRating);
         var textByRank: string = populate(jsonByRank);
-    } catch (err) {
+    } catch (error) {
         console.log("Error:", error.status);
         console.log("Error:", error.message);
         if (error instanceof Error) {
@@ -351,7 +351,7 @@ function fillTableAndSearch() {
                 {
                     data: "mainRating",
                     title: "Rating",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         if (type === 'display') {
                             return "<span data-color='" + data + "'>" + data + "</span>";
                         }
@@ -384,7 +384,7 @@ function fillTableAndSearch() {
                 {
                     data: "mainOriginalTitle",
                     title: "Title",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         if (type === 'display') {
                             return "<a class='screenshot' href='https://www.imdb.com/title/tt" + row.mainImdbid + "/' target='_blank' rel='" + row.mainCoverUrl + "'>" + data + "</a>";
                         }
@@ -394,7 +394,7 @@ function fillTableAndSearch() {
                 {
                     data: "mainImdbid",
                     title: "IMDB (id)",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         if (type === 'display') {
                             return data + "&nbsp;<small>(" + row.id + ")</small>";
                         }
@@ -407,7 +407,7 @@ function fillTableAndSearch() {
                 {
                     data: "mainCountries",
                     title: "Countries",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         if (type === 'display') {
                             return data.replace(", <b>Country:</b> ", "").replace(", <b>Countries:</b> ", "");
                         }
@@ -424,10 +424,10 @@ function fillTableAndSearch() {
 }
 
 function getColors() {
-    $('span').each(function (index: any) {
+    $('span').each(function(index: any) {
         th = $(this);
         dc = parseInt($(this).attr('data-color'), 10);
-        $.each(mc, function (name: string, value: any) {
+        $.each(mc, function(name: string, value: any) {
             first = parseInt(name.split('-')[0], 10);
             second = parseInt(name.split('-')[1], 10);
             if (between(dc, first, second)) {
@@ -497,6 +497,6 @@ function getJsonListAll() {
         });
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
     getJsonListAll();
 });
