@@ -43,6 +43,8 @@ public final class DbUtils {
 
     private static final Logger LOG = LogManager.getLogger(DbUtils.class);
 
+    private static final String MAIN_IMDBID = "mainImdbid";
+
     private static final String SQL_SELECT_0_RATE = "SELECT imdb_id FROM films where rating=0;";
     private static final String SQL_COUNT = "SELECT count(id) as count FROM films;";
     private static final String SQL_DELETE = "delete from films where imdb_id=?;";
@@ -81,6 +83,10 @@ public final class DbUtils {
                                    ALTER TABLE films drop COLUMN is_on_drive;
                                    ALTER TABLE films ADD column is_on_drive boolean DEFAULT false;
                                    """;
+
+    private DbUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static String getHistogram() {
         try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString()); PreparedStatement stmtSelect = conn.prepareStatement(SQL_HISTOGRAM)) {
@@ -234,16 +240,16 @@ public final class DbUtils {
                     Map<String, Map<String, Object>> mapFromBeans = new HashMap<>();
                     for (NameYearBean nameYearBean : listFound) {
                         Map<String, Object> mapFromBean = generateHtmlReport.getMapFromBean(nameYearBean);
-                        mapFromBeans.put((String) mapFromBean.get("mainImdbid"), mapFromBean);
-                        if (mapFromBean.get("mainImdbid") != null || mapFromBean.get("mainOriginalTitle") != null) {
-                            pstmtSelect.setString(1, (String) mapFromBean.get("mainImdbid"));
+                        mapFromBeans.put((String) mapFromBean.get(MAIN_IMDBID), mapFromBean);
+                        if (mapFromBean.get(MAIN_IMDBID) != null || mapFromBean.get("mainOriginalTitle") != null) {
+                            pstmtSelect.setString(1, (String) mapFromBean.get(MAIN_IMDBID));
                             ResultSet rs = pstmtSelect.executeQuery();
                             if (rs.next()) {
                                 sqlUpdate(pstmtUpdate, mapFromBean);
-                                imdbIdsUptade.add((String) mapFromBean.get("mainImdbid"));
+                                imdbIdsUptade.add((String) mapFromBean.get(MAIN_IMDBID));
                             } else {
                                 sqlInsert(pstmtInsert, mapFromBean);
-                                imdbIdsInsert.add((String) mapFromBean.get("mainImdbid"));
+                                imdbIdsInsert.add((String) mapFromBean.get(MAIN_IMDBID));
                             }
                         }
                     }
@@ -315,7 +321,7 @@ public final class DbUtils {
                 map.put("rank", ++rank);
                 map.put("id", rs.getInt("id"));
                 map.put("mainOriginalTitle", rs.getString("title"));
-                map.put("mainImdbid", rs.getString("imdb_id"));
+                map.put(MAIN_IMDBID, rs.getString("imdb_id"));
                 map.put("mainYear", rs.getString("year"));
                 map.put("mainKind", rs.getString("kind"));
                 map.put("mainRating", rs.getDouble("rating"));
@@ -372,7 +378,7 @@ public final class DbUtils {
         pstmtUpdate.setString(++i, (String) mapFromBean.get("mainGenres"));
         pstmtUpdate.setBoolean(++i, (Boolean) mapFromBean.get("isOnDrive"));
 
-        pstmtUpdate.setString(++i, (String) mapFromBean.get("mainImdbid"));
+        pstmtUpdate.setString(++i, (String) mapFromBean.get(MAIN_IMDBID));
         pstmtUpdate.addBatch();
     }
 
@@ -382,7 +388,7 @@ public final class DbUtils {
         pstmtInsert.setString(++i, (String) mapFromBean.get("mainYear"));
         pstmtInsert.setString(++i, (String) mapFromBean.get("mainKind"));
         pstmtInsert.setDouble(++i, (Double) mapFromBean.get("mainRating"));
-        pstmtInsert.setString(++i, (String) mapFromBean.get("mainImdbid"));
+        pstmtInsert.setString(++i, (String) mapFromBean.get(MAIN_IMDBID));
         pstmtInsert.setString(++i, (String) mapFromBean.get("mainCoverUrl"));
         pstmtInsert.setString(++i, (String) mapFromBean.get("mainVotes"));
         pstmtInsert.setString(++i, (String) mapFromBean.get("runtimeHM"));
