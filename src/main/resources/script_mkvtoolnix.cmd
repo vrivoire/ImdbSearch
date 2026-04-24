@@ -1,9 +1,11 @@
-rem @echo off
+@echo off
+chcp 65001
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-set "DIRECTORY=Furies 2024"
-rem set "LANG=eng,fre"
+set "DIRECTORY=Privilèges 2026"
+set "LANG=eng,fre"
 rem set "LANG=eng"
-set "LANG=fre"
+rem set "LANG=fre"
 
 set "mkvmerge=C:\Program Files\MKVToolNix\mkvmerge.exe"
 set "VIDEO=C:\Users\ADELE\Videos\"
@@ -12,7 +14,7 @@ set "INPUT_DIR=%VIDEO%%DIRECTORY%"
 set "OUTPUT_DIR=%VIDEO%%DIRECTORY%\out"
 
 for %%f in ("%INPUT_DIR%\*.mkv") do (
-	@echo .
+	@echo:
 	@echo ----- %%f %LANG%
 	call "%mkvmerge%" -o "%OUTPUT_DIR%\%%~nf_%LANG%.mkv" --audio-tracks %LANG% --subtitle-tracks %LANG% "%%f"
 )
