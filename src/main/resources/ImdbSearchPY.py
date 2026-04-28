@@ -66,6 +66,9 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
             movies: list[MovieBriefInfo] = search_result.titles
             kind: str | None = None
             log.info(f'\t\tid: {thread_index} {title}: len: {len(movies)}, {movies}')
+            # Nice!!!!
+            # [log.info(f'\t\t\t{movie}') for movie in movies]
+
             for movie in movies:
                 log.info(f'\t\tid: {thread_index} {title}: {movie}')
                 akas: list[str] = [cleanup_title(aka.title) for aka in get_akas(movie.imdb_id)['akas']]
@@ -260,63 +263,66 @@ def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
 def args_search(path: str, files: list[str]):
     now: datetime = datetime.now()
     file_count: int = len(files)
-    log.info(f"args_search: {path}, {len(files)} files, files: {files}")
-
-    if file_count <= THREAD_NB:
-        thread_nb: int = file_count
-        files_per_thread: int = 1
-    else:
-        thread_nb: int = THREAD_NB
-        files_per_thread: int = int(file_count / thread_nb)
-
-    remain_files: int = file_count - files_per_thread * thread_nb
-    result_queue: Queue = Queue()
-    log.info(f"THREAD_NB: {THREAD_NB}, file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
-
-    threads: list[Thread] = []
-    i: int = 0
-    thread_id: int = 1
-    for thread_id in range(1, thread_nb + 1):
-        k: int = thread_id * files_per_thread
-        log.info(f"thread_id: {thread_id}, {range(i, k)}, size: {len(files[i:k])}")
-        thread: Thread = threading.Thread(
-            target=spawn,
-            args=(thread_id, path, files[i:k], result_queue),
-            name=thread_id.__str__()
-        )
-        threads.append(thread)
-        thread.start()
-        i = k
-    if len(files[file_count - remain_files:file_count]) > 0:
-        log.info(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
-        thread: Thread = threading.Thread(
-            target=spawn,
-            args=(thread_id + 1, path, files[file_count - remain_files: file_count], result_queue),
-            name=(thread_nb + 1).__str__(),
-        )
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()
-
     props: dict[str, Any] = {}
-    while not result_queue.empty():
-        props.update(result_queue.get())
-    log.info("All tasks has been finished")
+    log.info(f"args_search: {path}, {file_count} files, files: {files}")
 
-    for i in range(1, 5):
-        for title in props.keys():
-            if len(props.get(title)) == 0:
-                log.info(f'Retrying {title}')
-                imdb_id: str|None = load_data(0, path, title)
-                prop: dict[str, Any] = populate(0, imdb_id, title)
-                props.update({title: prop})
+    if file_count>0:
+        if file_count <= THREAD_NB:
+            thread_nb: int = file_count
+            files_per_thread: int = 1
+        else:
+            thread_nb: int = THREAD_NB
+            files_per_thread: int = int(file_count / thread_nb)
 
-    save_json(props)
-    elapsed = datetime.now().now() - now
-    log.info(f"Threads: {thread_nb}, Time elapsed: {elapsed} for {len(files)} titles, {elapsed / len(files)} per title.")
+        remain_files: int = file_count - files_per_thread * thread_nb
+        result_queue: Queue = Queue()
+        log.info(f"THREAD_NB: {THREAD_NB}, file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
 
+        threads: list[Thread] = []
+        i: int = 0
+        thread_id: int = 1
+        for thread_id in range(1, thread_nb + 1):
+            k: int = thread_id * files_per_thread
+            log.info(f"thread_id: {thread_id}, {range(i, k)}, size: {len(files[i:k])}")
+            thread: Thread = threading.Thread(
+                target=spawn,
+                args=(thread_id, path, files[i:k], result_queue),
+                name=thread_id.__str__()
+            )
+            threads.append(thread)
+            thread.start()
+            i = k
+        if len(files[file_count - remain_files:file_count]) > 0:
+            log.info(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
+            thread: Thread = threading.Thread(
+                target=spawn,
+                args=(thread_id + 1, path, files[file_count - remain_files: file_count], result_queue),
+                name=(thread_nb + 1).__str__(),
+            )
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        while not result_queue.empty():
+            props.update(result_queue.get())
+        log.info("All tasks has been finished")
+
+        for i in range(1, 5):
+            for title in props.keys():
+                if len(props.get(title)) == 0:
+                    log.info(f'Retrying {title}')
+                    imdb_id: str|None = load_data(0, path, title)
+                    prop: dict[str, Any] = populate(0, imdb_id, title)
+                    props.update({title: prop})
+
+        save_json(props)
+        elapsed = datetime.now().now() - now
+        log.info(f"Threads: {thread_nb}, Time elapsed: {elapsed} for {len(files)} titles, {elapsed / len(files)} per title.")
+    else:
+        save_json(props)
+        log.info("No files found")
 
 def path_search(path):
     log.info(f"Searching into path: {path}")

@@ -2,7 +2,7 @@
 chcp 65001
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-set "DIRECTORY=Privilèges 2026"
+set "DIRECTORY=Moloch 2025"
 set "LANG=eng,fre"
 rem set "LANG=eng"
 rem set "LANG=fre"
