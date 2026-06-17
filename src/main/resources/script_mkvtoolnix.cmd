@@ -2,10 +2,10 @@
 chcp 65001
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-set "DIRECTORY=Moloch 2025"
-set "LANG=eng,fre"
+set "DIRECTORY=Chamgyoyuk 2026"
+rem set "LANG=eng,fre"
 rem set "LANG=eng"
-rem set "LANG=fre"
+set "LANG=fre"
 
 set "mkvmerge=C:\Program Files\MKVToolNix\mkvmerge.exe"
 set "VIDEO=C:\Users\ADELE\Videos\"
@@ -16,7 +16,7 @@ set "OUTPUT_DIR=%VIDEO%%DIRECTORY%\out"
 for %%f in ("%INPUT_DIR%\*.mkv") do (
 	@echo:
 	@echo ----- %%f %LANG%
-	call "%mkvmerge%" -o "%OUTPUT_DIR%\%%~nf_%LANG%.mkv" --audio-tracks %LANG% --subtitle-tracks %LANG% "%%f"
+	call "%mkvmerge%" -o "%OUTPUT_DIR%\%%~nf_%LANG%.mkv" --audio-tracks %LANG% --subtitle-tracks %LANG% "%%f"    
 )
 
 pause

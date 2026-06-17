@@ -68,9 +68,9 @@ public class SearchMovie {
     public List<NameYearBean> search() throws Exception {
         Set<NameYearBean> movieSet = listFiles();
         List<NameYearBean> list = new ArrayList<>();
-
-        newWay(movieSet, list);
-
+        if (!movieSet.isEmpty()) {
+            newWay(movieSet, list);
+        }
         return list;
     }
 

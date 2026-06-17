@@ -16,7 +16,7 @@ from typing import Any
 import jmespath
 import jsonpickle
 import unicodedata
-from imdbinfo import get_movie, search_title, get_akas
+from imdbinfo import get_movie, search_title, get_akas, WAFError
 from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
 from imdbinfo.services import normalize_imdb_id, request_json_url
 
@@ -208,6 +208,10 @@ def populate(thread_index: int, imdb_id: str|None, title: str) -> dict[str, Any]
                 except Exception as ex:
                     log.error(f"\t\tid: {thread_index} 5 ERROR: {imdb_id}, {title} --> {ex}")
                     log.error(traceback.format_exc())
+    except WAFError as wa:
+        log.error(f"\t\tid: {thread_index} 1.1 WAFError title={title}, movieID={imdb_id}, msg={wa.__str__()}")
+        log.error(traceback.format_exc())
+
     except Exception as ex:
         log.error(f"\t\tid: {thread_index} 1.1 ERROR title={title}, movieID={imdb_id}, msg={ex.__str__()}")
         log.error(traceback.format_exc())

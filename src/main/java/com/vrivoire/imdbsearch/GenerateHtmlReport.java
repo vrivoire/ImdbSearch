@@ -105,7 +105,6 @@ public class GenerateHtmlReport {
             map.put("datatables_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.min.js\"></script>\n");
             map.put("datatables_jqueryui_js", "<script src=\"https://cdn.datatables.net/" + Config.VERSION_DATATABLES.getString() + "/js/dataTables.jqueryui.min.js\"></script>\n");
             map.put("datatables_colreorder_js", "<script src=\"https://cdn.datatables.net/colreorder/" + Config.VERSION_DATATABLES_COLREORDER.getString() + "/js/dataTables.colReorder.min.js\"></script>\n");
-
             map.put("babel_js", "<script src=\"https://unpkg.com/@babel/standalone/babel.min.js\"></script>\n");
         } else {
             map.put("jqueryui_css", base64ToHtml("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/" + Config.VERSION_JQUERY_UI.getString() + "/themes/overcast/jquery-ui.min.css", "<link rel=\"stylesheet\" href=\"data:text/css;base64,", "\">\n"));
@@ -124,7 +123,7 @@ public class GenerateHtmlReport {
 
         map.put("index_css", "\n<style>\n" + read("/index.css") + "\n</style>\n");
 
-        map.put("index_ts", "\n<script type=\"text/babel\">\n" + read("/index.ts") + "\n</script>\n");
+        map.put("index_ts", "\n<script type=\"text/babel\" data-presets=\"flow\">\n" + read("/index.ts") + "\n</script>\n");
 
         for (NameYearBean nameYearBean : movieList) {
             if (nameYearBean.getMainImdbid() == null || nameYearBean.getMainImdbid().isEmpty() || nameYearBean.getMainImdbid().equals("0")) {
@@ -325,7 +324,7 @@ public class GenerateHtmlReport {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new NameYearBean().getClass().getResourceAsStream(resourceName)));
         StringBuilder sb2 = new StringBuilder();
         reader.lines().forEach((String line) -> {
-            sb2.append(line);
+            sb2.append(line).append('\n');
         });
         return sb2.toString();
     }
