@@ -2,10 +2,10 @@
 chcp 65001
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-set "DIRECTORY=Chamgyoyuk 2026"
+set "DIRECTORY=Lioness 2023"
 rem set "LANG=eng,fre"
-rem set "LANG=eng"
-set "LANG=fre"
+set "LANG=eng"
+rem set "LANG=fre"
 
 set "mkvmerge=C:\Program Files\MKVToolNix\mkvmerge.exe"
 set "VIDEO=C:\Users\ADELE\Videos\"

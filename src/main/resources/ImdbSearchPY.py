@@ -20,6 +20,7 @@ from imdbinfo import get_movie, search_title, get_akas, WAFError
 from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
 from imdbinfo.services import normalize_imdb_id, request_json_url
 
+TORRENTS = None
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 OUTPUT_JSON_FILE = None
@@ -155,7 +156,7 @@ def get_fr_plot(imdb_id: str) -> str:
     return plot_list_str
 
 
-def populate(thread_index: int, imdb_id: str|None, title: str) -> dict[str, Any]:
+def populate(thread_index: int, imdb_id: str | None, title: str) -> dict[str, Any]:
     try:
         if imdb_id:
             movie_detail: MovieDetail | None = get_movie(imdb_id)
@@ -270,7 +271,7 @@ def args_search(path: str, files: list[str]):
     props: dict[str, Any] = {}
     log.info(f"args_search: {path}, {file_count} files, files: {files}")
 
-    if file_count>0:
+    if file_count > 0:
         if file_count <= THREAD_NB:
             thread_nb: int = file_count
             files_per_thread: int = 1
@@ -280,7 +281,10 @@ def args_search(path: str, files: list[str]):
 
         remain_files: int = file_count - files_per_thread * thread_nb
         result_queue: Queue = Queue()
+
+        log.info('*'.center(200, '*'))
         log.info(f"THREAD_NB: {THREAD_NB}, file_count: {file_count}, thread_nb: {thread_nb}, files_per_thread: {files_per_thread}, remain_files: {remain_files}, file_count / thread_nb: {file_count / thread_nb}")
+        log.info('*'.center(200, '*'))
 
         threads: list[Thread] = []
         i: int = 0
@@ -294,8 +298,8 @@ def args_search(path: str, files: list[str]):
                 name=thread_id.__str__()
             )
             threads.append(thread)
-            thread.start()
             i = k
+
         if len(files[file_count - remain_files:file_count]) > 0:
             log.info(f"thread_id: {thread_nb + 1}, {range(file_count - remain_files, file_count)}, size: {len(files[file_count - remain_files:file_count])}")
             thread: Thread = threading.Thread(
@@ -304,20 +308,24 @@ def args_search(path: str, files: list[str]):
                 name=(thread_nb + 1).__str__(),
             )
             threads.append(thread)
-            thread.start()
 
+        log.warning("Starting threads")
+        for thread in threads:
+            thread.start()
+        log.warning("Waiting join....")
         for thread in threads:
             thread.join()
+        log.warning("All tasks has been finished")
 
         while not result_queue.empty():
             props.update(result_queue.get())
-        log.info("All tasks has been finished")
+        log.warning("Collecting data")
 
         for i in range(1, 5):
             for title in props.keys():
                 if len(props.get(title)) == 0:
                     log.info(f'Retrying {title}')
-                    imdb_id: str|None = load_data(0, path, title)
+                    imdb_id: str | None = load_data(0, path, title)
                     prop: dict[str, Any] = populate(0, imdb_id, title)
                     props.update({title: prop})
 
@@ -327,6 +335,7 @@ def args_search(path: str, files: list[str]):
     else:
         save_json(props)
         log.info("No files found")
+
 
 def path_search(path):
     log.info(f"Searching into path: {path}")
@@ -375,6 +384,8 @@ if __name__ == "__main__":
         CONFIG = json.load(infile)
     log.info(f'CONFIG={CONFIG}')
 
+    TORRENTS = CONFIG["TORRENTS"]
+    log.info(f'TORRENTS={TORRENTS}')
     SUPPORTED_EXTENSIONS = CONFIG["SUPPORTED_EXTENSIONS"]
     log.info(f'SUPPORTED_EXTENSIONS={SUPPORTED_EXTENSIONS}')
     IGNORED_FOLDERS: list[str] = CONFIG["IGNORED_FOLDERS"]
@@ -390,12 +401,11 @@ if __name__ == "__main__":
         args_search(sys.argv[1], sys.argv[2:])
     else:
         log.info("Default path.")
-        # path_search("C:/Users/ADELE/Videos")
+        path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/W")
         # path_search("C:/Users/ADELE/Videos/W2")
         # path_search("C:/Users/ADELE/Videos/W3")
-        path_search("C:/Users/ADELE/Videos/W4")
-        # path_search("C:/Users/ADELE/Videos/W/Kaamelott")
+        # path_search("C:/Users/ADELE/Videos/W4")
 
         if os.path.isfile(OUTPUT_JSON_FILE):
             with open(OUTPUT_JSON_FILE, 'r', encoding='utf-8') as file:

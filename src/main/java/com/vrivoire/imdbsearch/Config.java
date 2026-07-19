@@ -76,8 +76,7 @@ public enum Config {
                 if (thread != null) {
                     try {
                         thread.interrupt();
-                    }
-                    catch (SecurityException e) {
+                    } catch (SecurityException e) {
                         LOG.error(e.getMessage(), e);
                     }
                 }
@@ -110,14 +109,12 @@ public enum Config {
             LOG.debug("1 - Configuration:\n" + MAP);
             LOG.debug("2 - Configuration:\n" + objectMapper.writeValueAsString(MAP));
 
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             LOG.fatal(ex.getMessage(), ex);
             if (thread != null) {
                 try {
                     thread.interrupt();
-                }
-                catch (SecurityException e) {
+                } catch (SecurityException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
@@ -153,14 +150,12 @@ public enum Config {
                         }
                         key.reset();
                     }
-                }
-                catch (IOException | InterruptedException ex) {
+                } catch (IOException | InterruptedException ex) {
                     LOG.fatal(ex.getMessage(), ex);
                     if (thread != null) {
                         try {
                             thread.interrupt();
-                        }
-                        catch (SecurityException e) {
+                        } catch (SecurityException e) {
                             LOG.error(e.getMessage(), e);
                         }
                     }

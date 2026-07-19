@@ -65,8 +65,7 @@ public class GenerateHtmlReport {
             if (Files.exists(Paths.get(fullReportPath), LinkOption.NOFOLLOW_LINKS)) {
                 Files.delete(Paths.get(fullReportPath));
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             LOG.error(ex.getMessage(), ex);
         }
     }
@@ -81,8 +80,7 @@ public class GenerateHtmlReport {
         String spaceUsed = "";
         try {
             spaceUsed = NameYearBean.convertBytesToHumanReadable(FileUtils.sizeOfDirectory(new File(fullReportPath.substring(0, fullReportPath.lastIndexOf(System.getProperty("file.separator"))))));
-        }
-        catch (Exception ade) {
+        } catch (Exception ade) {
             LOG.error(ade.getMessage());
         }
         Map<String, Object> map = new HashMap<>();
@@ -297,8 +295,7 @@ public class GenerateHtmlReport {
                 } else {
                     map.put("mainCoverUrl", movie.getMainCoverUrl());
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 LOG.error(ex.getMessage(), ex);
             }
         }

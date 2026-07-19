@@ -144,8 +144,7 @@ public final class DbUtils {
             chart.draw(g2, r);
 
             return g2.getSVGElement();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
         return null;
@@ -173,8 +172,7 @@ public final class DbUtils {
                     }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -211,8 +209,7 @@ public final class DbUtils {
                 frame.setVisible(true);
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             System.exit(-1);
         }
@@ -257,15 +254,13 @@ public final class DbUtils {
                     try {
                         resultUpdate = pstmtUpdate.executeBatch();
                         pstmtUpdate.clearBatch();
-                    }
-                    catch (SQLException e) {
+                    } catch (SQLException e) {
                         LOG.error("pstmtUpdate: " + e.getMessage(), e);
                     }
                     try {
                         resultInsert = pstmtInsert.executeBatch();
                         pstmtInsert.clearBatch();
-                    }
-                    catch (SQLException e) {
+                    } catch (SQLException e) {
                         LOG.error("pstmtInsert: " + e.getMessage(), e);
                     }
 
@@ -284,8 +279,7 @@ public final class DbUtils {
 
             deleteNoRates();
             zipFile(Config.DB_URL.getString(), Config.DB_URL.getString().substring(0, Config.DB_URL.getString().lastIndexOf('/') + 1) + "BkpScripts" + Config.DB_URL.getString().substring(Config.DB_URL.getString().lastIndexOf('/')) + ".zip");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
 
@@ -333,8 +327,7 @@ public final class DbUtils {
 //				map.put("isOnDrive", rs.getString("is_on_drive"));
             }
             LOG.info("Read all history, " + list.size() + " records.");
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
         }
         return list;
@@ -347,8 +340,7 @@ public final class DbUtils {
                 int count = rs.getInt("count");
                 return count;
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
         }
         return null;
@@ -402,30 +394,25 @@ public final class DbUtils {
         try (Connection conn = DriverManager.getConnection(Config.DB_PROTOCOL.getString() + Config.DB_URL.getString())) {
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL1);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL2);
-            }
-            catch (Exception e1) {
+            } catch (Exception e1) {
                 LOG.error(e1.getMessage(), e1);
             }
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL3);
-            }
-            catch (Exception e2) {
+            } catch (Exception e2) {
                 LOG.error(e2.getMessage(), e2);
             }
             try (Statement stmt = conn.createStatement()) {
                 boolean b = stmt.execute(DDL4);
-            }
-            catch (Exception e3) {
+            } catch (Exception e3) {
                 LOG.error(e3.getMessage(), e3);
             }
-        }
-        catch (Exception e4) {
+        } catch (Exception e4) {
             LOG.error(e4.getMessage(), e4);
             File file = new File(Config.DB_URL.getString());
             if (file.exists()) {

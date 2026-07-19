@@ -41,6 +41,7 @@ public class Main {
     public static Process pythonProcess;
     private static String[] _args;
     private final static JTextArea TEXT_AREA_LOGS = new JTextArea();
+    private static JFrame frameLogs = null;
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -97,8 +98,7 @@ public class Main {
                     main.start();
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             LOG.fatal(ex.getMessage(), ex);
         }
     }
@@ -150,12 +150,10 @@ public class Main {
             String[] cmd = {'"' + Config.WEB_BROWSER.getString() + '"', '"' + "--allow-file-access-from-files" + '"', '"' + default_path + "_report.html\""};
             LOG.info("cmd: " + Arrays.toString(cmd));
             Runtime.getRuntime().exec(cmd);
-        }
-        catch (Exception ioe) {
+        } catch (Exception ioe) {
             LOG.fatal(ioe.getMessage(), ioe);
             System.exit(-1);
-        }
-        finally {
+        } finally {
             float duration = System.currentTimeMillis() - start;
             int size = ((listFound == null || listFound.isEmpty()) ? 1 : listFound.size()) + ((listNotFound == null || listNotFound.isEmpty()) ? 0 : listNotFound.size());
             LOG.info("Took: " + duration + "ms, " + String.format("%.2f", duration / size) + "ms/film, found: " + size);
@@ -164,7 +162,7 @@ public class Main {
     }
 
     private void createWindow() {
-        JFrame frameLogs = new JFrame("ImdbSearch - Log window");
+        frameLogs = new JFrame("ImdbSearch - Log window");
         URL imageURL = Main.class.getResource(Config.ICON.getString());
         if (imageURL != null) {
             frameLogs.setIconImage(new ImageIcon(imageURL).getImage());
@@ -197,6 +195,7 @@ public class Main {
         if (option == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             default_path = file.getAbsolutePath() + File.separator;
+            frameLogs.setTitle("ImdbSearch - Log window - " + default_path);
             return true;
         } else {
             LOG.info("Open command cancelled by user.");
@@ -264,8 +263,7 @@ public class Main {
                                             FileTime time = FileTime.fromMillis(Date.from(new Date().toInstant()).getTime());
                                             attributes.setTimes(time, time, time);
                                             LOG.info("File " + newF + " updated creation date");
-                                        }
-                                        catch (IOException ex) {
+                                        } catch (IOException ex) {
                                             LOG.warn(originalName + " " + ex.getMessage());
                                         }
                                     }
