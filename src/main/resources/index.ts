@@ -35,7 +35,7 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
             </a>
             <div class="hist-text-cell">
                 <span style="font-weight: bold; border:0px; text-wrap: balance;">
-                    <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.file}">${film.mainTitle}</a>
+                    <a class="ui-button ui-widget ui-corner-all" href="https://www.imdb.com/title/tt${film.mainImdbid}" target ="_blank" title="${film.file + "\n\n" + film.mainAkas}">${film.mainTitle}</a>
                 </span>
                 <span style="font-weight: lighter; font-size: x-small; font-family: monospace; padding: 1em; display: flex; justify-content: center; align-items: center;">
                     <a href="${alloCine}" target="_blank" rel="noreferrer noopener external"><img src="${alloCineIcon}" alt="AlloCiné ${film.mainOriginalTitle}" width="20px" title="AlloCiné"/></a>&nbsp;
@@ -55,7 +55,7 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
     str += `<span style="font-size: medium;"><span>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
             <span style="text-wrap: balance;"><b>Year: </b>${film.mainYears === '' ? film.mainYear : film.mainYears}${seasons} </span></span>
             </br>`;
-    str += `<span><b>Res.: </b>${film.resolutionDescription === null ? film.width + 'x' + film.heigth : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription}</span></br>`;
+    str += `<span><b>Res.: </b>${film.resolutionDescription === null ? (film.width === null ? '?' : film.width) + 'x' + (film.heigth === null ? '?' : film.heigth) : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription === null ? '?' : film.codecDescription}</span></br>`;
     if (film.mainAspectRatio != undefined && film.mainAspectRatio != null && film.mainAspectRatio != '') {
         str += `<span style="text-wrap: balance;" > <b>Ratio: </b>&nbsp;${film.mainAspectRatio}, </span>`;
     }
@@ -64,7 +64,8 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
                 </br>`;
     }
     if (film.mainDirectors != undefined && film.mainDirectors != null && film.mainDirectors.length != 0) {
-        str += `<span><b>Director: </b> ${film.mainDirectors} </span>
+        str += `</br>
+					<span><b>Director: </b> ${film.mainDirectors} </span>
                 </br>`;
     }
     if (film.mainWriters != undefined && film.mainWriters != null && film.mainWriters.length != 0) {

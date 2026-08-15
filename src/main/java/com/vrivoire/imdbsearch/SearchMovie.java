@@ -373,7 +373,7 @@ public class SearchMovie {
 
 		while (!meta.isError() && !meta.isDone()) {
 			try {
-				Thread.sleep(10);
+				Thread.sleep(50);
 			} catch (InterruptedException ex) {
 				LOG.error(ex.getMessage(), ex);
 			}
@@ -391,7 +391,6 @@ public class SearchMovie {
 		public VlcMeta(NameYearBean nameYearBean) {
 			super(nameYearBean.getFile().getName());
 			this.nameYearBean = nameYearBean;
-			LOG.info("\t" + nameYearBean.getFile().getName() + " startred.");
 		}
 
 		public boolean isDone() {
@@ -408,17 +407,17 @@ public class SearchMovie {
 
 		@Override
 		public void run() {
+			long start = System.currentTimeMillis();
 			try {
 				String path;
 				if (nameYearBean.getFile().isDirectory()) {
 					@SuppressWarnings("unchecked")
 					Collection<File> listFiles = FileUtils.listFiles(nameYearBean.getFile(), ((String[]) ((List) Config.SUPPORTED_EXTENSIONS.get()).toArray(String[]::new)), true);
 					path = listFiles.isEmpty() ? "" : (listFiles.toArray(File[]::new)[0]).getAbsolutePath();
-					LOG.info("\t" + nameYearBean.getFile().getName() + " Folder: " + nameYearBean.getFile().getName() + " -> " + path);
+					LOG.info("\tFound in file in directory: " + path);
 				} else {
 					path = nameYearBean.getFile().getAbsolutePath();
 				}
-				LOG.info("\t" + nameYearBean.getFile().getName() + " Looking for " + new File(path).exists() + " " + path);
 
 				mediaPlayerComponent.mediaPlayer().media().prepare(path);
 				LOG.info("\t" + nameYearBean.getFile().getName() + " isParsed: " + mediaPlayerComponent.mediaPlayer().media().parsing().parse());
@@ -426,7 +425,7 @@ public class SearchMovie {
 
 					@Override
 					public void mediaParsedChanged(Media media, MediaParsedStatus newStatus) {
-						LOG.info("\t" + nameYearBean.getFile().getName() + " VLC looking meta for " + nameYearBean.getFile().getName() + ", Status: " + newStatus);
+						LOG.info("\t" + nameYearBean.getFile().getName() + " VLC looking meta status: " + newStatus);
 						if (newStatus == MediaParsedStatus.DONE) {
 							MediaPlayer mediaPlayer = mediaPlayerComponent.mediaPlayer();
 							List<? extends TrackInfo> trackInfoList = mediaPlayer.media().info().tracks();
@@ -448,7 +447,7 @@ public class SearchMovie {
 												}
 											}
 											case UnknownTrackInfo unknownTrackInfo ->
-												LOG.info("\t" + nameYearBean.getFile().getName() + " UnknownTrackInfo: " + unknownTrackInfo);
+												LOG.warn("\t" + nameYearBean.getFile().getName() + " UnknownTrackInfo: " + unknownTrackInfo);
 											case VideoTrackInfo videoTrackInfo -> {
 												nameYearBean.setHeight(videoTrackInfo.height());
 												nameYearBean.setWidth(videoTrackInfo.width());
@@ -502,17 +501,21 @@ public class SearchMovie {
 								nameYearBean.setSubTitles(subTitleList);
 								nameYearBean.setAudio(audioList);
 
-								LOG.info("\t" + nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
-										+ nameYearBean.getResolutionDescription() + ", " + nameYearBean.getTimeInHHMM() + ", SubTitles[" + nameYearBean.getSubTitles() + "], Audio[" + nameYearBean.getAudio() + "]");
+								LOG.info("\tTook: " + (System.currentTimeMillis() - start) + "ms, " + nameYearBean.getFile().getName() + ", " + nameYearBean.getCodecDescription() + ", " + nameYearBean.getWidth() + "x" + nameYearBean.getHeigth() + ", "
+										+ nameYearBean.getResolutionDescription() + ", Duration: " + nameYearBean.getTimeInHHMM() + ", SubTitles: " + nameYearBean.getSubTitles() + ", Audio: " + nameYearBean.getAudio());
+								isDone = true;
 							} else {
-								LOG.info("\t" + nameYearBean.getFile().getName() + ", Empty");
+								LOG.warn("\t" + nameYearBean.getFile().getName() + ", Empty");
+								isDone = true;
 							}
 						} else {
+							isDone = true;
+							isError = true;
 							LOG.info("\t" + nameYearBean.getFile().getName() + " , Status: " + newStatus);
 						}
+
 					}
 				});
-				isDone = true;
 			} catch (Throwable ex) {
 				LOG.error("\t" + nameYearBean.getFile().getName() + " " + ex.getMessage(), ex);
 				isError = true;

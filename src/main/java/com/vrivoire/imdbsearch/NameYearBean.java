@@ -310,8 +310,12 @@ public class NameYearBean implements Serializable {
 		this.mainAkas = mainAkas;
 	}
 
-	public List<String> getMainAkas() {
-		return mainAkas;
+	public String getMainAkas() {
+		StringBuilder temp = new StringBuilder('\n');
+		for (String aka : mainAkas) {
+			temp.append(aka).append('\n');
+		}
+		return temp.toString();
 	}
 
 	public void setMainAspectRatio(List<String> mainAspectRatio) {

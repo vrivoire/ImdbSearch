@@ -9,6 +9,7 @@ import sys
 import threading
 import traceback
 from datetime import datetime
+from pathlib import Path
 from queue import Queue
 from threading import Thread
 from typing import Any
@@ -25,6 +26,7 @@ SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 OUTPUT_JSON_FILE = None
 search_path = None
+DOS_FORBIDDEN_CHAR:set = {"\\", "/", ":", "*", "?", '"', '<', '>', '|'}
 
 log.basicConfig(
     level=logging.INFO,
@@ -35,19 +37,35 @@ log.basicConfig(
 )
 
 
-def remove_accents(text):
-    return "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
+def remove_accents(text)->str:
+    clean_text:str=  "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
+    clean_text = "".join([char for char in clean_text if char not in DOS_FORBIDDEN_CHAR])
+    return clean_text
 
+
+def isdir_insensitive_pathlib(path_str: str) -> bool:
+    path = Path(path_str)
+    parent = path.parent
+
+    if not parent.exists():
+        return False
+
+    # Match the specific folder name case-insensitively
+    # returns a generator of matching Path objects
+    matches = parent.glob(path.name, case_sensitive=False)
+
+    # Check if any matching path is actually a directory
+    return any(match.is_dir() for match in matches)
 
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
 def load_data(thread_index: int, path: str, title: str) -> str | None:
     sys.stdout.reconfigure(encoding='utf-8')
-    title = title.encode('utf-8') if type(title) == bytes else title
+    title = str(title.encode('utf-8')) if type(title) == bytes else title
     title = title.lower()
-    log.info(f'\t\tid: {thread_index} Looking for path: {path}, title: {title}')
+    log.info(f'\t\tthread: {thread_index} Looking for path: {path}, title: {title}')
 
     imdb_id: str | None = None
-    looking_year: str = ''
+    looking_year: int|None = None
     *middle, last = title.split()
     if len(middle) == 0:
         looking_title: str = last
@@ -56,30 +74,33 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
         try:
             looking_year: int = int(last)
         except ValueError as ex:
-            log.warning(f'\t\tid: {thread_index} year not found for {title}, {ex}')
-            looking_year: str = ''
+            log.warning(f'\t\tthread: {thread_index} year not found for {title}, {ex}')
+            looking_year = None
             looking_title = title
-    log.info(f'\t\tid: {thread_index} {looking_title} {looking_year}')
+    log.info(f'\t\tthread: {thread_index} looking_title: {looking_title} looking_year: {looking_year}')
 
     try:
-        search_result: SearchResult | None = search_title(title)
+        if looking_year is None:
+            search_result: SearchResult | None = search_title(title)
+        else:
+            search_result: SearchResult | None = search_title(looking_title, looking_year)
         if search_result:
             movies: list[MovieBriefInfo] = search_result.titles
             kind: str | None = None
-            log.info(f'\t\tid: {thread_index} {title}: len: {len(movies)}, {movies}')
+            log.info(f'\t\tthread: {thread_index} {title}: len: {len(movies)}, {movies}')
             # Nice!!!!
             # [log.info(f'\t\t\t{movie}') for movie in movies]
 
             for movie in movies:
-                log.info(f'\t\tid: {thread_index} {title}: {movie}')
+                log.info(f'\t\tthread: {thread_index} {title}: {movie}')
                 akas: list[str] = [cleanup_title(aka.title) for aka in get_akas(movie.imdb_id)['akas']]
                 akas.insert(0, cleanup_title(movie.title))
                 titles: set[str] = set(akas)
-                log.info(f'\t\tid: {thread_index} {title}: AKAS: {titles}')
+                log.info(f'\t\tthread: {thread_index} {title}: AKAS: {titles}')
 
                 if not imdb_id:
                     kind = movie.kind.lower()
-                    log.info(f'\t\tid: {thread_index} {title}: {kind}, is_series: {movie.is_series()}, is_episode: {movie.is_episode()}')
+                    log.info(f'\t\tthread: {thread_index} {title}: {kind}, is_series: {movie.is_series()}, is_episode: {movie.is_episode()}')
                     if (
                             'podcast' not in kind
                             and 'game' not in kind
@@ -87,17 +108,20 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
                             and 'vg' not in kind
                             and not movie.is_episode()
                     ):
-                        log.info(f'\t\tid: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
-                        found_year = looking_year != '' and movie.year == looking_year
+                        log.info(f'\t\tthread: {thread_index} {looking_title} --> kind: {kind}, is_series: {movie.is_series()}, len: {len(titles)}, found: {looking_title in titles}, {titles}')
+                        found_year = looking_year is not None and movie.year == looking_year
                         # log.info(f'found_year={found_year}')
                         r_accentes = remove_accents(looking_title)
                         log.info(f'looking_title = {looking_title}, r_accentes = {r_accentes}')
                         # log.info(f'toto1={remove_accents(t) for t in titles}')
                         # log.info(f'toto1={r_accentes in [remove_accents(t) for t in titles]}')
                         if r_accentes in [remove_accents(t) for t in titles]:
+                            # log.info(0)
                             if found_year and (movie.year == looking_year):
+                                # print(f'{path}/{title}')
+                                # print(os.path.isdir(f'{path}/{title}'))
                                 # log.info(1)
-                                if os.path.isdir(path + '/' + title) and movie.is_series():
+                                if os.path.isdir(f'{path}/{title}') and movie.is_series():
                                     # log.info(2)
                                     imdb_id = movie.imdb_id
                                     break
@@ -117,12 +141,12 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
                                     break
 
             if imdb_id:
-                log.info(f'\t\tid: {thread_index} FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
+                log.info(f'\t\tthread: {thread_index} FOUND {imdb_id}, {kind} - looking={looking_title} {looking_year} - title={title}')
             else:
-                log.info(f'\t\tid: {thread_index} NOT FOUND looking: {looking_title} {looking_year}')
+                log.info(f'\t\tthread: {thread_index} NOT FOUND looking: {looking_title} {looking_year}')
 
     except Exception as ex:
-        log.error(f"\t\tid: {thread_index} 1 ERROR {ex}: {title}")
+        log.error(f"\t\tthread: {thread_index} 1 ERROR {ex}: {title}")
         log.error(traceback.format_exc())
         if ex.__str__().find('****** AWS WAF enforcement in place. Try again later. ******') != -1:
             return None
@@ -161,6 +185,11 @@ def populate(thread_index: int, imdb_id: str | None, title: str) -> dict[str, An
         if imdb_id:
             movie_detail: MovieDetail | None = get_movie(imdb_id)
             if movie_detail:
+                # print(type(get_akas(imdb_id).akas))
+                # print([x.__str__() for x in get_akas(imdb_id).akas])
+                # print('*'.center(100, '*'))
+                # print(movie_detail.model_dump_json(indent=4))
+                # print('*'.center(100, '*'))
                 try:
                     prop: dict[str, Any] = {
                         "main.imdbID": imdb_id,
@@ -179,7 +208,9 @@ def populate(thread_index: int, imdb_id: str | None, title: str) -> dict[str, An
                         "plot.synopsis": movie_detail.synopses,
                         "main.country codes": [x.lower() for x in movie_detail.country_codes] if movie_detail.country_codes else [],
                         'is Series': movie_detail.is_series(),
+                        'main.akas': [x.__str__() for x in get_akas(imdb_id).akas]
                     }
+
                     if movie_detail.awards:
                         prop['main.awards.wins'] = movie_detail.awards.wins
                         prop['main.awards.nominations'] = movie_detail.awards.nominations
@@ -314,14 +345,14 @@ def args_search(path: str, files: list[str]):
             thread.start()
         log.warning("Waiting join....")
         for thread in threads:
-            thread.join()
+            thread.join(60)
         log.warning("All tasks has been finished")
 
         while not result_queue.empty():
             props.update(result_queue.get())
         log.warning("Collecting data")
 
-        for i in range(1, 5):
+        for i in range(1, 3):
             for title in props.keys():
                 if len(props.get(title)) == 0:
                     log.info(f'Retrying {title}')
@@ -342,6 +373,7 @@ def path_search(path):
     files: list[str] = os.listdir(path)
     log.info(f"Searching into files: {files}")
     log.info(f'IGNORED_FOLDERS: {IGNORED_FOLDERS}')
+    log.info(f'TORRENTS: {TORRENTS}')
     log.info(f'SUPPORTED_EXTENSIONS: {SUPPORTED_EXTENSIONS}')
     for folder in IGNORED_FOLDERS:
         try:
@@ -358,6 +390,11 @@ def path_search(path):
                 files[i] = file[0: len(file) - 4]
             else:
                 log.info(f'removing {file} {files.remove(file)}')
+
+    for i, file in enumerate(files):
+        for sub in TORRENTS:
+            file = file.replace(sub, "")
+            files[i] = file.strip()
 
     log.info(f'files={files}')
     args_search(path, files)
@@ -379,6 +416,11 @@ def get_config_path():
 
 
 if __name__ == "__main__":
+    log.warning('*'.center(100, '*'))
+    log.warning('*' + f'{__file__[__file__.rfind('\\') + 1:len(__file__) - 3]} started'.center(98, ' ') + '*')
+    log.warning('*' + sys.version.center(98, ' ') + '*')
+    log.warning('*'.center(100, '*'))
+
     file_path: str = get_config_path().format(**os.environ)
     with open(file_path) as infile:
         CONFIG = json.load(infile)
@@ -401,11 +443,11 @@ if __name__ == "__main__":
         args_search(sys.argv[1], sys.argv[2:])
     else:
         log.info("Default path.")
-        path_search("C:/Users/ADELE/Videos")
+        # path_search("C:/Users/ADELE/Videos")
         # path_search("C:/Users/ADELE/Videos/W")
         # path_search("C:/Users/ADELE/Videos/W2")
         # path_search("C:/Users/ADELE/Videos/W3")
-        # path_search("C:/Users/ADELE/Videos/W4")
+        path_search("C:/Users/ADELE/Videos/W4")
 
         if os.path.isfile(OUTPUT_JSON_FILE):
             with open(OUTPUT_JSON_FILE, 'r', encoding='utf-8') as file:
