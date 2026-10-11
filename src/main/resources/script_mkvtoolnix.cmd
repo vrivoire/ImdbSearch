@@ -2,7 +2,7 @@
 chcp 65001
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-set "DIRECTORY=A Shop for Killers 2024"
+set "DIRECTORY=Ted Lasso"
 rem set "LANG=eng,fre"
 set "LANG=eng"
 rem set "LANG=fre"

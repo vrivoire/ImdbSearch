@@ -49,18 +49,19 @@ function insertAll(film: any, audioFlags: string, subTitlesFlags: string, langua
                 <span style="font-size: small">`;
     if (film.mainAwardsWins > 0 || film.mainAwardsPrestigious_award) {
         str +=
-            `<span style="font-weight: bold; color: #104e8b;font-size: medium;">${film.mainAwardsWins > 0 ? "Wins:&nbsp;" + film.mainAwardsWins : ""}${film.mainAwardsPrestigious_award ? ",&nbsp;" + film.mainAwardsPrestigious_award.name : ""}</span>
+            `<span style="font-weight: bold; color: #104e8b;font-size: medium;" title="${film.mainAwards}" >${film.mainAwardsWins > 0 ? "Wins:&nbsp;" + film.mainAwardsWins : ""}${film.mainAwardsPrestigious_award ? ",&nbsp;" + film.mainAwardsPrestigious_award.name : ""}</span>
             </br>`;
     }
     str += `<span style="font-size: medium;"><span>${film.size} ${film.fileCount === null ? '' : ', <b>Count: </b>' + film.fileCount}</span>
             <span style="text-wrap: balance;"><b>Year: </b>${film.mainYears === '' ? film.mainYear : film.mainYears}${seasons} </span></span>
             </br>`;
     str += `<span><b>Res.: </b>${film.resolutionDescription === null ? (film.width === null ? '?' : film.width) + 'x' + (film.heigth === null ? '?' : film.heigth) : film.resolutionDescription}, <b>Codec: </b>${film.codecDescription === null ? '?' : film.codecDescription}</span></br>`;
-    if (film.mainAspectRatio != undefined && film.mainAspectRatio != null && film.mainAspectRatio != '') {
+    if (film.mainAspectRatio != '') {
         str += `<span style="text-wrap: balance;" > <b>Ratio: </b>&nbsp;${film.mainAspectRatio}, </span>`;
     }
     if (film.creactors != undefined && film.creactors != null && film.creactors.length != 0) {
-        str += `<span><b>Creactors: </b> ${film.creactors} </span>
+        str += `</br>
+					<span><b>Creactors: </b> ${film.creactors} </span>
                 </br>`;
     }
     if (film.mainDirectors != undefined && film.mainDirectors != null && film.mainDirectors.length != 0) {
@@ -173,7 +174,13 @@ function getaAdioSubTitlesFlagsByCode(list: string[]) {
                     var country = map['en'][0];
                     flags += `<img src='https://unpkg.com/language-icons/icons/${lang}.svg' height='15px' alt='${country}' title='${country}'> `;
                 } else {
-                    flags += `${element} `;
+					var map = json_iso_639_1[element];
+					if (map != undefined) {
+						var country = map['name'];
+						flags += `<img src='https://unpkg.com/language-icons/icons/${element}.svg' height='15px' alt='${country}' title='${country}'> `;
+					} else {
+						flags += `${element} `;
+					}
                 }
             }
         }

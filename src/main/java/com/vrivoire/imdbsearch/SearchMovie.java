@@ -226,6 +226,7 @@ public class SearchMovie {
 			Map<String, Object> map = jsonMap.get(searchKey);
 			if (map == null) {
 				LOG.warn(searchKey + " --> " + map);
+				LOG.warn(searchKey + " --> " + jsonMap.keySet());
 			} else {
 				map.keySet().forEach(key -> {
 					mapKeys.put(key, map.get(key) == null ? null : map.get(key).getClass().getSimpleName());

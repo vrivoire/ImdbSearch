@@ -19,14 +19,14 @@ import jsonpickle
 import unicodedata
 from imdbinfo import get_movie, search_title, get_akas, WAFError
 from imdbinfo.models import MovieDetail, MovieBriefInfo, SearchResult
-from imdbinfo.services import normalize_imdb_id, request_json_url
+from imdbinfo.services import normalize_imdb_id, request_json_url, get_awards
 
 TORRENTS = None
 SUPPORTED_EXTENSIONS = None
 IGNORED_FOLDERS = None
 OUTPUT_JSON_FILE = None
 search_path = None
-DOS_FORBIDDEN_CHAR:set = {"\\", "/", ":", "*", "?", '"', '<', '>', '|'}
+DOS_FORBIDDEN_CHAR: set = {"\\", "/", ":", "*", "?", '"', '<', '>', '|'}
 
 log.basicConfig(
     level=logging.INFO,
@@ -37,8 +37,8 @@ log.basicConfig(
 )
 
 
-def remove_accents(text)->str:
-    clean_text:str=  "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
+def remove_accents(text) -> str:
+    clean_text: str = "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
     clean_text = "".join([char for char in clean_text if char not in DOS_FORBIDDEN_CHAR])
     return clean_text
 
@@ -57,6 +57,7 @@ def isdir_insensitive_pathlib(path_str: str) -> bool:
     # Check if any matching path is actually a directory
     return any(match.is_dir() for match in matches)
 
+
 # https://www.geeksforgeeks.org/python/how-to-remove-string-accents-using-python-3/
 def load_data(thread_index: int, path: str, title: str) -> str | None:
     sys.stdout.reconfigure(encoding='utf-8')
@@ -65,7 +66,7 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
     log.info(f'\t\tthread: {thread_index} Looking for path: {path}, title: {title}')
 
     imdb_id: str | None = None
-    looking_year: int|None = None
+    looking_year: int | None = None
     *middle, last = title.split()
     if len(middle) == 0:
         looking_title: str = last
@@ -77,13 +78,17 @@ def load_data(thread_index: int, path: str, title: str) -> str | None:
             log.warning(f'\t\tthread: {thread_index} year not found for {title}, {ex}')
             looking_year = None
             looking_title = title
-    log.info(f'\t\tthread: {thread_index} looking_title: {looking_title} looking_year: {looking_year}')
+    log.info(f'\t\tthread: {thread_index} looking_title: "{looking_title}" looking_year: "{looking_year}"')
 
     try:
         if looking_year is None:
             search_result: SearchResult | None = search_title(title)
         else:
-            search_result: SearchResult | None = search_title(looking_title, looking_year)
+            search_result: SearchResult | None = search_title(looking_title, looking_year, exact_match=True)
+        if not search_result or not search_result.titles or len(search_result.titles) == 0:
+            log.warning('exact match=True FAILED, tying loose')
+            search_result: SearchResult | None = search_title(looking_title, looking_year, exact_match=False)
+
         if search_result:
             movies: list[MovieBriefInfo] = search_result.titles
             kind: str | None = None
@@ -215,7 +220,22 @@ def populate(thread_index: int, imdb_id: str | None, title: str) -> dict[str, An
                         prop['main.awards.wins'] = movie_detail.awards.wins
                         prop['main.awards.nominations'] = movie_detail.awards.nominations
                         prop['main.awards.prestigious_award'] = movie_detail.awards.prestigious_award
-
+                        awards = get_awards(imdb_id)
+                        if awards:
+                            wins = set()
+                            other = set()
+                            for award in awards:
+                                award_text = f"{award.event}, {award.status}"
+                                if "Winner" in award.status:
+                                    wins.add(award_text)
+                                else:
+                                    other.add(award_text)
+                            sorted_wins = sorted(wins)
+                            sorted_other = sorted(other)
+                            separator = [""] if sorted_wins and sorted_other else []
+                            prop["main.awards"] = "\n".join(sorted_wins + separator + sorted_other)
+                        else:
+                            prop["main.awards"] = ""
                     if movie_detail.is_series():
                         prop['creators'] = list(reversed([creator.name for creator in movie_detail.info_series.get_creators()]))
                         prop['seasons'] = len(movie_detail.info_series.display_seasons)
@@ -278,22 +298,25 @@ def spawn(thread_index: int, path: str, titles: list[str], result_queue: Queue):
         title: str
         for title in titles:
             i += 1
-            prop: dict[str, Any] = {}
+            # prop: dict[str, Any] = {}
             try:
                 title = title.replace(".", " ")
             except Exception:
                 pass  # No dot and extension
 
-            try:
-                imdb_id: str | None = load_data(thread_index, path, title)
-                prop: dict[str, Any] = populate(thread_index, imdb_id, title)
-            finally:
-                log.info(f"\t\tid: {thread_index} {i}/{size}, found: {title}")
-                result_queue.put({title: prop})
-        log.info(f"\tid: {thread_index} Ending {thread_index}")
+            # try:
+            imdb_id: str | None = load_data(thread_index, path, title)
+            prop: dict[str, Any] = populate(thread_index, imdb_id, title)
+            # finally:
+            result_queue.put({title: prop})
+            log.info(f"\t\tid: {thread_index} {i}/{size}, found: {title} &&&&&&&&")
+
+        log.info(f"\tid: {thread_index} ended")
     except Exception as ex:
         log.error(f"\tid: {thread_index} 7 ERROR - ************** IMDbError ************** thread_id: {thread_index}, {ex}: {titles}")
         log.error(traceback.format_exc())
+    finally:
+        result_queue.task_done()
 
 
 def args_search(path: str, files: list[str]):
@@ -343,14 +366,17 @@ def args_search(path: str, files: list[str]):
         log.warning("Starting threads")
         for thread in threads:
             thread.start()
-        log.warning("Waiting join....")
+        log.warning("Waiting join queue....")
+        result_queue.join()
+        log.warning("Waiting join threads....")
         for thread in threads:
             thread.join(60)
         log.warning("All tasks has been finished")
 
+        log.warning(f"1 Collecting data, queue #: {result_queue.qsize()}/{file_count}")
         while not result_queue.empty():
             props.update(result_queue.get())
-        log.warning("Collecting data")
+        log.warning(f"2 Collecting data, keys: {len(props.keys())}/{file_count}, {list(props.keys())}")
 
         for i in range(1, 3):
             for title in props.keys():

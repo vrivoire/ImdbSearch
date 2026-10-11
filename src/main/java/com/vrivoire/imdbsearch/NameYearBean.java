@@ -82,8 +82,17 @@ public class NameYearBean implements Serializable {
 	private Integer mainAwardsNominations = 0;
 	private Integer mainAwardsWins = 0;
 	private Map<String, Object> mainAwardsPrestigious_award = null;
+	private String mainAwards = null;
 
 	public NameYearBean() {
+	}
+
+	public String getMainAwards() {
+		return mainAwards;
+	}
+
+	public void setMainAwards(String mainAwards) {
+		this.mainAwards = mainAwards;
 	}
 
 	public Integer getMainAwardsNominations() {
@@ -311,11 +320,15 @@ public class NameYearBean implements Serializable {
 	}
 
 	public String getMainAkas() {
-		StringBuilder temp = new StringBuilder('\n');
-		for (String aka : mainAkas) {
-			temp.append(aka).append('\n');
+		if (this.mainAkas == null) {
+			return "";
+		} else {
+			StringBuilder temp = new StringBuilder().append('\n');
+			for (String aka : mainAkas) {
+				temp.append(aka).append('\n');
+			}
+			return temp.toString();
 		}
-		return temp.toString();
 	}
 
 	public void setMainAspectRatio(List<String> mainAspectRatio) {
@@ -674,79 +687,79 @@ public class NameYearBean implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("NameYearBean [");
-		builder.append("audio=").append(audio);
-		builder.append(", bytes=").append(bytes);
-		builder.append(", codecDescription=").append(codecDescription);
-		builder.append(", creators=").append(creators);
-		builder.append(", error=").append(error);
-		builder.append(", file=").append(file);
-		builder.append(", fileCount=").append(fileCount);
-		builder.append(", fileDate=").append(fileDate);
-		builder.append(", heigth=").append(heigth);
-		builder.append(", isDirectory=").append(isDirectory);
-		builder.append(", isOnDrive=").append(isOnDrive);
-		builder.append(", isSeries=").append(isSeries);
-		builder.append(", mainAkas=").append(mainAkas);
-		builder.append(", mainAlternativeKind=").append(mainAlternativeKind);
-		builder.append(", mainAspectRatio=").append(mainAspectRatio);
-		builder.append(", mainAwardsNominations=").append(mainAwardsNominations);
-		builder.append(", mainAwardsPrestigious_award=").append(mainAwardsPrestigious_award);
-		builder.append(", mainAwardsWins=").append(mainAwardsWins);
-		builder.append(", mainBottom100Rank=").append(mainBottom100Rank);
-		builder.append(", mainBoxOffice=").append(mainBoxOffice);
-		builder.append(", mainCasts=").append(mainCasts);
-		builder.append(", mainCertificates=").append(mainCertificates);
-		builder.append(", mainColorInfo=").append(mainColorInfo);
-		builder.append(", mainCountries=").append(mainCountries);
-		builder.append(", mainCountryCodes=").append(mainCountryCodes);
-		builder.append(", mainCoverUrl=").append(mainCoverUrl);
-		builder.append(", mainDirectors=").append(mainDirectors);
-		builder.append(", mainDuration=").append(mainDuration);
-		builder.append(", mainEpisode=").append(mainEpisode);
-		builder.append(", mainEpisodeOf=").append(mainEpisodeOf);
-		builder.append(", mainGenres=").append(mainGenres);
-		builder.append(", mainImdbid=").append(mainImdbid);
-		builder.append(", mainKind=").append(mainKind);
-		builder.append(", mainLanguageCodes=").append(mainLanguageCodes);
-		builder.append(", mainLanguages=").append(mainLanguages);
-		builder.append(", mainLocalizedTitle=").append(mainLocalizedTitle);
-		builder.append(", mainNextEpisode=").append(mainNextEpisode);
-		builder.append(", mainNumberOfEpisodes=").append(mainNumberOfEpisodes);
-		builder.append(", mainNumberOfSeasons=").append(mainNumberOfSeasons);
-		builder.append(", mainOriginalAirDate=").append(mainOriginalAirDate);
-		builder.append(", mainOriginalTitle=").append(mainOriginalTitle);
-		builder.append(", mainPlotOutline=").append(mainPlotOutline);
-		builder.append(", mainPreviousEpisode=").append(mainPreviousEpisode);
-		builder.append(", mainProductionStatus=").append(mainProductionStatus);
-		builder.append(", mainProductionStatusUpdated=").append(mainProductionStatusUpdated);
-		builder.append(", mainRating=").append(mainRating);
-		builder.append(", mainSeason=").append(mainSeason);
-		builder.append(", mainSeasons=").append(mainSeasons);
-		builder.append(", mainSoundMix=").append(mainSoundMix);
-		builder.append(", mainStars=").append(mainStars);
-		builder.append(", mainTitle=").append(mainTitle);
-		builder.append(", mainTop250Rank=").append(mainTop250Rank);
-		builder.append(", mainTvSeriesTitle=").append(mainTvSeriesTitle);
-		builder.append(", mainVideos=").append(mainVideos);
-		builder.append(", mainVotes=").append(mainVotes);
-		builder.append(", mainWriters=").append(mainWriters);
-		builder.append(", mainYear=").append(mainYear);
-		builder.append(", mainYears=").append(mainYears);
-		builder.append(", name=").append(name);
-		builder.append(", originalName=").append(originalName);
-		builder.append(", plotPlot=").append(plotPlot);
-		builder.append(", plotSynopsis=").append(plotSynopsis);
-		builder.append(", resolutionDescription=").append(resolutionDescription);
-		builder.append(", seasons=").append(seasons);
-		builder.append(", serialVersionUID=").append(serialVersionUID);
-		builder.append(", size=").append(size);
-		builder.append(", subTitles=").append(subTitles);
-		builder.append(", timeInHHMM=").append(timeInHHMM);
-		builder.append(", width=").append(width);
-		builder.append("]");
-		return builder.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append("NameYearBean{");
+		sb.append("name=").append(name);
+		sb.append(", originalName=").append(originalName);
+		sb.append(", fileDate=").append(fileDate);
+		sb.append(", isDirectory=").append(isDirectory);
+		sb.append(", size=").append(size);
+		sb.append(", bytes=").append(bytes);
+		sb.append(", file=").append(file);
+		sb.append(", fileCount=").append(fileCount);
+		sb.append(", mainAkas=").append(mainAkas);
+		sb.append(", mainAspectRatio=").append(mainAspectRatio);
+		sb.append(", mainBoxOffice=").append(mainBoxOffice);
+		sb.append(", mainCertificates=").append(mainCertificates);
+		sb.append(", mainColorInfo=").append(mainColorInfo);
+		sb.append(", mainCountries=").append(mainCountries);
+		sb.append(", mainCountryCodes=").append(mainCountryCodes);
+		sb.append(", mainCoverUrl=").append(mainCoverUrl);
+		sb.append(", mainDirectors=").append(mainDirectors);
+		sb.append(", mainGenres=").append(mainGenres);
+		sb.append(", mainImdbid=").append(mainImdbid);
+		sb.append(", mainKind=").append(mainKind);
+		sb.append(", mainAlternativeKind=").append(mainAlternativeKind);
+		sb.append(", mainLanguageCodes=").append(mainLanguageCodes);
+		sb.append(", mainLanguages=").append(mainLanguages);
+		sb.append(", mainLocalizedTitle=").append(mainLocalizedTitle);
+		sb.append(", mainOriginalAirDate=").append(mainOriginalAirDate);
+		sb.append(", mainOriginalTitle=").append(mainOriginalTitle);
+		sb.append(", mainPlotOutline=").append(mainPlotOutline);
+		sb.append(", mainRating=").append(mainRating);
+		sb.append(", mainSoundMix=").append(mainSoundMix);
+		sb.append(", mainCasts=").append(mainCasts);
+		sb.append(", mainTitle=").append(mainTitle);
+		sb.append(", mainTop250Rank=").append(mainTop250Rank);
+		sb.append(", mainVideos=").append(mainVideos);
+		sb.append(", mainVotes=").append(mainVotes);
+		sb.append(", mainWriters=").append(mainWriters);
+		sb.append(", mainYear=").append(mainYear);
+		sb.append(", mainYears=").append(mainYears);
+		sb.append(", plotPlot=").append(plotPlot);
+		sb.append(", plotSynopsis=").append(plotSynopsis);
+		sb.append(", mainSeasons=").append(mainSeasons);
+		sb.append(", mainNumberOfSeasons=").append(mainNumberOfSeasons);
+		sb.append(", mainProductionStatusUpdated=").append(mainProductionStatusUpdated);
+		sb.append(", mainProductionStatus=").append(mainProductionStatus);
+		sb.append(", error=").append(error);
+		sb.append(", mainEpisode=").append(mainEpisode);
+		sb.append(", mainNumberOfEpisodes=").append(mainNumberOfEpisodes);
+		sb.append(", mainPreviousEpisode=").append(mainPreviousEpisode);
+		sb.append(", mainNextEpisode=").append(mainNextEpisode);
+		sb.append(", mainSeason=").append(mainSeason);
+		sb.append(", isOnDrive=").append(isOnDrive);
+		sb.append(", resolutionDescription=").append(resolutionDescription);
+		sb.append(", width=").append(width);
+		sb.append(", heigth=").append(heigth);
+		sb.append(", codecDescription=").append(codecDescription);
+		sb.append(", timeInHHMM=").append(timeInHHMM);
+		sb.append(", subTitles=").append(subTitles);
+		sb.append(", audio=").append(audio);
+		sb.append(", mainEpisodeOf=").append(mainEpisodeOf);
+		sb.append(", mainBottom100Rank=").append(mainBottom100Rank);
+		sb.append(", mainStars=").append(mainStars);
+		sb.append(", mainTvSeriesTitle=").append(mainTvSeriesTitle);
+		sb.append(", isSeries=").append(isSeries);
+		sb.append(", creators=").append(creators);
+		sb.append(", seasons=").append(seasons);
+		sb.append(", mainDuration=").append(mainDuration);
+		sb.append(", mainAwardsNominations=").append(mainAwardsNominations);
+		sb.append(", mainAwardsWins=").append(mainAwardsWins);
+		sb.append(", mainAwardsPrestigious_award=").append(mainAwardsPrestigious_award);
+		sb.append(", mainAwards=").append(mainAwards);
+		sb.append('}');
+		return sb.toString();
 	}
 
 }
